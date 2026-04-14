@@ -55,3 +55,6 @@
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,visualstudiocode
+
+### main exe file
+main
