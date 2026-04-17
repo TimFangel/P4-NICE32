@@ -15,7 +15,7 @@ LANGUAGE = -std=c++26
 CXXFLAGS = ${DEBUG_FLAGS} ${WARNINGS} ${LANGUAGE}
 
 #Compilation targets
-test.out: testEx.o
+test: testEx.o
 	${CXX} ${CXXFLAGS} $^ -o $@
 
 testEx.o: testEx.cpp
