@@ -28,7 +28,7 @@ $(OBJDIR)/%.o: %.cpp | $(OBJDIR)
 
 # Ensure build directory exists
 $(OBJDIR):
-	mkdir -p $(OBJDIR)
+	mkdir $(OBJDIR)
 
 # Clean
 clean:
