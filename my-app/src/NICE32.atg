@@ -1,0 +1,33 @@
+#include "AST.hpp"
+
+COMPILER NICE32
+
+CHARACTERS
+  digit = '0'..'9'.
+
+TOKENS
+  number = digit {digit}.
+
+COMMENTS FROM "//" TO lf
+
+IGNORE  ' ' + '\n' + '\t' + '\r'
+
+PRODUCTIONS
+
+NICE32 =
+  { Statement }
+.
+
+Statement =
+  "print" Expr ';'
+.
+
+Expr =
+  Term { '+' Term }
+.
+
+Term =
+  number
+.
+
+END NICE32.
