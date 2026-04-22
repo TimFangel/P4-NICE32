@@ -1,8 +1,12 @@
 /* SEE PAGE 38, 39 IN CocoR Taste example */
-public class symbol { // object describing a declared symbol in symboltable
+
+// object describing a declared symbol in symboltable, used for lookup of identifiers.
+@RequiredArgsConstructor 
+public class symbol { 
     public string name; // name of symbol
-    public int type; // 
-    public int kind; // The kind of symbol variable, function, component
+    public int type; // type of symbol
+    public int kind; // The kind of symbol: variable, function, component, constant
+
     /* MISSING MORE */
 
 }
