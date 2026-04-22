@@ -1,15 +1,14 @@
 /* SEE PAGE 38, 39 IN CocoR Taste example */
 
-// object describing a declared symbol in symboltable, used for lookup of identifiers.
-
 import lombok.RequiredArgsConstructor;
 
+// object describing a declared symbol in symboltable, used for lookup of identifiers.
 @RequiredArgsConstructor
 public class Symbol { 
-    public string name; // name of symbol
-    public int type; // type of symbol
+    public string name; // Name of symbol
+    public int type; // Type of symbol: int, float, bool
     public int kind; // The kind of symbol: variable, function, component, constant
-
+    public Object locals; // The local scopes within functions and components
     /* MISSING MORE */
 
 }
@@ -19,9 +18,10 @@ public class SymbolTable {
     
     // object kinds
     let variable = 0;
-    let function = 1;
-    let component = 2;
-    let scope = 3;
+    let constant = 1;
+    let function = 2;
+    let component = 3;
+    let scope = 4;
 
     public Object topScope;
     public int currentScopelevel;
@@ -30,18 +30,19 @@ public class SymbolTable {
 
     public void OpenNewScope() {
         Symbol scopeObj = new Symbol();
-        scope.name = "";
-        scope.next = topScope;
-        topScope = scopeObj;
-        currentScopelevel++;
+        scopeObj.name = "";
+        scopeObj.kind = scope;
+        scopeObj.next = topScope;
+        scopeObj.locals = null;
+        topScope = scopeObj; // Topscope is now the new scope
+        currentScopelevel++; // 
     }
 
     public void closeCurrentScope() {
-        topScope =
-        currentScopelevel--;
+        currentScopelevel--; //
     }
 
-    public SymbolTable (Parser parser) {
+    public SymbolTable(Parser parser) {
     this.parser = parser;
 
     }
