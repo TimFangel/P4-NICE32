@@ -1,33 +1,143 @@
 #include "AST.hpp"
 
 COMPILER NICE32
+/*-------------------------[GLOBAL FIELDS AND METHODS]-----------------------*/
+
+
+
+
+/*---------------------------SCANNER SPECIFICATION---------------------------*/
+
+/*Valid characters that may appear in tokens*/
 
 CHARACTERS
+  letter = 'A'..'Z' + 'a'..'z'.
   digit = '0'..'9'.
+  eol = '\n'  
+  ht = '\t'
+  cr = '\r'
+
+
 
 TOKENS
+  ident = (letter|"_") {letter | digit}.
   number = digit {digit}.
+  float = digit{digit}'.'digit {digit}.
 
-COMMENTS FROM "//" TO lf
+
+
+COMMENTS FROM "//" TO \n
+COMMENTS FROM "/*" TO "*/" NESTED
+
+
 
 IGNORE  ' ' + '\n' + '\t' + '\r'
 
+/*--------------------------PARSER SPECIFICATION---------------------------*/
+
 PRODUCTIONS
+
+
 
 NICE32 =
   { Statement }
 .
 
-Statement =
+Program = setup functions main.
+
+Setup = "setup" "{" {Declaration} "}"  "{" {Component} "}".
+
+Functions = "functions" "{" {Function} "}".
+
+Main = "main" "{" {Statement} "}".
+
+/*---------------------------------------*/
+
+Declaration = Type ident "=" Value ";".
+
+Component = "component" ident "{" Constants {Declaration} "}".
+
+Constants = "port" ":" int ";" 
+            "protocol" ":" Protocol ";"
+            "interval" ":" int ";"
+            "direction" ":" Direction ";".
+
+Field = "." Fieldtype.
+
+Fieldtype = "port"|"protocol"|"interval"|"direction".
+
+/*---------------------------------------*/
+
+Function = Type "func" ident "(" [Parameter] ")" Block.
+
+Parameter = Type ident [Field].
+
+FunctionCall = ident "(" Value ")".
+
+Block = "{" {Statement} "}"
+
+/*---------------------------------------*/
+
+Statement = Declaration | Assignment | IfStatement | WhileStatement | FunctionCall | ReturnStatement.
+
+Assignment = ident [Field] "=" Value ";".
+
+IfStatement = "if" "(" BoolExpr ")" Block | "if" "(" BoolExpr ")" Block ElseStatement.
+
+ElseStatement = "else" IfStatement | "else" Block.
+
+WhileStatement = "while" "(" BoolExpr ")" Block.
+
+Return = "return" Value ";".
+
+/*---------------------------------------*/
+
+ArithExpr<out Value> =
+
+
+ArithTerm<out Value> (.int val;.)
+= ArithTerm<out Value> 
+{ ( "+"   ArithTerm<out val1> 
+ (. val = val + val1; .)
+  | "-"   ArithTerm<out val1> 
+(. val = val - val1; .)
+  ) 
+}.
+
+
+ArithFactor<out Value> = Term{} 
+
+
+
+
+/*---------------------------------------*/
+
+
+Type = "bool" | "float" | "int".
+
+Value = ArithExpr | BoolExpr | Bool | number | float
+
+Protocol = "digital" | "analog"
+
+
+
+/*---------------------------------------*/
+
+
+
+statement =
   "print" Expr ';'
 .
 
 Expr =
-  Term { '+' Term }
-.
+  Term { '+' Term 
+  | '-' Term  
+  }.
 
 Term =
   number
 .
+
+
 
 END NICE32.
