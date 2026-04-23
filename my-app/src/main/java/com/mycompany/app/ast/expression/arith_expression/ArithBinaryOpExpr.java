@@ -5,6 +5,7 @@ import com.mycompany.app.ast.expression.enums.*;
 
 import lombok.Getter;
 
+/* Binary Arithmetic Operator */
 @Getter
 public class ArithBinaryOpExpr extends ArithExpr {
     private ArithBinaryOp op;
