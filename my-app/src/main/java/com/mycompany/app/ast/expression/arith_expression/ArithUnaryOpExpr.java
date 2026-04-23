@@ -5,6 +5,7 @@ import com.mycompany.app.ast.expression.enums.*;
 
 import lombok.Getter;
 
+/* Unary Arithmetic Operator */
 @Getter
 public class ArithUnaryOpExpr extends ArithExpr {
     private ArithUnaryOp op;

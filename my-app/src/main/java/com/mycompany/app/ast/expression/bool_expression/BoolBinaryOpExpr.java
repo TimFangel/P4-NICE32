@@ -5,6 +5,7 @@ import com.mycompany.app.ast.expression.enums.BoolBinaryOp;
 
 import lombok.Getter;
 
+/* Binary Boolean Operator */
 @Getter
 public class BoolBinaryOpExpr extends BoolExpr {
     private BoolBinaryOp op;

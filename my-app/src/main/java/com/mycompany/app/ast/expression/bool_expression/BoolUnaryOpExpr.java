@@ -5,6 +5,7 @@ import com.mycompany.app.ast.expression.enums.BoolUnaryOp;
 
 import lombok.Getter;
 
+/* Unary Boolean Operator */
 @Getter
 public class BoolUnaryOpExpr extends BoolExpr {
     private BoolUnaryOp op;
