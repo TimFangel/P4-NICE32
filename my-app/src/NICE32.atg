@@ -13,25 +13,20 @@ COMPILER NICE32
 CHARACTERS
   letter = 'A'..'Z' + 'a'..'z'.
   digit = '0'..'9'.
-  eol = '\n'  
-  ht = '\t'
-  cr = '\r'
-
-
+  eol = '\n'.  
+  ht = '\t'.
+  cr = '\r'.
 
 TOKENS
   ident = (letter|"_") {letter | digit}.
   number = digit {digit}.
   float = digit{digit}'.'digit {digit}.
 
-
-
-COMMENTS FROM "//" TO \n
 COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO cr eol
 
 
-
-IGNORE  ' ' + '\n' + '\t' + '\r'
+IGNORE eol + ht + cr
 
 /*--------------------------PARSER SPECIFICATION---------------------------*/
 
@@ -92,11 +87,12 @@ Return = "return" Value ";".
 
 /*---------------------------------------*/
 
-ArithExpr<out Value> =
+Expression<out int val>= ArithExpr<out val> /* Expression with output val of type int */
 
-
-ArithTerm<out Value> (.int val;.)
-= ArithTerm<out Value> 
+ArithExpr<out int val> 
+(.int val;.) /* local variable*/
+= 
+ArithTerm<out val> 
 { ( "+"   ArithTerm<out val1> 
  (. val = val + val1; .)
   | "-"   ArithTerm<out val1> 
@@ -105,7 +101,15 @@ ArithTerm<out Value> (.int val;.)
 }.
 
 
-ArithFactor<out Value> = Term{} 
+ArithFactor<out int val> 
+(. int val;.)
+= 
+Factor<out val>
+{ ("*" 
+| "/"
+)
+Factor<out val>
+}.
 
 
 
@@ -115,7 +119,8 @@ ArithFactor<out Value> = Term{}
 
 Type = "bool" | "float" | "int".
 
-Value = ArithExpr | BoolExpr | Bool | number | float
+Value = ArithExpr | BoolExpr 
+
 
 Protocol = "digital" | "analog"
 
