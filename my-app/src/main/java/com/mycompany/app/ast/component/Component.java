@@ -31,6 +31,8 @@ public class Component extends Node {
         this.direction = direction;
     }
 
+
+    // TODO: Write test for addVariable?
     /**
      * Adds a declaration to a component
      * @param decl a declaration to be added.
