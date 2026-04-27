@@ -18,7 +18,7 @@ public class SymbolTable {
     final int direction = 5;
     final int procedure = 6;
 
-    // Symbol kinds
+    // Symbol categories
     final int variable = 0;
     final int constant = 1;
     final int function = 2;
