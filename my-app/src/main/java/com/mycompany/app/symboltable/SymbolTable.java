@@ -1,16 +1,12 @@
-/* SEE PAGE 38, 39 IN CocoR Taste example */
+package com.mycompany.app.symboltable;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-// Object describing a declared symbol in symboltable, used for lookup of identifiers.
-@RequiredArgsConstructor
-public class Symbol { 
-    public @Getter @Setter string name; // Name of symbol
-    public @Getter @Setter int type; // Type of symbol: int, float, bool
-    public @Getter @Setter Symbol next; // Next symbol in same scope
-    public @Getter @Setter int category; // The category of symbol: variable, constant, function, component, constant, scope
-    public @Getter @Setter Symbol locals; // The local symbols 
-    public @Getter @Setter int level; // O = global, 1 = local
-}
+import javax.naming.NameAlreadyBoundException;
+
+import com.mycompany.app.symboltable.Symbol;
+/* SEE PAGE 38, 39 IN CocoR Taste example */
 
 public class SymbolTable {
     // Types
@@ -32,6 +28,7 @@ public class SymbolTable {
     public Symbol topScope; // Current scope 
     public int currentScopelevel;
 
+    // Missing import parser class. 
     private Parser parser;
 
     public void OpenNewScope() {
@@ -50,7 +47,7 @@ public class SymbolTable {
     }
 
     // Create new symbol in current scope - compile time check
-    public Symbol newSymbol(string name, int category, int type) {
+    public Symbol newSymbol(String name, int category, int type) {
         Symbol topScopeLocals = new Symbol(); 
         Symbol last = new Symbol();
         Symbol symbol = new Symbol();
@@ -66,13 +63,13 @@ public class SymbolTable {
          * It iterates through all locals and check if their Id is different from the new Id of the symbol. 
         */
         while (topScopeLocals != null) {
-            if (topScopeLocals.name == name) {system.out.println("duplicate Id"); return 0;} 
+            if (topScopeLocals.name == name) {System.out.println("duplicate Id"); throw new NameAlreadyBoundException();} 
             last = topScopeLocals;
-            topScopeLocals = topScopeLocals.next();
+            topScopeLocals = topScopeLocals.next;
         }
         /* Assign the new symbol to the locals in topscope (if no locals were found) */
         if (last == null) {
-            topscope.locals = symbol; 
+            topScope.locals = symbol; 
         } else {
             last.next = symbol; // Assign the new symbol as the next member (Most recent - if locals were found)
         }
@@ -85,7 +82,7 @@ public class SymbolTable {
      * 3. Control statements
      * I think it is run-time check. 
     */
-    public Symbol findId(string name) { // Search for a symbol and return the symbol
+    public Symbol findId(String name) { // Search for a symbol and return the symbol
         Symbol symbol = new Symbol();
         Symbol scope = new Symbol();
         scope = topScope;
