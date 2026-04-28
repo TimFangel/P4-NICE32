@@ -1,8 +1,8 @@
-package com.mycompany.app.ast.statement.main_statement;
+package frontend.abstract_syntax.statement.main_statement;
 
-import com.mycompany.app.ast.expression.Expr;
-import com.mycompany.app.ast.statement.Stmt;
-import com.mycompany.app.ast.value.Var;
+import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.statement.Stmt;
+import frontend.abstract_syntax.value.Var;
 
 import lombok.Getter;
 import lombok.ToString;

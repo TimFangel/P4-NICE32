@@ -1,6 +1,6 @@
-package com.mycompany.app.ast.component.constants;
+package frontend.abstract_syntax.component.constants;
 
-import com.mycompany.app.ast.value.Num;
+import frontend.abstract_syntax.value.Num;
 
 import lombok.Getter;
 import lombok.ToString;

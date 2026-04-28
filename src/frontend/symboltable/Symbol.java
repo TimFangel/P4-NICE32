@@ -1,14 +1,13 @@
-package com.mycompany.app.symboltable;
+package frontend.symboltable;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 // Object describing a declared symbol in symboltable, used for lookup of identifiers.
 @NoArgsConstructor
-@Getter @Setter
+@Getter
+@Setter
 public class Symbol { 
     public String name; // Name of symbol
     public int type; // Type of symbol: int, float, bool

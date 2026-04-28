@@ -1,4 +1,4 @@
-package com.mycompany.app.ast.expression.enums;
+package frontend.abstract_syntax.expression.enums;
 
 /* Unary Arithmetic Operator Enum */
 public enum ArithUnaryOp {

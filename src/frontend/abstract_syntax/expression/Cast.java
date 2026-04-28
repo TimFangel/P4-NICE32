@@ -1,5 +1,6 @@
-package src.abstract_syntax;
+package frontend.abstract_syntax.expression;
 
+import frontend.abstract_syntax.type.Type;
 import lombok.Getter;
 import lombok.ToString;
 

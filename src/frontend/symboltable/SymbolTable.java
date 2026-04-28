@@ -1,4 +1,4 @@
-package com.mycompany.app.symboltable;
+package frontend.symboltable;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameNotFoundException;
 
-import com.mycompany.app.symboltable.Symbol;
+import frontend.coco.Parser;
 
 public class SymbolTable {
     // Types

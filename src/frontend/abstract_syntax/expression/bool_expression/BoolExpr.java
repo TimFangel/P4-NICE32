@@ -1,6 +1,6 @@
-package com.mycompany.app.ast.expression.bool_expression;
+package frontend.abstract_syntax.expression.bool_expression;
 
-import com.mycompany.app.ast.expression.Expr;
+import frontend.abstract_syntax.expression.Expr;
 
 import lombok.Getter;
 import lombok.ToString;

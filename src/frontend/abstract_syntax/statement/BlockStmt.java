@@ -1,4 +1,4 @@
-package src.abstract_syntax;
+package frontend.abstract_syntax.statement;
 
 import java.util.List;
 

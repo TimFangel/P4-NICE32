@@ -1,4 +1,4 @@
-package com.mycompany.app.ast.value;
+package frontend.abstract_syntax.value;
 
 /* Variable value */
 public record Var(String name) {}

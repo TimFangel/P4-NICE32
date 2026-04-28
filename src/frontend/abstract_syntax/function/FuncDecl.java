@@ -1,12 +1,12 @@
-package com.mycompany.app.ast.function;
+package frontend.abstract_syntax.function;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mycompany.app.ast.Node;
-import com.mycompany.app.ast.statement.Stmt;
-import com.mycompany.app.ast.type.Type;
-import com.mycompany.app.ast.value.Var;
+import frontend.abstract_syntax.Node;
+import frontend.abstract_syntax.statement.Stmt;
+import frontend.abstract_syntax.type.Type;
+import frontend.abstract_syntax.value.Var;
 
 import lombok.Getter;
 import lombok.ToString;

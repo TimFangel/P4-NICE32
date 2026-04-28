@@ -1,15 +1,15 @@
-package com.mycompany.app.ast.component;
+package frontend.abstract_syntax.component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mycompany.app.ast.Node;
-import com.mycompany.app.ast.component.constants.DirectionComp;
-import com.mycompany.app.ast.component.constants.IntervalComp;
-import com.mycompany.app.ast.component.constants.PortComp;
-import com.mycompany.app.ast.component.constants.ProtocolComp;
-import com.mycompany.app.ast.statement.Decl;
-import com.mycompany.app.ast.value.Var;
+import frontend.abstract_syntax.Node;
+import frontend.abstract_syntax.component.constants.DirectionComp;
+import frontend.abstract_syntax.component.constants.IntervalComp;
+import frontend.abstract_syntax.component.constants.PortComp;
+import frontend.abstract_syntax.component.constants.ProtocolComp;
+import frontend.abstract_syntax.statement.Decl;
+import frontend.abstract_syntax.value.Var;
 
 import lombok.Getter;
 import lombok.ToString;

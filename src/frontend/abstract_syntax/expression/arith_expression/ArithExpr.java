@@ -1,6 +1,6 @@
-package com.mycompany.app.ast.expression.arith_expression;
+package frontend.abstract_syntax.expression.arith_expression;
 
-import com.mycompany.app.ast.expression.Expr;
+import frontend.abstract_syntax.expression.Expr;
 
 import lombok.Getter;
 import lombok.ToString;

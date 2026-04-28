@@ -1,6 +1,6 @@
-package src.semantic_analysis;
+package frontend.semantic_analysis;
 
-import src.abstract_syntax.*;
+import frontend.abstract_syntax.*;
 import java.util.*;
 
 public class TypeChecker {

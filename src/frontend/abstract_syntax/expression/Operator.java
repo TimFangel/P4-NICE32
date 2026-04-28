@@ -1,5 +1,5 @@
-package com.mycompany.app.ast.expression;
-import com.mycompany.app.ast.Node;
+package frontend.abstract_syntax.expression;
+import frontend.abstract_syntax.Node;
 
 import lombok.Getter;
 import lombok.ToString;

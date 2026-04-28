@@ -1,4 +1,4 @@
-package com.mycompany.app.ast.program;
+package frontend.abstract_syntax.program;
 
 import java.util.ArrayList;
 import java.util.List;

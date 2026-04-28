@@ -1,4 +1,4 @@
-package com.mycompany.app.ast.statement;
+package frontend.abstract_syntax.statement;
 
 import lombok.Getter;
 import lombok.ToString;
