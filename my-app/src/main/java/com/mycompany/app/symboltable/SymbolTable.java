@@ -4,9 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.naming.NameAlreadyBoundException;
-
 import com.mycompany.app.symboltable.Symbol;
-/* SEE PAGE 38, 39 IN CocoR Taste example */
 
 public class SymbolTable {
     // Types
@@ -33,10 +31,10 @@ public class SymbolTable {
 
     public void OpenNewScope() {
         Symbol scopeObj = new Symbol();
-        scopeObj.name = ""; 
-        scopeObj.category = scope; 
-        scopeObj.next = topScope; 
-        scopeObj.locals = null; // New scope has no locals initially 
+        scopeObj.setName(""); 
+        scopeObj.setCategory(scope); 
+        scopeObj.setNext(topScope);
+        scopeObj.setLocals(null); // New scope has no locals initially 
         topScope = scopeObj; // Topscope is now the new scope
         currentScopelevel++; 
     }
@@ -51,10 +49,10 @@ public class SymbolTable {
         Symbol topScopeLocals = new Symbol(); 
         Symbol last = new Symbol();
         Symbol symbol = new Symbol();
-        symbol.name = name;
-        symbol.category = category;
-        symbol.type = type;
-        symbol.level = currentScopelevel;
+        symbol.setName(name);
+        symbol.setCategory(category);
+        symbol.setType(type);
+        symbol.setLevel(currentScopelevel);
         topScopeLocals = topScope.locals; // Object holding local symbols in current scope
         last = null; 
         /* Handle instance when a new Id of symbol in a scope is already declared in the scope. (Duplicate Id) 
