@@ -8,7 +8,7 @@ import lombok.ToString;
 /* Arithmetic Expression */
 @ToString
 @Getter
-public class ArithExpr extends Expr {
+public abstract class ArithExpr extends Expr {
     ArithExpr(int lineNumber) {
         super(lineNumber);
     }

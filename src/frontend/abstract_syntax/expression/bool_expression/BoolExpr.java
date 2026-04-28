@@ -8,7 +8,7 @@ import lombok.ToString;
 /* Boolean Expression */
 @ToString
 @Getter
-public class BoolExpr extends Expr {
+public abstract class BoolExpr extends Expr {
     BoolExpr(int lineNumber) {
         super(lineNumber);
     }

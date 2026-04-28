@@ -1,7 +1,6 @@
 package frontend.abstract_syntax.component.constants;
 
 import frontend.abstract_syntax.component.constants.component_types.DirectionType;
-
 import lombok.Getter;
 import lombok.ToString;
 
