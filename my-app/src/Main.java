@@ -8,7 +8,7 @@ import src.semantic_analysis.TypeChecker;
 public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Usage: java Main <file>");
+            System.out.println("Usage: java src.Main <file>");
             return;
         }
 
