@@ -51,7 +51,7 @@ buildNumber.properties
 .vscode
 
 # Coco/r parser files
-!my-app/src/coco/Coco.jar
-!my-app/src/coco/*.frame
-my-app/src/coco/*.java
+!src/frontend/coco/Coco.jar
+!src/frontend/coco/*.frame
+src/frontend/coco/*.java
 
