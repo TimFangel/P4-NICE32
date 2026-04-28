@@ -1,0 +1,211 @@
+import src.abstract_syntax.*;
+import java.util.*;
+
+COMPILER NICE32
+
+public Program mainNode = null;
+
+public boolean hasErrors() {
+    return errors.count > 0;
+}
+
+CHARACTERS
+  digit = "0123456789" .
+  letter = 'A'..'Z' + 'a'..'z' .
+
+TOKENS
+  FLOAT = digit {digit} "." digit {digit} .
+  INT   = digit {digit} .
+  IDENT = letter {letter | digit} .
+
+COMMENTS FROM "//" TO '\n'
+
+IGNORE ' ' + '\t' + '\n' + '\r'
+
+PRODUCTIONS
+
+NICE32
+  = (. BlockStmt setupBlock;
+       BlockStmt functionBlock;
+       BlockStmt mainBlock; .)
+    "setup"
+    Block<out setupBlock>
+    "functions"
+    Block<out functionBlock>
+    "main"
+    Block<out mainBlock>
+    (. mainNode = new Program(setupBlock, functionBlock, mainBlock); .)
+  .
+
+Block<out BlockStmt block>
+  = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
+    "{"
+      { Stmt<out s> (. stmts.add(s); .) }
+    "}"
+    (. block = new BlockStmt(stmts); .)
+  .
+
+Stmt<out Stmt stmt>
+  = (. 
+       stmt = null;
+       Type type;
+       String name;
+       Expr value;
+    .)
+    (
+      TypeName<out type>
+      IDENT (. name = t.val; .)
+      "="
+      Expr<out value>
+      ";"
+      (. stmt = new Decl(type, name, value); .)
+
+    |
+      IDENT (. name = t.val; .)
+      "="
+      Expr<out value>
+      ";"
+      (. stmt = new Assign(name, value); .)
+
+    |
+      IfStmt<out stmt>
+    )
+  .
+
+IfStmt<out Stmt stmt>
+  = (.
+       Expr cond;
+       BlockStmt thenBlock;
+       Stmt elseBranch = null;
+       BlockStmt elseBlock;
+    .)
+    "if"
+    "(" Expr<out cond> ")"
+    Block<out thenBlock>
+    [
+      "else"
+      (
+        IfStmt<out elseBranch>
+      |
+        Block<out elseBlock>
+        (. elseBranch = elseBlock; .)
+      )
+    ]
+    (. stmt = new If(cond, thenBlock, elseBranch); .)
+  .
+
+TypeName<out Type type>
+  = (. type = Type.INT; .)
+    (
+      "int"
+      (. type = Type.INT; .)
+    |
+      "float"
+      (. type = Type.FLOAT; .)
+    |
+      "bool"
+      (. type = Type.BOOL; .)
+    )
+  .
+
+Expr<out Expr expr>
+  = OrExpr<out expr>
+  .
+
+OrExpr<out Expr expr>
+  = (. Expr right; .)
+    AndExpr<out expr>
+    {
+      "||"
+      AndExpr<out right>
+      (. expr = new BinaryOp(expr, Op.OR, right); .)
+    }
+  .
+
+AndExpr<out Expr expr>
+  = (. Expr right; .)
+    EqExpr<out expr>
+    {
+      "&&"
+      EqExpr<out right>
+      (. expr = new BinaryOp(expr, Op.AND, right); .)
+    }
+  .
+
+EqExpr<out Expr expr>
+  = (. Expr right; .)
+    AddExpr<out expr>
+    {
+      "=="
+      AddExpr<out right>
+      (. expr = new BinaryOp(expr, Op.EQ, right); .)
+    }
+  .
+
+AddExpr<out Expr expr>
+  = (. Expr right; .)
+    MulExpr<out expr>
+    {
+      "+"
+      MulExpr<out right>
+      (. expr = new BinaryOp(expr, Op.ADD, right); .)
+    |
+      "-"
+      MulExpr<out right>
+      (. expr = new BinaryOp(expr, Op.SUB, right); .)
+    }
+  .
+
+MulExpr<out Expr expr>
+  = (. Expr right; .)
+    UnaryExpr<out expr>
+    {
+      "*"
+      UnaryExpr<out right>
+      (. expr = new BinaryOp(expr, Op.MUL, right); .)
+    |
+      "/"
+      UnaryExpr<out right>
+      (. expr = new BinaryOp(expr, Op.DIV, right); .)
+    }
+  .
+
+UnaryExpr<out Expr expr>
+  = (. expr = null; Type castType; .)
+    (
+      "("
+        (
+          TypeName<out castType>
+          ")"
+          UnaryExpr<out Expr inner>
+          (. expr = new Cast(castType, inner); .)
+        |
+          Expr<out expr>
+          ")"
+        )
+    |
+      PrimaryNoParens<out expr>
+    )
+  .
+
+PrimaryNoParens<out Expr expr>
+  = (. expr = null; .)
+    (
+      INT
+      (. expr = new IntNum(Integer.parseInt(t.val)); .)
+    |
+      FLOAT
+      (. expr = new FloatNum(Float.parseFloat(t.val)); .)
+    |
+      "true"
+      (. expr = new Bool(true); .)
+    |
+      "false"
+      (. expr = new Bool(false); .)
+    |
+      IDENT
+      (. expr = new Var(t.val); .)
+    )
+  .
+
+END NICE32.

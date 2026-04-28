@@ -1,0 +1,22 @@
+setup {
+    bool yes = true;
+}
+
+functions {
+    // ingen funktioner
+}
+
+main {
+    int a = 5;
+
+    float b = (float) a + 2.2;
+    int c = (int) a;
+
+    if (a == 5) {
+        float f = 1.2;
+    } else if (a == 5 && yes) {
+        float g = 55.66;
+    }
+
+    a = 12;
+}
