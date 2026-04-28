@@ -13,8 +13,9 @@ public class Decl extends Stmt {
     private Var identifier;
     private Expr value;
 
-    Decl(int lineNumber, Var identifier, Expr value) {
+    Decl(int lineNumber, Type type, Var identifier, Expr value) {
         super(lineNumber);
+        this.type = type;
         this.identifier = identifier;
         this.value = value;
     }

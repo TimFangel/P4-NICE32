@@ -1,15 +1,15 @@
 package com.mycompany.app.ast.component.constants;
 
-import com.mycompany.app.ast.type.IntT;
+import com.mycompany.app.ast.value.Num;
 
 import lombok.Getter;
 
 /* Interval Constant */
 @Getter
 public class IntervalComp extends CompConst {
-    private IntT interval;
+    private Num interval;
 
-    IntervalComp(int lineNumber, IntT interval) {
+    IntervalComp(int lineNumber, Num interval) {
         super(lineNumber);
         this.interval = interval;
     }

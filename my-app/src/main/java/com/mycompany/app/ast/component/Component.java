@@ -23,8 +23,9 @@ public class Component extends Node {
     private DirectionComp direction;
     private List<Decl> variables = new ArrayList<>();
 
-    Component(int lineNumber, PortComp port, ProtocolComp protocol, IntervalComp interval, DirectionComp direction) {
+    Component(int lineNumber, Var identifier, PortComp port, ProtocolComp protocol, IntervalComp interval, DirectionComp direction) {
         super(lineNumber);
+        this. identifier = identifier;
         this.port = port;
         this.protocol = protocol;
         this.interval = interval;

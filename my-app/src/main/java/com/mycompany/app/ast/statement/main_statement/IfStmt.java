@@ -12,8 +12,9 @@ public class IfStmt extends Stmt{
     private Stmt thenStmt;
     private Stmt elseStmt;
 
-    IfStmt(int linenumber, Stmt thenStmt, Stmt elseStmt) {
+    IfStmt(int linenumber, Expr condition, Stmt thenStmt, Stmt elseStmt) {
         super(linenumber);
+        this.condition = condition;
         this.thenStmt = thenStmt;
         this.elseStmt = elseStmt;
     }
