@@ -1,4 +1,4 @@
-import src.abstract_syntax.*;
+import frontend.abstract_syntax.*;
 import java.util.*;
 
 COMPILER NICE32
