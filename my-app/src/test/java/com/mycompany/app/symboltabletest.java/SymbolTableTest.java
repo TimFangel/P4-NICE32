@@ -2,7 +2,7 @@
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
-import com.mycompany.app.symboltable.*;;
+import com.mycompany.app.symboltable.*;
 
 // Ongoing
 public class SymbolTableTest {
