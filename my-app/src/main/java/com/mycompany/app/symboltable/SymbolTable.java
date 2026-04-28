@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
+
 import com.mycompany.app.symboltable.Symbol;
 
 public class SymbolTable {
@@ -95,7 +97,7 @@ public class SymbolTable {
             }
         scope = scope.next;
         }
-        System.out.println(name + "name is not declared");
+        System.out.println("Name could not be found"); throw new NameNotFoundException();
     }
     
     // Maybe make lombok take care of this constructor?
