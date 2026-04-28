@@ -42,6 +42,7 @@ public class SymbolTable {
     }
 
     public void closeCurrentScope() {
+        if (topScope == null) {throw new NullPointerException();}
         topScope = topScope.next;
         currentScopelevel--; 
     }
@@ -90,7 +91,7 @@ public class SymbolTable {
             symbol = scope.locals;
 
             while (symbol != null) { // Iterate through all names in that scope
-                if (symbol.name == name) { 
+                if (symbol.name != null ? symbol.name.equals(name) : name == null) { 
                     return symbol;
                 }
                 symbol = symbol.next;
