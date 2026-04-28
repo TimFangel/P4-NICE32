@@ -3,13 +3,11 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.mycompany.app</groupId>
-  <artifactId>my-app</artifactId>
+  <groupId>com.example.p4nice32</groupId>
+  <artifactId>P4-NICE32</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>my-app</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <name>P4-NICE32</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -49,7 +47,9 @@
   </dependencies>
 
   <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>tests</testSourceDirectory>
+    <pluginManagement>
       <plugins>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
         <plugin>
