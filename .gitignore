@@ -49,3 +49,9 @@ buildNumber.properties
 # End of https://www.toptal.com/developers/gitignore/api/java,maven
 
 .vscode
+
+# Coco/r parser files
+!src/coco/Coco.jar
+
+src/coco/*.java
+
