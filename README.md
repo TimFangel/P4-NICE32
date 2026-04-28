@@ -1,12 +1,14 @@
-# P4-NICE32
+Skriv kode i *Test.NICE*
 
-NICE32 compiler for coding on the ESP32.
+Generér parser og scanner når du står i */my-app/src/coco*:
+`java -jar Coco.jar NICE32.atg -package "src.coco"`
 
-## Requirements
+Kør `cd ../..` for at hoppe ud i */my-app*
 
-- Maven
-- Java 21 or later
+Kompilér java filer når du står i */my-app*:
+`javac -d out src/Main.java src/abstract_syntax/*.java src/coco/*.java`
 
-## Compilation
+Kør main med input når du står i */my-app*:
+`java -cp out src.Main src/Test.NICE`
 
-`cd` to "my-app" folder and run `mvn package` in your terminal, then run `java -cp target/my-app-1.0-SNAPSHOT.jar com.mycompany.app.App`.
+Nu burde du have fået spyttet et AST ud i tekstform i terminalen.
