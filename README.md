@@ -4,11 +4,9 @@ NICE32 compiler for coding on the ESP32.
 
 ## Requirements
 
-- Makefile
-- C++ Compiler
+- Maven
+- Java 21 or later
 
 ## Compilation
 
-To compile `main`, go to project root directory and run command `make` in your terminal, then run `./main`.
-
-To compile unit tests, go to `tests` directory and run command `make` in your terminal, then run `./test`.
+`cd` to "my-app" folder and run `mvn package` in your terminal, then run `java -cp target/my-app-1.0-SNAPSHOT.jar com.mycompany.app.App`.
