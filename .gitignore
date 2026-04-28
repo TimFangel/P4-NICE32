@@ -52,6 +52,6 @@ buildNumber.properties
 
 # Coco/r parser files
 !src/coco/Coco.jar
-
+!src/coco/*.frame
 src/coco/*.java
 
