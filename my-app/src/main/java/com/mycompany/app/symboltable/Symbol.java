@@ -15,5 +15,5 @@ public class Symbol {
     public Symbol next; // Next symbol in same scope
     public int category; // The category of symbol: variable, constant, function, component, constant, scope
     public Symbol locals; // The local symbols 
-    public int level; // O = global, 1 = local
+    public int level; // 0 = global, 1 = local
 }
