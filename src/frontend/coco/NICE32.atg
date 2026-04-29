@@ -62,36 +62,43 @@ Block<out BlockStmt block>
     (. block = new BlockStmt(line, stmts); .)
   .
 
-// TODO: fix stmt; int float bool
+// TODO: fix stmt; IDENT (int float bool)
 Stmt<out Stmt stmt>
   = (. 
        stmt = null;
-       Type type;
        IdentSingle name;
-       Expr value;
     .)
     (
-      TypeName<out type>
-      (. int line = t.line; .)
-      IDENT (. name = new IdentSingle(t.val); .)
-      "="
-      Expr<out value>
-      ";"
-      (. stmt = new Decl(line, type, name, value); .)
-
-    |
       IDENT (. name = new IdentSingle(t.val); .)
       (. int line = t.line; .)
       "="
-      Expr<out value>
+      Expr<out Expr value>
       ";"
       (. stmt = new AssStmt(line, name, value); .)
 
     |
       IfStmt<out stmt>
     |
-      FuncDif<out stmt>
+      TypeName<out Type type>
+      IdentStmt<out stmt, type>
     )
+  .
+
+IdentStmt<out Stmt stmt, Type type>
+  = (
+      Decl<out stmt, type>
+    |
+      FuncDecl<out stmt, type>
+    )
+  .
+
+Decl<out Stmt stmt, Type type>
+  = (. int line = t.line; .)
+    IDENT (. name = new IdentSingle(t.val); .)
+    "="
+    Expr<out value>
+    ";"
+    (. stmt = new Decl(line, type, name, value); .)
   .
 
 IfStmt<out Stmt stmt>
@@ -268,7 +275,7 @@ UnaryExpr<out Expr expr>
     )
   .
 
-FuncDif<out Stmt stmt>
+FuncDecl<out Stmt stmt, Type type>
   = (.
        Type returnType;
        IdentSingle callSign;
