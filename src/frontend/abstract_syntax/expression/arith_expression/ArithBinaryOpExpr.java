@@ -1,7 +1,7 @@
-package com.mycompany.app.ast.expression.arith_expression;
+package frontend.abstract_syntax.expression.arith_expression;
 
-import com.mycompany.app.ast.expression.Expr;
-import com.mycompany.app.ast.expression.enums.*;
+import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.enums.*;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -14,7 +14,7 @@ public class ArithBinaryOpExpr extends ArithExpr {
     private Expr exprLeft;
     private Expr exprRight;
     
-    ArithBinaryOpExpr(int lineNumber, ArithBinaryOp op, Expr exprLeft, Expr exprRight) {
+    public ArithBinaryOpExpr(int lineNumber, ArithBinaryOp op, Expr exprLeft, Expr exprRight) {
         super(lineNumber);
 
         this.op = op;

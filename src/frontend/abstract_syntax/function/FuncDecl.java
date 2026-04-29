@@ -1,39 +1,25 @@
-package com.mycompany.app.ast.function;
+package frontend.abstract_syntax.function;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.mycompany.app.ast.Node;
-import com.mycompany.app.ast.statement.Stmt;
-import com.mycompany.app.ast.type.Type;
-import com.mycompany.app.ast.value.Var;
-
+import frontend.abstract_syntax.statement.BlockStmt;
+import frontend.abstract_syntax.type.Type;
+import frontend.abstract_syntax.value.Ident;
 import lombok.Getter;
 import lombok.ToString;
 
 /* Function Declaration */
 @ToString
 @Getter
-public class FuncDecl extends Node implements Func {
+public class FuncDecl extends Func {
     private Type returnType;
-    private Var identifier;
+    private Ident identifier;
     private Type paramType;
-    private List<Stmt> statements = new ArrayList<>();
+    private BlockStmt statements;
 
-    FuncDecl(int lineNumber, Type returnType, Var identifier, Type paramType) {
+    FuncDecl(int lineNumber, Type returnType, Ident identifier, Type paramType, BlockStmt statements) {
         super(lineNumber);
         this.returnType = returnType;
         this.identifier = identifier;
         this.paramType = paramType;
-    }
-
-    /**
-     * Add statement to function's stmt list.
-     * @param stmt statement to add to list.
-     */
-    void addStmt(Stmt stmt) {
-        if(stmt != null) {
-            this.statements.add(stmt);
-        }
+        this.statements = statements;
     }
 }

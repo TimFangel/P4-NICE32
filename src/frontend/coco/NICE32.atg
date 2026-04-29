@@ -1,5 +1,21 @@
-import src.abstract_syntax.*;
 import java.util.*;
+
+// TODO: Add missing semantics
+
+import frontend.abstract_syntax.*;
+import frontend.abstract_syntax.component.*;
+import frontend.abstract_syntax.component.constants.*;
+import frontend.abstract_syntax.component.constants.component_types.*;
+import frontend.abstract_syntax.expression.*;
+import frontend.abstract_syntax.expression.arith_expression.*;
+import frontend.abstract_syntax.expression.bool_expression.*;
+import frontend.abstract_syntax.expression.enums.*;
+import frontend.abstract_syntax.function.*;
+import frontend.abstract_syntax.program.*;
+import frontend.abstract_syntax.statement.*;
+import frontend.abstract_syntax.statement.main_statement.*;
+import frontend.abstract_syntax.type.*;
+import frontend.abstract_syntax.value.*;
 
 COMPILER NICE32
 
@@ -14,9 +30,9 @@ CHARACTERS
   letter = 'A'..'Z' + 'a'..'z' .
 
 TOKENS
-  FLOAT = digit {digit} "." digit {digit} .
+  FLOAT = {digit} "." digit {digit} .
   INT   = digit {digit} .
-  IDENT = letter {letter | digit} .
+  IDENT = (letter | "_") {letter | digit | "_"}  .
 
 COMMENTS FROM "//" TO '\n'
 
@@ -29,43 +45,46 @@ NICE32
        BlockStmt functionBlock;
        BlockStmt mainBlock; .)
     "setup"
+    (. int line = t.line; .)
     Block<out setupBlock>
     "functions"
     Block<out functionBlock>
     "main"
     Block<out mainBlock>
-    (. mainNode = new Program(setupBlock, functionBlock, mainBlock); .)
+    (. mainNode = new Program(line, setupBlock, functionBlock, mainBlock); .)
   .
 
 Block<out BlockStmt block>
   = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
-    "{"
+    "{" (. int line = t.line; .)
       { Stmt<out s> (. stmts.add(s); .) }
     "}"
-    (. block = new BlockStmt(stmts); .)
+    (. block = new BlockStmt(line, stmts); .)
   .
 
 Stmt<out Stmt stmt>
   = (. 
        stmt = null;
        Type type;
-       String name;
+       IdentSingle name;
        Expr value;
     .)
     (
       TypeName<out type>
-      IDENT (. name = t.val; .)
+      (. int line = t.line; .)
+      IDENT (. name = new IdentSingle(t.val); .)
       "="
       Expr<out value>
       ";"
-      (. stmt = new Decl(type, name, value); .)
+      (. stmt = new Decl(line, type, name, value); .)
 
     |
-      IDENT (. name = t.val; .)
+      IDENT (. name = new IdentSingle(t.val); .)
+      (. int line = t.line; .)
       "="
       Expr<out value>
       ";"
-      (. stmt = new Assign(name, value); .)
+      (. stmt = new AssStmt(line, name, value); .)
 
     |
       IfStmt<out stmt>
@@ -76,35 +95,36 @@ IfStmt<out Stmt stmt>
   = (.
        Expr cond;
        BlockStmt thenBlock;
-       Stmt elseBranch = null;
-       BlockStmt elseBlock;
+       Stmt elseBranch;
+       BlockStmt elseBlock = null;
     .)
     "if"
+    (. int line = t.line; .)
     "(" Expr<out cond> ")"
     Block<out thenBlock>
     [
       "else"
       (
         IfStmt<out elseBranch>
+        (. elseBlock = new BlockStmt(line, elseBranch); .)
       |
         Block<out elseBlock>
-        (. elseBranch = elseBlock; .)
       )
     ]
-    (. stmt = new If(cond, thenBlock, elseBranch); .)
+    (. stmt = new IfStmt(line, cond, thenBlock, elseBlock); .)
   .
 
 TypeName<out Type type>
-  = (. type = Type.INT; .)
+  = (. type = Type.INT_T; .)
     (
       "int"
-      (. type = Type.INT; .)
+      (. type = Type.INT_T; .)
     |
       "float"
-      (. type = Type.FLOAT; .)
+      (. type = Type.FLOAT_T; .)
     |
       "bool"
-      (. type = Type.BOOL; .)
+      (. type = Type.BOOL_T; .)
     )
   .
 
@@ -113,60 +133,75 @@ Expr<out Expr expr>
   .
 
 OrExpr<out Expr expr>
-  = (. Expr right; .)
+  = (. 
+      Expr right;
+      int line = t.line; 
+    .)
     AndExpr<out expr>
     {
       "||"
       AndExpr<out right>
-      (. expr = new BinaryOp(expr, Op.OR, right); .)
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.OR, expr, right); .)
     }
   .
 
 AndExpr<out Expr expr>
-  = (. Expr right; .)
+  = (. 
+      Expr right;
+      int line = t.line; 
+    .)
     EqExpr<out expr>
     {
       "&&"
       EqExpr<out right>
-      (. expr = new BinaryOp(expr, Op.AND, right); .)
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.AND, expr, right); .)
     }
   .
 
 EqExpr<out Expr expr>
-  = (. Expr right; .)
+  = (. 
+      Expr right;
+      int line = t.line; 
+    .)
     AddExpr<out expr>
     {
       "=="
       AddExpr<out right>
-      (. expr = new BinaryOp(expr, Op.EQ, right); .)
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.EQ, expr, right); .)
     }
   .
 
 AddExpr<out Expr expr>
-  = (. Expr right; .)
+  = (. 
+      Expr right;
+      int line = t.line; 
+    .)
     MulExpr<out expr>
     {
       "+"
       MulExpr<out right>
-      (. expr = new BinaryOp(expr, Op.ADD, right); .)
+      (. expr = new ArithBinaryOpExpr(line, ArithBinaryOp.ADD, expr, right); .)
     |
       "-"
       MulExpr<out right>
-      (. expr = new BinaryOp(expr, Op.SUB, right); .)
+      (. expr = new ArithBinaryOpExpr(line, ArithBinaryOp.SUB, expr, right); .)
     }
   .
 
 MulExpr<out Expr expr>
-  = (. Expr right; .)
+  = (. 
+      Expr right;
+      int line = t.line; 
+    .)
     UnaryExpr<out expr>
     {
       "*"
       UnaryExpr<out right>
-      (. expr = new BinaryOp(expr, Op.MUL, right); .)
+      (. expr = new ArithBinaryOpExpr(line, ArithBinaryOp.MUL, expr, right); .)
     |
       "/"
       UnaryExpr<out right>
-      (. expr = new BinaryOp(expr, Op.DIV, right); .)
+      (. expr = new ArithBinaryOpExpr(line, ArithBinaryOp.DIV, expr, right); .)
     }
   .
 
@@ -174,11 +209,12 @@ UnaryExpr<out Expr expr>
   = (. expr = null; Type castType; .)
     (
       "("
+        (. int line = t.line;  .)
         (
           TypeName<out castType>
           ")"
           UnaryExpr<out Expr inner>
-          (. expr = new Cast(castType, inner); .)
+          (. expr = new Cast(line, castType, inner); .)
         |
           Expr<out expr>
           ")"
@@ -189,22 +225,25 @@ UnaryExpr<out Expr expr>
   .
 
 PrimaryNoParens<out Expr expr>
-  = (. expr = null; .)
+  = (. 
+      expr = null;
+      int line = t.line;
+     .)
     (
       INT
-      (. expr = new IntNum(Integer.parseInt(t.val)); .)
+      (. expr = new Operand(line, new Num(Integer.parseInt(t.val))); .)
     |
       FLOAT
-      (. expr = new FloatNum(Float.parseFloat(t.val)); .)
+      (. expr = new Operand(line, new Deci(Float.parseFloat(t.val))); .)
     |
       "true"
-      (. expr = new Bool(true); .)
+      (. expr = new Operand(line, new Bool(true)); .)
     |
       "false"
-      (. expr = new Bool(false); .)
+      (. expr = new Operand(line, new Bool(false)); .)
     |
       IDENT
-      (. expr = new Var(t.val); .)
+      (. expr = new Operand(line, new IdentSingle(t.val)); .)
     )
   .
 

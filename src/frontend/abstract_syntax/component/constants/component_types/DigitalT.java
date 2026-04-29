@@ -1,4 +1,4 @@
-package com.mycompany.app.ast.component.constants.component_types;
+package frontend.abstract_syntax.component.constants.component_types;
 
 /* Digital Type */
 public final class DigitalT implements ProtocolType {

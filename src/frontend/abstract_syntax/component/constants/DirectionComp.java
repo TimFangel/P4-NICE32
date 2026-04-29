@@ -1,7 +1,6 @@
-package com.mycompany.app.ast.component.constants;
+package frontend.abstract_syntax.component.constants;
 
-import com.mycompany.app.ast.component.constants.component_types.DirectionType;
-
+import frontend.abstract_syntax.component.constants.component_types.DirectionType;
 import lombok.Getter;
 import lombok.ToString;
 

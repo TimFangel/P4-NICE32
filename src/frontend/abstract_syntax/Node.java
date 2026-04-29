@@ -1,4 +1,4 @@
-package com.mycompany.app.ast;
+package frontend.abstract_syntax;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

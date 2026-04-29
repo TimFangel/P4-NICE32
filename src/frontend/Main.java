@@ -1,14 +1,14 @@
-package src;
+package frontend;
 
-import src.abstract_syntax.*;
-import src.coco.Parser;
-import src.coco.Scanner;
-import src.semantic_analysis.TypeChecker;
+import frontend.abstract_syntax.*;
+import frontend.coco.Parser;
+import frontend.coco.Scanner;
+import frontend.semantic_analysis.TypeChecker;
 
 public class Main {
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("Usage: java src.Main <file>");
+            System.out.println("Usage: java frontend.Main <file>");
             return;
         }
 

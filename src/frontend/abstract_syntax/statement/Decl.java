@@ -1,9 +1,8 @@
-package com.mycompany.app.ast.statement;
+package frontend.abstract_syntax.statement;
 
-import com.mycompany.app.ast.expression.Expr;
-import com.mycompany.app.ast.type.Type;
-import com.mycompany.app.ast.value.Var;
-
+import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.type.Type;
+import frontend.abstract_syntax.value.Ident;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -12,10 +11,10 @@ import lombok.ToString;
 @Getter
 public class Decl extends Stmt {
     private Type type;
-    private Var identifier;
+    private Ident identifier;
     private Expr value;
 
-    Decl(int lineNumber, Type type, Var identifier, Expr value) {
+    public Decl(int lineNumber, Type type, Ident identifier, Expr value) {
         super(lineNumber);
         this.type = type;
         this.identifier = identifier;

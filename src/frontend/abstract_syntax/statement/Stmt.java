@@ -1,6 +1,6 @@
-package com.mycompany.app.ast.statement;
+package frontend.abstract_syntax.statement;
 
-import com.mycompany.app.ast.Node;
+import frontend.abstract_syntax.Node;
 
 import lombok.Getter;
 import lombok.ToString;

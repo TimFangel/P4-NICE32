@@ -1,7 +1,7 @@
-package com.mycompany.app.ast.expression.bool_expression;
+package frontend.abstract_syntax.expression.bool_expression;
 
-import com.mycompany.app.ast.expression.Expr;
-import com.mycompany.app.ast.expression.enums.BoolBinaryOp;
+import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -14,7 +14,7 @@ public class BoolBinaryOpExpr extends BoolExpr {
     private Expr exprLeft;
     private Expr exprRight;
     
-    BoolBinaryOpExpr(int lineNumber, BoolBinaryOp op, Expr exprLeft, Expr exprRight) {
+    public BoolBinaryOpExpr(int lineNumber, BoolBinaryOp op, Expr exprLeft, Expr exprRight) {
         super(lineNumber);
 
         this.op = op;
