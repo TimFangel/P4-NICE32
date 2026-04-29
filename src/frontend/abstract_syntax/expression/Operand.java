@@ -10,8 +10,9 @@ import lombok.ToString;
 public class Operand extends Expr {
     Value value;
     
-    Operand(int lineNumber, Value value) {
+    public Operand(int lineNumber, Value value) {
         super(lineNumber);
+
         this.value = value;
     }
 }

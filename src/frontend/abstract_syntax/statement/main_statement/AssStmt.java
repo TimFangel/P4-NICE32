@@ -13,7 +13,7 @@ public class AssStmt extends Stmt {
     private Ident variable;
     private Expr value;
 
-    AssStmt(int lineNumber, Ident variable, Expr value) {
+    public AssStmt(int lineNumber, Ident variable, Expr value) {
         super(lineNumber);
         this.variable = variable;
         this.value = value;

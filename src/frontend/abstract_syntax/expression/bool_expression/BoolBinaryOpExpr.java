@@ -14,7 +14,7 @@ public class BoolBinaryOpExpr extends BoolExpr {
     private Expr exprLeft;
     private Expr exprRight;
     
-    BoolBinaryOpExpr(int lineNumber, BoolBinaryOp op, Expr exprLeft, Expr exprRight) {
+    public BoolBinaryOpExpr(int lineNumber, BoolBinaryOp op, Expr exprLeft, Expr exprRight) {
         super(lineNumber);
 
         this.op = op;

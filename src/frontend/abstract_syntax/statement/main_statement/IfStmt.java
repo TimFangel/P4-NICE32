@@ -15,7 +15,7 @@ public class IfStmt extends Stmt{
     private BlockStmt  thenStmt;
     private BlockStmt  elseStmt;
 
-    IfStmt(int linenumber, Expr condition, BlockStmt  thenStmt, BlockStmt  elseStmt) {
+    public IfStmt(int linenumber, Expr condition, BlockStmt  thenStmt, BlockStmt  elseStmt) {
         super(linenumber);
         this.condition = condition;
         this.thenStmt = thenStmt;
