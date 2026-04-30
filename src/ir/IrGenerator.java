@@ -174,6 +174,7 @@ public class IrGenerator {
      */
     public void generateIR(AST ast) {
         // generate ir
+        // create basic blocks?
         // (opt) optimize
         // output file
     }
