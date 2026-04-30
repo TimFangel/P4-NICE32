@@ -1,6 +1,25 @@
 package frontend.semantic_analysis;
 
 import frontend.abstract_syntax.*;
+import frontend.abstract_syntax.expression.Cast;
+import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
+import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
+import frontend.abstract_syntax.expression.bool_expression.BoolExpr;
+import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
+import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
+import frontend.abstract_syntax.program.Program;
+import frontend.abstract_syntax.statement.BlockStmt;
+import frontend.abstract_syntax.statement.Decl;
+import frontend.abstract_syntax.statement.Stmt;
+import frontend.abstract_syntax.statement.main_statement.AssStmt;
+import frontend.abstract_syntax.statement.main_statement.IfStmt;
+import frontend.abstract_syntax.type.Type;
+import frontend.abstract_syntax.value.Bool;
+import frontend.abstract_syntax.value.FloatNum;
+import frontend.abstract_syntax.value.IntNum;
+import frontend.abstract_syntax.value.Value;
+
 import java.util.*;
 
 public class TypeChecker {
@@ -16,18 +35,20 @@ public class TypeChecker {
 
     private void checkStmt(Stmt stmt) {
         if (stmt instanceof Decl d) {
-            if (symbols.containsKey(d.name)) {
-                throw new RuntimeException("Variable already declared: " + d.name);
+            if (symbols.containsKey(d.getIdentifier())) {
+                throw new RuntimeException("Variable already declared: " + d.getIdentifier());
             }
 
-            Type valueType = checkExpr(d.value);
+            Type valueType = checkExpr(d.getValue());
 
-            if (d.type != valueType) {
+            if (d.getType() != valueType) {
                 throw new RuntimeException(
-                        "Type error: cannot assign " + valueType + " to " + d.type + " variable '" + d.name + "'");
+                        "Type error: cannot assign " + valueType + " to " + d.getType() + " variable '"
+                                + d.getIdentifier()
+                                + "'");
             }
 
-            symbols.put(d.name, d.type);
+            symbols.put(d.getIdentifier(), d.getType());
             return;
         }
 
@@ -38,34 +59,35 @@ public class TypeChecker {
             return;
         }
 
-        if (stmt instanceof If i) {
-            Type condType = checkExpr(i.condition);
+        if (stmt instanceof IfStmt i) {
+            Type condType = checkExpr(i.getCondition());
 
-            if (condType != Type.BOOL) {
+            if (condType != Type.BOOL_T) {
                 throw new RuntimeException("If condition must be BOOL, got " + condType);
             }
 
-            checkStmt(i.thenBranch);
+            checkStmt(i.getThenStmt());
 
-            if (i.elseBranch != null) {
-                checkStmt(i.elseBranch);
+            if (i.getElseStmt() != null) {
+                checkStmt(i.getElseStmt());
             }
 
             return;
         }
 
-        if (stmt instanceof Assign a) {
-            Type varType = symbols.get(a.name);
+        if (stmt instanceof AssStmt a) {
+            Type varType = symbols.get(a.getVariable());
 
             if (varType == null) {
-                throw new RuntimeException("Cannot assign to undeclared variable '" + a.name + "'");
+                throw new RuntimeException("Cannot assign to undeclared variable '" + a.getVariable() + "'");
             }
 
-            Type valueType = checkExpr(a.value);
+            Type valueType = checkExpr(a.getValue());
 
             if (varType != valueType) {
                 throw new RuntimeException(
-                        "Type error: cannot assign " + valueType + " to " + varType + " variable '" + a.name + "'");
+                        "Type error: cannot assign " + valueType + " to " + varType + " variable '" + a.getVariable()
+                                + "'");
             }
 
             return;
@@ -76,34 +98,25 @@ public class TypeChecker {
 
     private Type checkExpr(Expr expr) {
         if (expr instanceof IntNum) {
-            return Type.INT;
+            return Type.INT_T;
         }
 
         if (expr instanceof FloatNum) {
-            return Type.FLOAT;
+            return Type.FLOAT_T;
         }
 
-        if (expr instanceof Var v) {
-            Type type = symbols.get(v.name);
-
-            if (type == null) {
-                throw new RuntimeException("Undeclared variable: " + v.name);
-            }
-
-            return type;
-        }
-
+        // Check type casting.
         if (expr instanceof Cast c) {
-            Type sourceType = checkExpr(c.expr);
-            Type targetType = c.targetType;
+            Type sourceType = checkExpr(c.getExpr());
+            Type targetType = c.getTargetType();
 
-            if (sourceType == Type.BOOL || targetType == Type.BOOL) {
+            if (sourceType == Type.BOOL_T || targetType == Type.BOOL_T) {
                 throw new RuntimeException(
                         "Cannot cast between BOOL and other types: " + sourceType + " -> " + targetType);
             }
 
-            if ((sourceType == Type.INT && targetType == Type.FLOAT) ||
-                    (sourceType == Type.FLOAT && targetType == Type.INT)) {
+            if ((sourceType == Type.INT_T && targetType == Type.FLOAT_T) ||
+                    (sourceType == Type.FLOAT_T && targetType == Type.INT_T)) {
                 return targetType;
             }
 
@@ -111,40 +124,28 @@ public class TypeChecker {
                 return targetType;
             }
 
-            throw new RuntimeException("Invalid cast: " + sourceType + " -> " + targetType);
+            throw new RuntimeException("Invalid cast from " + sourceType + " to " + targetType);
         }
 
-        if (expr instanceof Bool) {
-            return Type.BOOL;
+        // Check boolean expressions.
+        if (expr instanceof BoolExpr) {
+            return Type.BOOL_T;
         }
 
-        if (expr instanceof BinaryOp b) {
-            Type left = checkExpr(b.left);
-            Type right = checkExpr(b.right);
+        // Check boolean binary expressions.
+        if (expr instanceof BoolBinaryOpExpr b) {
+            Type left = checkExpr(b.getExprLeft());
+            Type right = checkExpr(b.getExprRight());
 
-            switch (b.op) {
-                case ADD:
-                case SUB:
-                case MUL:
-                case DIV:
-                    if (left != right) {
-                        throw new RuntimeException("Type mismatch: " + left + " and " + right);
-                    }
-
-                    if (left != Type.INT && left != Type.FLOAT) {
-                        throw new RuntimeException("Arithmetic op on non-number: " + left);
-                    }
-
-                    return left;
-
-                case AND:
-                case OR:
-                    if (left != Type.BOOL || right != Type.BOOL) {
+            switch (b.getOp()) {
+                case AND, OR:
+                    if (left != Type.BOOL_T || right != Type.BOOL_T) {
                         throw new RuntimeException(
-                                "Boolean operator " + b.op + " requires BOOL and BOOL, got " + left + " and " + right);
+                                "Boolean operator " + b.getOp() + " requires BOOL and BOOL, got " + left + " and "
+                                        + right);
                     }
 
-                    return Type.BOOL;
+                    return Type.BOOL_T;
 
                 case EQ:
                     if (left != right) {
@@ -152,10 +153,33 @@ public class TypeChecker {
                                 "Equality requires same types, got " + left + " and " + right);
                     }
 
-                    return Type.BOOL;
+                    return Type.BOOL_T;
 
                 default:
-                    throw new RuntimeException("Unknown op: " + b.op);
+                    throw new RuntimeException("Unknown op: " + b.getOp());
+            }
+        }
+
+        // Check arithmetic binary expressions.
+        if (expr instanceof ArithBinaryOpExpr a) {
+            Type left = checkExpr(a.getExprLeft());
+            Type right = checkExpr(a.getExprRight());
+
+            switch (a.getOp()) {
+                case ADD, SUB, MUL, DIV:
+                    if (left != right) {
+                        throw new RuntimeException("Type mismatch: " + left + " and " + right);
+                    }
+
+                    if (left != Type.INT_T && left != Type.FLOAT_T) {
+                        throw new RuntimeException("Arithmetic op on non-number: " + left);
+                    }
+
+                    return left;
+
+                default:
+                    throw new RuntimeException("Unknown op: " + a.getOp());
+
             }
         }
 
