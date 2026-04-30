@@ -11,7 +11,6 @@ import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolExpr;
-import frontend.abstract_syntax.function.Func;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
