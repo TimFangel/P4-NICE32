@@ -1,8 +1,10 @@
 package frontend.semantic_analysis;
 
 import frontend.abstract_syntax.*;
+import frontend.abstract_syntax.component.Component;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolExpr;
@@ -17,6 +19,7 @@ import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
+import frontend.abstract_syntax.value.IdentSingle;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 
@@ -93,16 +96,40 @@ public class TypeChecker {
             return;
         }
 
+        if (stmt instanceof Component) {
+            return;
+        }
+
         throw new RuntimeException("Unknown statement: " + stmt);
     }
 
     private Type checkExpr(Expr expr) {
-        if (expr instanceof IntNum) {
-            return Type.INT_T;
-        }
+        if (expr instanceof Operand o) {
+            Value value = o.getValue();
 
-        if (expr instanceof FloatNum) {
-            return Type.FLOAT_T;
+            if (value instanceof IntNum) {
+                return Type.INT_T;
+            }
+
+            if (value instanceof FloatNum) {
+                return Type.FLOAT_T;
+            }
+
+            if (value instanceof Bool) {
+                return Type.BOOL_T;
+            }
+
+            if (value instanceof IdentSingle id) {
+                Type type = symbols.get(id.name());
+
+                if (type == null) {
+                    throw new RuntimeException("Undeclared variable: " + id.name());
+                }
+
+                return type;
+            }
+
+            throw new RuntimeException("Unknown operand value: " + value);
         }
 
         // Check type casting.
