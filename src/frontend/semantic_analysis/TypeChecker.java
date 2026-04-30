@@ -30,8 +30,6 @@ import frontend.abstract_syntax.value.Value;
 
 import java.util.*;
 
-import javax.management.RuntimeErrorException;
-
 public class TypeChecker {
     // TODO: Lige p.t. er dette vores symboltable. Har ikke fået kigget på det som
     // Skipper arbejdede på.
