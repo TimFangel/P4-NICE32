@@ -60,6 +60,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Download generated files
+        uses: actions/download-artifact@v4
+        with:
+          name: parser-files
+          path: src/frontend/coco/
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -84,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download helper files
+      - name: Download parser files
         uses: actions/download-artifact@v4
         with:
           name: parser-files
@@ -108,11 +114,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download helper files
+      - name: Download parser files
         uses: actions/download-artifact@v4
         with:
-          name: helper-files
-          path: output/
+          name: parser-files
+          path: src/frontend/coco/
 
       - name: Download app JAR
         uses: actions/download-artifact@v4
