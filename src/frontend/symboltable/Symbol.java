@@ -1,5 +1,6 @@
 package frontend.symboltable;
 
+import ir.IrValue;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,4 +16,6 @@ public class Symbol {
     public int category; // The category of symbol: variable, constant, function, component, scope
     public Symbol locals; // The local symbols 
     public int level; // 0 = global, 1 = local
+
+    public IrValue irvalue; // store IR releveant information
 }

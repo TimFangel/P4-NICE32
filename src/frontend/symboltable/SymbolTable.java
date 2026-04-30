@@ -47,10 +47,11 @@ public class SymbolTable {
         currentScopelevel--; 
     }
 
+    // TODO: fix exception to be custom
     // Create new symbol in current scope - compile time check
-    public Symbol newSymbol(String name, int category, int type) {
-        Symbol topScopeLocals = new Symbol(); 
-        Symbol last = new Symbol();
+    public Symbol newSymbol(String name, int category, int type) throws NameAlreadyBoundException {
+        Symbol topScopeLocals; 
+        Symbol last;
         Symbol symbol = new Symbol();
         symbol.setName(name);
         symbol.setCategory(category);
@@ -83,12 +84,13 @@ public class SymbolTable {
      * 3. Control statements
      * I think it is run-time check. 
     */
-    public Symbol findId(String name) { // Search for a symbol and return the symbol
-        Symbol symbol = new Symbol();
-        Symbol scope = new Symbol();
-        scope = topScope;
-        while (scope != null) { // Iterate through all scopes
-            symbol = scope.locals;
+   // TODO: fix exception to be custom.
+    public Symbol findId(String name) throws NameNotFoundException { // Search for a symbol and return the symbol
+        Symbol symbol;
+        Symbol symbolScope;
+        symbolScope = topScope;
+        while (symbolScope != null) { // Iterate through all scopes
+            symbol = symbolScope.locals;
 
             while (symbol != null) { // Iterate through all names in that scope
                 if (symbol.name != null ? symbol.name.equals(name) : name == null) { 
@@ -96,7 +98,7 @@ public class SymbolTable {
                 }
                 symbol = symbol.next;
             }
-        scope = scope.next;
+        symbolScope = symbolScope.next;
         }
         System.out.println("Name could not be found"); throw new NameNotFoundException();
     }
