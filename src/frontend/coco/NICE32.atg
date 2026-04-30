@@ -64,33 +64,109 @@ Block<out BlockStmt block>
   .
 
 Stmt<out Stmt stmt>
-  = (. 
+  = (.
+       int lineNumber = t.line;
        stmt = null;
-       Type type;
-       IdentSingle name;
+       Decl decl;
+       String name;
        Expr value;
     .)
     (
-      TypeName<out type>
-      (. int line = t.line; .)
-      IDENT (. name = new IdentSingle(t.val); .)
-      "="
-      Expr<out value>
-      ";"
-      (. stmt = new Decl(line, type, name, value); .)
+      VarDecl<out decl>
+      (. stmt = decl; .)
 
     |
-      IDENT (. name = new IdentSingle(t.val); .)
-      (. int line = t.line; .)
+      IDENT (. name = t.val; .)
       "="
       Expr<out value>
       ";"
-      (. stmt = new AssStmt(line, name, value); .)
       (. stmt = new AssStmt(lineNumber, name, value); .)
 
     |
       IfStmt<out stmt>
+
+    |
+      ComponentDecl<out stmt>
     )
+  .
+
+ComponentDecl<out Stmt stmt>
+  = (. 
+      int lineNumber;
+      Ident identifier;
+      Expr port;
+      ProtocolComp protocol;
+      Expr interval;
+      DirectionComp direction;
+      List<Decl> variables = new ArrayList<>();
+      Decl variable;  
+    .)
+    "component"
+    IDENT
+    (.
+      lineNumber = t.line;
+      identifier = new IdentSingle(t.val);
+    .)
+    "{"
+      "port" ":"
+      Expr<out port>
+      ";"
+
+      "protocol" ":"
+      ProtocolName<out protocol>
+      ";"
+
+      "interval" ":"
+      Expr<out interval>
+      ";"
+
+      "direction" ":"
+      DirectionName<out direction>
+      ";"
+
+      {
+        VarDecl<out variable>
+        (. variables.add(variable); .)
+      }
+    "}"
+    (. stmt = new Component(lineNumber, identifier, port, protocol, interval, direction, variables); .)
+  .
+
+ProtocolName<out ProtocolComp protocol>
+  = (. protocol = null; .)
+    (
+      "digital"
+      (. protocol = new ProtocolComp(t.line, ProtocolType.DIGITAL); .)
+    |
+      "analog"
+      (. protocol = new ProtocolComp(t.line, ProtocolType.ANALOG); .)
+    )
+  .
+
+DirectionName<out DirectionComp direction>
+  = (. direction = null; .)
+    (
+      "input"
+      (. direction = new DirectionComp(t.line, DirectionType.INPUT); .)
+    |
+      "output"
+      (. direction = new DirectionComp(t.line, DirectionType.OUTPUT); .)
+    )
+  .
+
+VarDecl<out Decl decl>
+  = (.
+      int line = t.line; 
+      Type type;
+      String name;
+      Expr value;
+    .)
+    TypeName<out type>
+    IDENT (. name = t.val; .)
+    "="
+    Expr<out value>
+    ";"
+    (. decl = new Decl(line, type, name, value); .)
   .
 
 IfStmt<out Stmt stmt>
@@ -233,11 +309,9 @@ PrimaryNoParens<out Expr expr>
      .)
     (
       INT
-      (. expr = new Operand(line, new Num(Integer.parseInt(t.val))); .)
       (. expr = new Operand(line, new IntNum(Integer.parseInt(t.val))); .)
     |
       FLOAT
-      (. expr = new Operand(line, new Deci(Float.parseFloat(t.val))); .)
       (. expr = new Operand(line, new FloatNum(Float.parseFloat(t.val))); .)
     |
       "true"
