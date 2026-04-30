@@ -149,7 +149,7 @@ jobs:
           # 1. Start Java application in the background (with &)
           java -jar target/*.jar &
           
-          # 2. Awaits serveren/appen is ready
+          # 2. Wait until the server/application is ready
           sleep 10
           
           # 3. Run external test script (e.g. bash script, Postman, Cypress, curl etc.)
