@@ -171,11 +171,11 @@ VarDecl<out Decl decl>
   = (.
       int line = t.line; 
       Type type;
-      String name;
+      Ident name;
       Expr value;
     .)
     TypeName<out type>
-    IDENT (. name = t.val; .)
+    IDENT (. name = new IdentSingle(t.val); .)
     "="
     Expr<out value>
     ";"
