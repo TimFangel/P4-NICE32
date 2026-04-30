@@ -79,13 +79,14 @@ Stmt<out Stmt stmt>
     |
       IfStmt<out stmt>
     |
-      TypeName<out Type type>
-      IdentStmt<out stmt, type>
+      TypeStmt<out stmt>
     )
   .
 
-IdentStmt<out Stmt stmt, Type type>
-  = (
+TypeStmt<out Stmt stmt>
+  = (. stmt = null; .)
+      TypeName<out Type type>
+    (
       Decl<out stmt, type>
     |
       FuncDecl<out stmt, type>
@@ -94,9 +95,9 @@ IdentStmt<out Stmt stmt, Type type>
 
 Decl<out Stmt stmt, Type type>
   = (. int line = t.line; .)
-    IDENT (. name = new IdentSingle(t.val); .)
+    IDENT (. Ident name = new IdentSingle(t.val); .)
     "="
-    Expr<out value>
+    Expr<out Expr value>
     ";"
     (. stmt = new Decl(line, type, name, value); .)
   .
