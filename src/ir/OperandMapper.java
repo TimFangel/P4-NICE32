@@ -31,13 +31,11 @@ public class OperandMapper {
     }
 
     public Operand mapArithUna(ArithUnaryOp op) {
-        switch (op) {
-            case NEG:
-                return Operand.NEG;
-        
-            default:
-                return null;
+        if (op == ArithUnaryOp.NEG) {
+            return Operand.NEG;
         }
+
+        return null;
     }
 
     public Operand mapBoolBin(BoolBinaryOp op) {
@@ -62,12 +60,10 @@ public class OperandMapper {
     }
 
     public Operand mapBoolUna(BoolUnaryOp op) {
-        switch (op) {
-            case NOT:
-                return Operand.NOT;
-        
-            default:
-                return null;
+        if (op == BoolUnaryOp.NOT) {
+            return Operand.NOT;
         }
+
+        return null;
     }
 }
