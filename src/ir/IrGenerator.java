@@ -3,16 +3,22 @@ package ir;
 import java.util.ArrayList;
 import java.util.List;
 
+import exception.NoExprMatchException;
+import exception.NoStmtMatchException;
+import exception.NoValueMatchException;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
 import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
+import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
+import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.Deci;
 import frontend.abstract_syntax.value.Num;
@@ -26,7 +32,7 @@ public class IrGenerator {
     private int labelCount = 0;
     private List<IrInstruction> code = new ArrayList<>();
     private SymbolTable symbolTable;
-    private OperandMapper operandMapper;
+    private OperandMapper operandMapper = new OperandMapper();
 
     public IrGenerator(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
@@ -41,9 +47,14 @@ public class IrGenerator {
     }
 
     private String newLabel() {
-        return "L" + labelCount++ + ":";
+        return "L" + labelCount++;
     }
 
+    /**
+     * Converts actual values into IrValues.
+     * @param value actual value object from frontend as input.
+     * @return an actual value as an IrValue.
+     */
     public IrValue generateValue(Value value) {
         if (value instanceof Num num) {
             return new IrValue(String.valueOf(num.value()), 0); // 0 -> integer in symbol table.
@@ -57,9 +68,14 @@ public class IrGenerator {
             return new IrValue(String.valueOf(bool.value()), 2); // 0 -> integer in symbol table.
         }
 
-        return null; // TODO: throw exception instead?
+        throw new NoValueMatchException("No matching value found!");
     }
 
+    /**
+     * Generates IR instructions recursively AST expressions.
+     * @param expr expression from the AST.
+     * @return the temporary variable generated.
+     */
     public IrValue generateExpr(Expr expr) {
         if (expr instanceof ArithBinaryOpExpr binop) {
             IrValue left = generateExpr(binop.getExprLeft());
@@ -105,23 +121,31 @@ public class IrGenerator {
             return temp;
         }
 
-        return null; // TODO: throw exception instead?
+        throw new NoExprMatchException("No matching expression found!");
     } 
 
     public void generateStmt(Stmt stmt) {
+        // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes efter frontend.
+
          if (stmt instanceof Decl decl) {
-            String name = decl.getIdentifier().toString();
+            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel navn!
+            String name = decl.getIdentifier().toString(); 
 
             try {
-                Symbol symbol = symbolTable.findId(name);
-                return new IrValue(name, symbol.getType());
+                // findId, since frontend has created it before.
+                Symbol symbol = symbolTable.findId(name); 
+                IrValue result = new IrValue(name, symbol.getType());
+                IrValue expr = generateExpr(decl.getValue());
+                code.add(new IrInstruction(Operand.ASS, expr, null, result));
+
+                return;
             } catch (Exception e) {
-                System.out.println("Statement in ln: " + stmt.getLineNumber() + " could not be made into TAC!");
-                return null;
+                e.printStackTrace();
             }
         }
 
         if (stmt instanceof AssStmt ass) {
+            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel navn!
             String varName = ass.getVariable().toString();
             IrValue right = generateExpr(ass.getValue());
 
@@ -129,9 +153,11 @@ public class IrGenerator {
                 Symbol sym = symbolTable.findId(varName);
                 IrValue left = new IrValue(varName, sym.getType());
 
-                code.add(new IrInstruction(Operand.ASS, left, null, left));
+                code.add(new IrInstruction(Operand.ASS, right, null, left));
+
+                return;
             } catch (Exception e) {
-                // TODO: handle exception
+                e.printStackTrace();
             }
         }
 
@@ -161,10 +187,43 @@ public class IrGenerator {
             // end label
             code.add(new IrInstruction(Operand.LABEL, null, null, new IrValue(endLabel, -1)));
 
+            return;
         }
 
+        if (stmt instanceof WhileStmt whileStmt) {
+            IrValue condition = generateExpr(whileStmt.getCondition());
+            String exitLabel = newLabel();
+            String toStartLabel = newLabel();
 
-        return null; // TODO: throw exception instead?
+            // add if condition to leave loop
+            code.add(new IrInstruction(Operand.IF, condition, null, new IrValue(exitLabel, -1)));
+
+            // create body of while loop
+            generateStmt(whileStmt.getWhileBody());
+
+            // goto start
+            code.add(new IrInstruction(Operand.GOTO, null, null, new IrValue(toStartLabel, -1)));
+
+            return;
+        }
+
+        if (stmt instanceof BlockStmt block) {
+            for (Stmt statement : block.getStatements()) {
+                generateStmt(statement);
+            }
+
+            return;
+        }
+
+        if (stmt instanceof ReturnStmt retStmt) {
+            IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
+
+            code.add(new IrInstruction(Operand.RET, null, null, returnedExpr));
+
+            return;
+        }
+
+        throw new NoStmtMatchException("No matching statement found!");
     }
 
 
