@@ -153,7 +153,7 @@ public class TypeChecker {
 
             if (directionType == null) {
                 throw new RuntimeException(
-                        "Direction must be one of the supported protocol values, got " + directionType);
+                        "Direction must be one of the supported direction values, got " + directionType);
             }
 
             return;
