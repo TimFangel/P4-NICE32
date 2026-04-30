@@ -296,7 +296,7 @@ FuncDecl<out Stmt stmt, Type type>
     (. stmt = new FuncDecl(line, returnType, callSign, paramType, paramName, body); .)
   .
 
-Factor<out Expr expr>
+IdentExpr<out Expr expr>
   = (. 
       expr = null;
       int line = t.line; 
@@ -330,7 +330,7 @@ PrimaryNoParens<out Expr expr>
       "false"
       (. expr = new Operand(line, new Bool(false)); .)
     |
-      Factor<out expr>
+      IdentExpr<out expr>
     )
   .
 
