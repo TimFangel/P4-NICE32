@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions;
 
 import frontend.coco.Parser;
 import frontend.symboltable.Symbol;
-import frontend.symboltable.SymbolTable;
 
 // Ongoing
 public class SymbolTableTest {
