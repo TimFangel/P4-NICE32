@@ -5,6 +5,10 @@ import java.util.List;
 
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
+import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
+import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
+import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
+import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.value.Bool;
@@ -18,7 +22,7 @@ import frontend.symboltable.SymbolTable;
 public class TacGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
-    private List<TacInstruction> code = new ArrayList<>();
+    private List<IrInstruction> code = new ArrayList<>();
     private SymbolTable symbolTable;
     private OperandMapper operandMapper;
 
@@ -55,9 +59,42 @@ public class TacGenerator {
             IrValue left = generateExpr(binop.getExprLeft());
             IrValue right = generateExpr(binop.getExprRight());
 
-            IrValue temp = newTemp(left.type);
+            // Create temporary value to hold result
+            IrValue temp = newTemp(left.getType());
 
-            code.add(new TacInstruction(operandMapper.mapArithBin(binop.getOp()), left, right, temp));
+            code.add(new IrInstruction(operandMapper.mapArithBin(binop.getOp()), left, right, temp));
+
+            return temp;
+        }
+
+        if (expr instanceof ArithUnaryOpExpr unop) {
+            // assign expression  
+            IrValue left = generateExpr(unop.getExpr());
+
+            IrValue temp = newTemp(left.getType());
+
+            code.add(new IrInstruction(operandMapper.mapArithUna(unop.getOp()), left, null, temp));
+
+            return temp;
+        }
+
+        if (expr instanceof BoolBinaryOpExpr binop) {
+            IrValue left = generateExpr(binop.getExprLeft());
+            IrValue right = generateExpr(binop.getExprRight());
+
+            IrValue temp = newTemp(left.getType());
+
+            code.add(new IrInstruction(operandMapper.mapBoolBin(binop.getOp()), left, right, temp));
+
+            return temp;
+        }
+
+        if (expr instanceof BoolUnaryOpExpr unop) {
+            IrValue left = generateExpr(unop.getExpr());
+
+            IrValue temp = newTemp(left.getType());
+
+            code.add(new IrInstruction(operandMapper.mapBoolUna(unop.getOp()), left, null, temp));
 
             return temp;
         }

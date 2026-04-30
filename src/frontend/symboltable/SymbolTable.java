@@ -1,7 +1,4 @@
 package frontend.symboltable;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 import javax.naming.NameAlreadyBoundException;
 import javax.naming.NameNotFoundException;

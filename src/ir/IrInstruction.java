@@ -1,12 +1,12 @@
 package ir;
 
-public class TacInstruction {
+public class IrInstruction {
     Operand operand;     // "if", "+", "*" etc.
     IrValue arg1;           
     IrValue arg2;
     IrValue result;
 
-    public TacInstruction(Operand operand, IrValue arg1, IrValue arg2, IrValue result) {
+    public IrInstruction(Operand operand, IrValue arg1, IrValue arg2, IrValue result) {
         this.operand = operand;
         this.arg1 = arg1;
         this.arg2 = arg2;
@@ -17,19 +17,19 @@ public class TacInstruction {
     public String toString() {
         switch (operand) {
             case ASS:
-                return result.name + " := " + arg1.name;    
+                return result.getName() + " := " + arg1.getName();    
 
             case ADD, SUB, MUL, DIV, MOD, LEQ, LT, GT, GEQ, EQ, NEQ:
-                return result.name + " := " + arg1.name + " " + operandToSymbol(operand) + " " + arg2.name;
+                return result.getName() + " := " + arg1.getName() + " " + operandToSymbol(operand) + " " + arg2.getName();
         
             case IF:
-                return "if " + arg1.name + " goto " + result.name; 
+                return "if " + arg1.getName() + " goto " + result.getName(); 
 
             case GOTO:
-                return "goto " + result.name;
+                return "goto " + result.getName();
 
             case LABEL:
-                return result.name + ":";
+                return result.getName() + ":";
 
             default:
                 return ""; // not recognized
