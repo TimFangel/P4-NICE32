@@ -1,8 +1,7 @@
 package frontend.symboltable;
 
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameNotFoundException;
-
+import exception.NameAlreadyBoundException;
+import exception.NameNotFoundException;
 import frontend.coco.Parser;
 
 public class SymbolTable {
@@ -62,7 +61,7 @@ public class SymbolTable {
          * It iterates through all locals and check if their Id is different from the new Id of the symbol. 
         */
         while (topScopeLocals != null) {
-            if (topScopeLocals.name == name) {System.out.println("duplicate Id"); throw new NameAlreadyBoundException();} 
+            if (topScopeLocals.getName().equals(name)) {throw new NameAlreadyBoundException("Duplicate: Name already exists!");} 
             last = topScopeLocals;
             topScopeLocals = topScopeLocals.next;
         }
@@ -97,7 +96,7 @@ public class SymbolTable {
             }
         symbolScope = symbolScope.next;
         }
-        System.out.println("Name could not be found"); throw new NameNotFoundException();
+        throw new NameNotFoundException("Not found: " + name);
     }
     
     // Maybe make lombok take care of this constructor?
