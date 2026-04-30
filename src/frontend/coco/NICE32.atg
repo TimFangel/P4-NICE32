@@ -1,7 +1,5 @@
 import java.util.*;
 
-// TODO: Add missing semantics
-
 import frontend.abstract_syntax.*;
 import frontend.abstract_syntax.component.*;
 import frontend.abstract_syntax.component.constants.*;
@@ -62,7 +60,6 @@ Block<out BlockStmt block>
     (. block = new BlockStmt(line, stmts); .)
   .
 
-// TODO: fix stmt; IDENT (int float bool)
 Stmt<out Stmt stmt>
   = (. 
        stmt = null;
