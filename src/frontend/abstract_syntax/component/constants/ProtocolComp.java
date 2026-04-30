@@ -10,9 +10,9 @@ import lombok.ToString;
 public class ProtocolComp extends CompConst {
     private ProtocolType protocol;
 
-    ProtocolComp(int lineNumber, ProtocolType protocol) {
+    public ProtocolComp(int lineNumber, ProtocolType protocol) {
         super(lineNumber);
         this.protocol = protocol;
     }
-    
+
 }

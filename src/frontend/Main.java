@@ -1,6 +1,6 @@
 package frontend;
 
-import frontend.abstract_syntax.*;
+import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.TypeChecker;

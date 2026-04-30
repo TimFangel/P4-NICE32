@@ -1,4 +1,5 @@
 package frontend.abstract_syntax.value;
 
 /* Numeral Value */
-public record Num(int value) implements Value {}
+public record IntNum(int value) implements Value {
+}
