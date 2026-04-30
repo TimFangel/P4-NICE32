@@ -12,6 +12,7 @@ import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
+import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.Deci;
 import frontend.abstract_syntax.value.Num;
@@ -31,12 +32,16 @@ public class IrGenerator {
         this.symbolTable = symbolTable;
     }
 
+    private List<IrInstruction> getCode() {
+        return code;
+    }
+
     private IrValue newTemp(int type) {
         return new IrValue("t" + tempCounter++, type);
     }
 
-    private Label newLabel() {
-        return new Label("L" + labelCount + ":");
+    private String newLabel() {
+        return "L" + labelCount++ + ":";
     }
 
     public IrValue generateValue(Value value) {
@@ -52,7 +57,7 @@ public class IrGenerator {
             return new IrValue(String.valueOf(bool.value()), 2); // 0 -> integer in symbol table.
         }
 
-        return null;
+        return null; // TODO: throw exception instead?
     }
 
     public IrValue generateExpr(Expr expr) {
@@ -100,10 +105,10 @@ public class IrGenerator {
             return temp;
         }
 
-        return null;
+        return null; // TODO: throw exception instead?
     } 
 
-    public IrValue generateStmt(Stmt stmt) {
+    public void generateStmt(Stmt stmt) {
          if (stmt instanceof Decl decl) {
             String name = decl.getIdentifier().toString();
 
@@ -130,7 +135,36 @@ public class IrGenerator {
             }
         }
 
+        if (stmt instanceof IfStmt ifStmt) {
+            IrValue condition = generateExpr(ifStmt.getCondition());
 
-        return null;
+            String elseLabel = newLabel();
+            String endLabel = newLabel();
+
+            // add if condition
+            code.add(new IrInstruction(Operand.IF, condition, null, new IrValue(elseLabel, -1)));
+
+            // generate then statements
+            generateStmt(ifStmt.getThenStmt());
+
+            // jump to end
+            code.add(new IrInstruction(Operand.GOTO, null, null, new IrValue(endLabel, -1)));
+
+            // else label
+            code.add(new IrInstruction(Operand.LABEL, null, null, new IrValue(elseLabel, -1)));
+
+            // generate else if exists
+            if (ifStmt.getElseStmt() != null) {
+                generateStmt(ifStmt.getElseStmt());
+            }
+
+            // end label
+            code.add(new IrInstruction(Operand.LABEL, null, null, new IrValue(endLabel, -1)));
+
+        }
+
+
+        return null; // TODO: throw exception instead?
     }
+
 }
