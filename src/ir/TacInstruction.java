@@ -19,7 +19,7 @@ public class TacInstruction {
             case ASS:
                 return result.name + " := " + arg1.name;    
 
-            case ADD, SUB, MUL, DIV, MOD, LTE, LT, GT, GTE, EQ, NEQ:
+            case ADD, SUB, MUL, DIV, MOD, LEQ, LT, GT, GEQ, EQ, NEQ:
                 return result.name + " := " + arg1.name + " " + operandToSymbol(operand) + " " + arg2.name;
         
             case IF:
@@ -52,9 +52,9 @@ public class TacInstruction {
                 return "<";
             case GT:
                 return ">";
-            case LTE:
+            case LEQ:
                 return "<=";
-            case GTE:
+            case GEQ:
                 return ">=";
             case EQ:
                 return "==";
