@@ -277,7 +277,6 @@ UnaryExpr<out Expr expr>
 
 FuncDecl<out Stmt stmt, Type type>
   = (.
-       Type returnType;
        IdentSingle callSign;
        Type paramType;
        IdentSingle paramName;
@@ -291,23 +290,27 @@ FuncDecl<out Stmt stmt, Type type>
       IDENT (. paramName = new IdentSingle(t.val); .)
     ")"
     Block<out body>
-    (. stmt = new FuncDecl(line, returnType, callSign, paramType, paramName, body); .)
+    (. stmt = new FuncDecl(line, type, callSign, paramType, paramName, body); .)
   .
 
 IdentExpr<out Expr expr>
   = (. 
       expr = null;
-      int line = t.line; 
+      int line;
+      Ident identifier;
     .)
-    IDENT (. Ident identifier = new IdentSingle(t.val); .)
-    (
-      (. expr = new Operand(line, identifier); .)
-    |
+    IDENT
+    (. 
+      line = t.line;
+      identifier = new IdentSingle(t.val);
+      expr = new Operand(line, identifier);
+    .)
+    [
       "(" 
         Expr<out Expr paramExpr> 
       ")"
       (. expr = new FuncCall(line, identifier, paramExpr); .)
-    )
+    ]
   .
 
 PrimaryNoParens<out Expr expr>
