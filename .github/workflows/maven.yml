@@ -31,9 +31,16 @@ jobs:
       - name: Seed determination (Inserted or generated)
         id: seed_logic
         run: |
-          if [ "${{ github.event.inputs.manual_seed }}" != "" ]; then
-            echo "FINAL_SEED=${{ github.event.inputs.manual_seed }}" >> "$GITHUB_OUTPUT"
-            echo "Uses manual seed: ${{ github.event.inputs.manual_seed }}"
+          MANUAL_SEED='${{ github.event.inputs.manual_seed }}'
+          if [ "$MANUAL_SEED" != "" ]; then
+            case "$MANUAL_SEED" in
+              ''|*[!0-9]*)
+                echo "Invalid manual seed: must contain digits only." >&2
+                exit 1
+                ;;
+            esac
+            echo "FINAL_SEED=$MANUAL_SEED" >> "$GITHUB_OUTPUT"
+            echo "Uses manual seed: $MANUAL_SEED"
           else
             AUTO_SEED=$RANDOM
             echo "FINAL_SEED=$AUTO_SEED" >> "$GITHUB_OUTPUT"
