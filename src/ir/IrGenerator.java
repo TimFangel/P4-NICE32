@@ -11,6 +11,7 @@ import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
 import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
+import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.Deci;
 import frontend.abstract_syntax.value.Num;
@@ -19,14 +20,14 @@ import frontend.symboltable.Symbol;
 import frontend.symboltable.SymbolTable;
 
 /* Three Access Code Generator */
-public class TacGenerator {
+public class IrGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
     private List<IrInstruction> code = new ArrayList<>();
     private SymbolTable symbolTable;
     private OperandMapper operandMapper;
 
-    public TacGenerator(SymbolTable symbolTable){
+    public IrGenerator(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
     }
 
@@ -115,6 +116,19 @@ public class TacGenerator {
             }
         }
 
+        if (stmt instanceof AssStmt ass) {
+            String varName = ass.getVariable().toString();
+            IrValue right = generateExpr(ass.getValue());
+
+            try {
+                Symbol sym = symbolTable.findId(varName);
+                IrValue left = new IrValue(varName, sym.getType());
+
+                code.add(new IrInstruction(Operand.ASS, left, null, left));
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
 
 
         return null;
