@@ -1,6 +1,9 @@
 package frontend.semantic_analysis;
 
 import frontend.abstract_syntax.component.Component;
+import frontend.abstract_syntax.component.constants.DirectionComp;
+import frontend.abstract_syntax.component.constants.ProtocolComp;
+import frontend.abstract_syntax.component.constants.component_types.DirectionType;
 import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
@@ -8,6 +11,8 @@ import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolExpr;
+import frontend.abstract_syntax.function.Func;
+import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.statement.Decl;
@@ -24,6 +29,8 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 
 import java.util.*;
+
+import javax.management.RuntimeErrorException;
 
 public class TypeChecker {
     // TODO: Lige p.t. er dette vores symboltable. Har ikke fået kigget på det som
@@ -47,6 +54,10 @@ public class TypeChecker {
                 name = dual.parentName() + "." + dual.childName();
             }
 
+            if (name == null) {
+                throw new RuntimeException("Could not find identifier for " + identifier);
+            }
+
             if (symbols.containsKey(name)) {
                 throw new RuntimeException("Variable already declared: " + d.getIdentifier());
             }
@@ -61,6 +72,11 @@ public class TypeChecker {
             }
 
             symbols.put(name, d.getType());
+            return;
+        }
+
+        if (stmt instanceof FuncDecl f) {
+            // TODO: Lav type tjek til functionsm
             return;
         }
 
@@ -121,9 +137,12 @@ public class TypeChecker {
                 throw new RuntimeException("Port must be of type INT, got " + portType);
             }
 
-            if (c.getProtocol() == null || c.getProtocol().getProtocol() == null) {
-                throw new RuntimeException("Protocol must be of type INT, got " +
-                        c.getProtocol().getProtocol());
+            ProtocolComp protocolComp = c.getProtocol();
+            ProtocolType protocolType = protocolComp == null ? null : protocolComp.getProtocol();
+
+            if (protocolType == null) {
+                throw new RuntimeException("Protocol must be one of the supported protocol values, got " +
+                        protocolType);
             }
 
             if (c.getInterval() instanceof Operand o && o.getValue() instanceof IntNum n && n.value() >= 0) {
@@ -132,8 +151,12 @@ public class TypeChecker {
                 throw new RuntimeException("Interval must be of type INT, got " + c.getInterval());
             }
 
-            if (c.getDirection() == null || c.getDirection().getDirection() == null) {
-                throw new RuntimeException("Direction must be INPUT or OUTPUT, got " + c.getDirection().getDirection());
+            DirectionComp directionComp = c.getDirection();
+            DirectionType directionType = directionComp == null ? null : directionComp.getDirection();
+
+            if (directionType == null) {
+                throw new RuntimeException(
+                        "Direction must be one of the supported protocol values, got " + directionType);
             }
 
             return;
@@ -201,11 +224,6 @@ public class TypeChecker {
             throw new RuntimeException("Invalid cast from " + sourceType + " to " + targetType);
         }
 
-        // Check boolean expressions.
-        if (expr instanceof BoolExpr) {
-            return Type.BOOL_T;
-        }
-
         // Check boolean binary expressions.
         if (expr instanceof BoolBinaryOpExpr b) {
             Type left = checkExpr(b.getExprLeft());
@@ -234,13 +252,18 @@ public class TypeChecker {
             }
         }
 
+        // Check boolean expressions.
+        if (expr instanceof BoolExpr) {
+            return Type.BOOL_T;
+        }
+
         // Check arithmetic binary expressions.
         if (expr instanceof ArithBinaryOpExpr a) {
             Type left = checkExpr(a.getExprLeft());
             Type right = checkExpr(a.getExprRight());
 
             switch (a.getOp()) {
-                case ADD, SUB, MUL, DIV:
+                case ADD, SUB, MUL, DIV, MOD:
                     if (left != right) {
                         throw new RuntimeException("Type mismatch: " + left + " and " + right);
                     }

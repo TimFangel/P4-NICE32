@@ -63,7 +63,6 @@ Block<out BlockStmt block>
 
 Stmt<out Stmt stmt>
   = (.
-       int lineNumber = t.line;
        stmt = null;
        IdentSingle name;
     .)
@@ -73,7 +72,7 @@ Stmt<out Stmt stmt>
       "="
       Expr<out Expr value>
       ";"
-      (. stmt = new AssStmt(lineNumber, name, value); .)
+      (. stmt = new AssStmt(line, name, value); .)
 
     |
       IfStmt<out stmt>
@@ -103,6 +102,7 @@ Decl<out Stmt stmt, Type type>
     (. stmt = new Decl(line, type, name, value); .)
   .
 
+// TODO: Komponenter må kun deklareres i setup
 ComponentDecl<out Stmt stmt>
   = (. 
       int lineNumber;
@@ -169,7 +169,6 @@ DirectionName<out DirectionComp direction>
 
 VarDecl<out Decl decl>
   = (.
-      int line = t.line; 
       Type type;
       Ident name;
       Expr value;
@@ -179,7 +178,7 @@ VarDecl<out Decl decl>
     "="
     Expr<out value>
     ";"
-    (. decl = new Decl(line, type, name, value); .)
+    (. decl = new Decl(t.line, type, name, value); .)
   .
 
 IfStmt<out Stmt stmt>
@@ -362,6 +361,7 @@ UnaryExpr<out Expr expr>
     )
   .
 
+// TODO: Funktioner må kun deklareres i functions blokken
 FuncDecl<out Stmt stmt, Type type>
   = (.
        IdentSingle callSign;
