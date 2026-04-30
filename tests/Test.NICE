@@ -2,9 +2,9 @@ setup {
     bool yes = true;
 
     component lampe {
-        port: 5;
+        port: 230;
         protocol: digital;
-        interval: 1500;
+        interval: 1000;
         direction: input;
 
         int x = 5;
