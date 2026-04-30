@@ -1,7 +1,5 @@
 import java.util.*;
 
-// TODO: Add missing semantics
-
 import frontend.abstract_syntax.*;
 import frontend.abstract_syntax.component.*;
 import frontend.abstract_syntax.component.constants.*;
@@ -65,30 +63,40 @@ Block<out BlockStmt block>
 Stmt<out Stmt stmt>
   = (. 
        stmt = null;
-       Type type;
        IdentSingle name;
-       Expr value;
     .)
     (
-      TypeName<out type>
-      (. int line = t.line; .)
-      IDENT (. name = new IdentSingle(t.val); .)
-      "="
-      Expr<out value>
-      ";"
-      (. stmt = new Decl(line, type, name, value); .)
-
-    |
       IDENT (. name = new IdentSingle(t.val); .)
       (. int line = t.line; .)
       "="
-      Expr<out value>
+      Expr<out Expr value>
       ";"
       (. stmt = new AssStmt(line, name, value); .)
 
     |
       IfStmt<out stmt>
+    |
+      TypeStmt<out stmt>
     )
+  .
+
+TypeStmt<out Stmt stmt>
+  = (. stmt = null; .)
+      TypeName<out Type type>
+    (
+      FuncDecl<out stmt, type>
+    |
+      Decl<out stmt, type>
+    )
+  .
+
+Decl<out Stmt stmt, Type type>
+  = (. int line = t.line; .)
+    IDENT (. Ident name = new IdentSingle(t.val); .)
+    "="
+    Expr<out Expr value>
+    ";"
+    (. stmt = new Decl(line, type, name, value); .)
   .
 
 IfStmt<out Stmt stmt>
@@ -163,12 +171,41 @@ EqExpr<out Expr expr>
       Expr right;
       int line = t.line; 
     .)
-    AddExpr<out expr>
-    {
+    RelExpr<out expr>
+    [
       "=="
-      AddExpr<out right>
+      RelExpr<out right>
       (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.EQ, expr, right); .)
-    }
+    |
+      "!="
+      RelExpr<out right>
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.NEQ, expr, right); .)
+    ]
+  .
+
+RelExpr<out Expr expr>
+  = (.
+      Expr right;
+      int line = t.line;
+    .)
+    AddExpr<out expr>
+    [
+      "<"
+      AddExpr<out right>
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.LT, expr, right); .)
+    |
+      ">"
+      AddExpr<out right>
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.GT, expr, right); .)
+    |
+      "<="
+      AddExpr<out right>
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.LEQ, expr, right); .)
+    |
+      ">="
+      AddExpr<out right>
+      (. expr = new BoolBinaryOpExpr(line, BoolBinaryOp.GEQ, expr, right); .)
+    ]
   .
 
 AddExpr<out Expr expr>
@@ -202,26 +239,82 @@ MulExpr<out Expr expr>
       "/"
       UnaryExpr<out right>
       (. expr = new ArithBinaryOpExpr(line, ArithBinaryOp.DIV, expr, right); .)
+    |
+      "%"
+      UnaryExpr<out right>
+      (. expr = new ArithBinaryOpExpr(line, ArithBinaryOp.MOD, expr, right); .)
     }
   .
 
 UnaryExpr<out Expr expr>
-  = (. expr = null; Type castType; .)
+  = (. 
+      expr = null; 
+      Type castType; 
+      Expr inner;
+    .)
     (
       "("
         (. int line = t.line;  .)
         (
           TypeName<out castType>
           ")"
-          UnaryExpr<out Expr inner>
+          UnaryExpr<out inner>
           (. expr = new Cast(line, castType, inner); .)
         |
           Expr<out expr>
           ")"
         )
     |
+      "-"
+      (. int line = t.line; .)
+      UnaryExpr<out inner>
+      (. expr = new ArithUnaryOpExpr(line, ArithUnaryOp.NEG, inner); .)
+    |
+      "!"
+      (. int line = t.line; .)
+      UnaryExpr<out inner>
+      (. expr = new BoolUnaryOpExpr(line, BoolUnaryOp.NOT, inner); .)
+    |
       PrimaryNoParens<out expr>
     )
+  .
+
+FuncDecl<out Stmt stmt, Type type>
+  = (.
+       IdentSingle callSign;
+       Type paramType;
+       IdentSingle paramName;
+       BlockStmt body;
+    .)
+    "func"
+    (. int line = t.line; .)
+    IDENT (. callSign = new IdentSingle(t.val); .)
+    "(" 
+      TypeName<out paramType>
+      IDENT (. paramName = new IdentSingle(t.val); .)
+    ")"
+    Block<out body>
+    (. stmt = new FuncDecl(line, type, callSign, paramType, paramName, body); .)
+  .
+
+IdentExpr<out Expr expr>
+  = (. 
+      expr = null;
+      int line;
+      Ident identifier;
+    .)
+    IDENT
+    (. 
+      line = t.line;
+      identifier = new IdentSingle(t.val);
+      expr = new Operand(line, identifier);
+    .)
+    [
+      "(" 
+        Expr<out Expr paramExpr> 
+      ")"
+      (. expr = new FuncCall(line, identifier, paramExpr); .)
+    ]
   .
 
 PrimaryNoParens<out Expr expr>
@@ -242,8 +335,7 @@ PrimaryNoParens<out Expr expr>
       "false"
       (. expr = new Operand(line, new Bool(false)); .)
     |
-      IDENT
-      (. expr = new Operand(line, new IdentSingle(t.val)); .)
+      IdentExpr<out expr>
     )
   .
 
