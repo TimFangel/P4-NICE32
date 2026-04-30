@@ -241,8 +241,18 @@ public class IrGenerator {
 
 /*
 TODO:
-- Basic Blocks?
+--- Generation ---
 - Correct recursion??
+- Function call generation
+- Function generation
+- Type cast generation
+- Component generatoin
+- Program generation
+- What to do with things 'out of scope', such as hardcoded main{}, setup{} etc.
+
+--- After Generation ---
+- Basic Blocks?
 - Output strings, obj?
-- :O
+- Optimize?
+- Tests
  */
