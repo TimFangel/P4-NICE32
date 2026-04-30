@@ -84,15 +84,15 @@ TypeStmt<out Stmt stmt>
   = (. stmt = null; .)
       TypeName<out Type type>
     (
-      Decl<out stmt, type>
-    |
       FuncDecl<out stmt, type>
+    |
+      Decl<out stmt, type>
     )
   .
 
 Decl<out Stmt stmt, Type type>
-  = (. int line = t.line; .)
-    IDENT (. Ident name = new IdentSingle(t.val); .)
+  = IDENT (. Ident name = new IdentSingle(t.val); .)
+    (. int line = t.line; .)
     "="
     Expr<out Expr value>
     ";"
@@ -263,11 +263,13 @@ UnaryExpr<out Expr expr>
     |
       "-"
       (. int line = t.line; .)
-      (. expr = new ArithUnaryOpExpr(line, ArithUnaryOp.NEG, expr); .)
+      UnaryExpr<out Expr inner>
+      (. expr = new ArithUnaryOpExpr(line, ArithUnaryOp.NEG, inner); .)
     |
       "!"
       (. int line = t.line; .)
-      (. expr = new BoolUnaryOpExpr(line, BoolUnaryOp.NOT, expr); .)
+      UnaryExpr<out Expr inner>
+      (. expr = new BoolUnaryOpExpr(line, BoolUnaryOp.NOT, inner); .)
     |
       PrimaryNoParens<out expr>
     )
@@ -281,7 +283,6 @@ FuncDecl<out Stmt stmt, Type type>
        IdentSingle paramName;
        BlockStmt body;
     .)
-    TypeName<out returnType>
     (. int line = t.line; .)
     "func"
     IDENT (. callSign = new IdentSingle(t.val); .)
