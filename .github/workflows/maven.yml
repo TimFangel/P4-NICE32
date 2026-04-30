@@ -3,12 +3,21 @@ name: Java CI with Maven
 on:
   push:
     branches: [ "**" ]
-  pull_request:
-    branches: [ "**" ]
+  workflow_dispatch: # Rerun button in GitHub UI with seed input
+    inputs:
+      manual_seed:
+        description: 'Insert a seed (not required)'
+        required: false
+        default: ''
 
 jobs:
+  # JOB 1: Generates parser, Scanner and seed
   generate:
     runs-on: ubuntu-latest
+    # Defines "output", with the seed included seed
+    outputs:
+      test_seed: ${{ steps.create-seed.outputs.seed }}
+      
     steps:
       - uses: actions/checkout@v4
 
@@ -17,27 +26,29 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: maven # Caches maven installation
 
-      - name: Run generator
-        run: mvn -B exec:java -Dexec.mainClass="com.example.Generator"
+      - name: Create Test Seed
+        id: create-seed
+        # Generates a random seed and assigns it to a system variable
+        run: echo "seed=$RANDOM" >> "$GITHUB_OUTPUT"
 
-      - name: Upload artifact
+      - name: Generate Parser and Scanner
+        # coco/r run command
+        run: java -jar src/frontend/coco/Coco.jar src/frontend/coco/NICE32.atg -package "frontend.coco"
+
+      - name: Upload Parser and Scanner
         uses: actions/upload-artifact@v4
         with:
-          name: generated-file
-          path: output/generated.txt
+          name: parser-files
+          path: src/frontend/coco # Parser file directory
 
+  # JOB 2: Byg selve applikationen
   build:
     runs-on: ubuntu-latest
-    needs: generate
-
+    needs: generate # Venter på generate
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: generated-file
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -46,5 +57,77 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn -B package --file pom.xml
+      - name: Build with Maven (Skip tests)
+        # Vi bygger .jar filen, men springer tests over (dem tager vi i næste job)
+        run: mvn -B clean package -DskipTests
+
+      - name: Upload compiled JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-jar
+          path: target/*.jar # Gemmer den færdige applikation
+
+  # JOB 3: Hurtige Unit Tests
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: generate # Behøver kun hjælpefilerne for at køre tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download helper files
+        uses: actions/download-artifact@v4
+        with:
+          name: helper-files
+          path: output/
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Unit Tests
+        # Kører dine standard unit tests
+        run: mvn -B test
+
+  # JOB 4: End-to-End Tests
+  e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [generate, build] # Venter på både filer og selve .jar filen
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download helper files
+        uses: actions/download-artifact@v4
+        with:
+          name: helper-files
+          path: output/
+
+      - name: Download app JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: app-jar
+          path: target/
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Run E2E Tests
+        # Vi gør seed'en tilgængelig som en miljøvariabel (Environment Variable)
+        env:
+          MY_SEED: ${{ needs.generate.outputs.test_seed }}
+        run: |
+          echo "Brug af seed: $MY_SEED"
+          
+          # 1. Start Java applikationen i baggrunden (ved hjælp af '&' tegnet)
+          java -jar target/*.jar &
+          
+          # 2. Vent et par sekunder så serveren/appen er klar
+          sleep 10
+          
+          # 3. Kør dit eksterne test script (f.eks. et bash script, Postman, Cypress, curl etc.)
+          # ./run-e2e-tests.sh
