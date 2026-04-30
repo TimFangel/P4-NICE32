@@ -105,7 +105,7 @@ jobs:
 
       - name: Run Unit Tests
         # Runs standard tests
-        run: mvn -B test
+        run: mvn -B test -Dtest.seed=${{ needs.generate.outputs.test_seed }}
 
   # JOB 4: End-to-End Tests
   e2e-tests:
