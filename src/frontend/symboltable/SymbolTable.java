@@ -13,6 +13,7 @@ public class SymbolTable {
     final int interval = 4;
     final int direction = 5;
     final int procedure = 6;
+    final int commponent = 7;
 
     // Symbol categories
     final int variable = 0;
