@@ -250,7 +250,7 @@ UnaryExpr<out Expr expr>
   = (. 
       expr = null; 
       Type castType; 
-      Expr inner
+      Expr inner;
     .)
     (
       "("
