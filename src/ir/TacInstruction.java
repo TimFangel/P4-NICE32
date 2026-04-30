@@ -6,15 +6,21 @@ public class TacInstruction {
     IrValue arg2;
     IrValue result;
 
+    public TacInstruction(Operand operand, IrValue arg1, IrValue arg2, IrValue result) {
+        this.operand = operand;
+        this.arg1 = arg1;
+        this.arg2 = arg2;
+        this.result = result;
+    }
 
+    @Override
     public String toString() {
         switch (operand) {
             case ASS:
-                return result.name + " = " + arg1.name;    
+                return result.name + " := " + arg1.name;    
 
-            case ADD: case SUB: case MUL: case DIV: case MOD:
-            case LTE: case LT: case GT: case GTE: case EQ: case NEQ:
-                return result.name + " = " + arg1.name + " " + operandToSymbol(operand) + " " + arg2.name;
+            case ADD, SUB, MUL, DIV, MOD, LTE, LT, GT, GTE, EQ, NEQ:
+                return result.name + " := " + arg1.name + " " + operandToSymbol(operand) + " " + arg2.name;
         
             case IF:
                 return "if " + arg1.name + " goto " + result.name; 
@@ -26,7 +32,7 @@ public class TacInstruction {
                 return result.name + ":";
 
             default:
-                return "NULL";
+                return ""; // not recognized
         }
     }
 
