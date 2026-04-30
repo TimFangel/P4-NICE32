@@ -121,12 +121,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download parser files
-        uses: actions/download-artifact@v4
-        with:
-          name: parser-files
-          path: src/frontend/coco/
-
       - name: Download app JAR
         uses: actions/download-artifact@v4
         with:
