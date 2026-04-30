@@ -5,6 +5,7 @@ import java.util.*;
 import frontend.abstract_syntax.*;
 import frontend.abstract_syntax.component.*;
 import frontend.abstract_syntax.component.constants.*;
+import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.component_types.*;
 import frontend.abstract_syntax.expression.*;
 import frontend.abstract_syntax.expression.arith_expression.*;
@@ -85,6 +86,7 @@ Stmt<out Stmt stmt>
       Expr<out value>
       ";"
       (. stmt = new AssStmt(line, name, value); .)
+      (. stmt = new AssStmt(lineNumber, name, value); .)
 
     |
       IfStmt<out stmt>
@@ -232,9 +234,11 @@ PrimaryNoParens<out Expr expr>
     (
       INT
       (. expr = new Operand(line, new Num(Integer.parseInt(t.val))); .)
+      (. expr = new Operand(line, new IntNum(Integer.parseInt(t.val))); .)
     |
       FLOAT
       (. expr = new Operand(line, new Deci(Float.parseFloat(t.val))); .)
+      (. expr = new Operand(line, new FloatNum(Float.parseFloat(t.val))); .)
     |
       "true"
       (. expr = new Operand(line, new Bool(true)); .)
