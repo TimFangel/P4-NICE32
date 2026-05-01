@@ -10,9 +10,9 @@ import lombok.ToString;
 public class DirectionComp extends CompConst {
     private DirectionType direction;
 
-    DirectionComp(int lineNumber, DirectionType direction) {
+    public DirectionComp(int lineNumber, DirectionType direction) {
         super(lineNumber);
         this.direction = direction;
     }
-    
+
 }

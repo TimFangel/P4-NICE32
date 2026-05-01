@@ -39,7 +39,7 @@ public class IrGenerator {
     private SymbolTable symbolTable;
     private OperatorMapper operandMapper = new OperatorMapper();
 
-    public IrGenerator(SymbolTable symbolTable){
+    public IrGenerator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
     }
 
@@ -57,6 +57,7 @@ public class IrGenerator {
 
     /**
      * Converts actual values into IrValues.
+     * 
      * @param value actual value object from frontend as input.
      * @return an actual value as an IrValue.
      */
@@ -66,11 +67,11 @@ public class IrGenerator {
         }
 
         if (value instanceof FloatNum num) {
-            return new IrValue(String.valueOf(num.value()), Type.FLOAT_T); 
+            return new IrValue(String.valueOf(num.value()), Type.FLOAT_T);
         }
 
         if (value instanceof Bool bool) {
-            return new IrValue(String.valueOf(bool.value()), Type.BOOL_T); 
+            return new IrValue(String.valueOf(bool.value()), Type.BOOL_T);
         }
 
         throw new NoValueMatchException("No matching value found! Value: " + value.toString());
@@ -78,6 +79,7 @@ public class IrGenerator {
 
     /**
      * Generates IR instructions recursively AST expressions.
+     * 
      * @param expr expression from the AST.
      * @return the temporary variable generated.
      */
@@ -87,7 +89,8 @@ public class IrGenerator {
             IrValue right = generateExpr(binop.getExprRight());
 
             if (left.getType() != right.getType()) {
-                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+                throw new NonMatchingTypeException(
+                        "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
             }
 
             // Create temporary value to hold result
@@ -116,7 +119,8 @@ public class IrGenerator {
             IrValue right = generateExpr(binop.getExprRight());
 
             if (left.getType() != right.getType()) {
-                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+                throw new NonMatchingTypeException(
+                        "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
             }
 
             IrValue temp = newTemp(left.getType());
@@ -153,27 +157,31 @@ public class IrGenerator {
         }
 
         throw new NoExprMatchException("No matching expression found! Expression: " + expr.toString());
-    } 
+    }
 
     /**
      * Generates IR instructions from statements.
+     * 
      * @param stmt statement to convert to IR
      */
     public void generateStmt(Stmt stmt) {
-        // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes efter frontend.
+        // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes
+        // efter frontend.
 
-         if (stmt instanceof Decl decl) {
-            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel navn!
-            String name = decl.getIdentifier().toString(); 
+        if (stmt instanceof Decl decl) {
+            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel
+            // navn!
+            String name = decl.getIdentifier().toString();
 
             try {
                 // findId, since frontend has created it before.
-                Symbol symbol = symbolTable.findId(name); 
+                Symbol symbol = symbolTable.findId(name);
                 IrValue result = new IrValue(name, symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
 
                 if (expr.getType() != result.getType()) {
-                    throw new NonMatchingTypeException("Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
+                    throw new NonMatchingTypeException(
+                            "Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
                 }
 
                 code.add(new IrInstruction(IrOperator.ASS, expr, null, result));
@@ -185,8 +193,9 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
-            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel navn!
-            String varName = ass.getVariable().toString();
+            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel
+            // navn!
+            String varName = ass.getIdentifier().toString();
             IrValue right = generateExpr(ass.getValue());
 
             try {
@@ -194,7 +203,8 @@ public class IrGenerator {
                 IrValue left = new IrValue(varName, sym.getType());
 
                 if (left.getType() != right.getType()) {
-                    throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+                    throw new NonMatchingTypeException(
+                            "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
                 }
                 code.add(new IrInstruction(IrOperator.ASS, right, null, left));
 
@@ -212,7 +222,7 @@ public class IrGenerator {
             }
 
             String elseLabel = newLabel();
-            // only 
+            // only
             String endLabel = (ifStmt.getElseStmt() != null) ? newLabel() : null;
 
             // add if condition
@@ -233,11 +243,9 @@ public class IrGenerator {
             if (ifStmt.getElseStmt() != null) {
                 generateStmt(ifStmt.getElseStmt());
 
-                
                 // end label only needed on else stmt.
                 code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(endLabel, Type.LABEL)));
             }
-
 
             return;
         }
@@ -285,6 +293,7 @@ public class IrGenerator {
 
     /**
      * Generate IR instructions for a NICE32 program.
+     * 
      * @param program NICE32 AST's root node.
      */
     public void generateProgram(Program program) {
@@ -303,7 +312,8 @@ public class IrGenerator {
 
     /**
      * Type casts between integer and float.
-     * @param value value to type cast.
+     * 
+     * @param value      value to type cast.
      * @param targetType type casted to.
      * @return the type casted variable.
      */
@@ -315,7 +325,7 @@ public class IrGenerator {
 
         IrValue temp = newTemp(targetType);
 
-        if(valueType == Type.INT_T && targetType == Type.FLOAT_T) {
+        if (valueType == Type.INT_T && targetType == Type.FLOAT_T) {
             code.add(new IrInstruction(IrOperator.INT_TO_FLOAT, value, null, temp));
         } else if (valueType == Type.FLOAT_T && targetType == Type.INT_T) {
             code.add(new IrInstruction(IrOperator.FLOAT_TO_INT, value, null, temp));
@@ -328,6 +338,7 @@ public class IrGenerator {
 
     /**
      * Generate IR and output to text file?
+     * 
      * @param ast abstract syntax tree generated by frontend
      */
     public void generateIR(Program program) {
@@ -340,16 +351,16 @@ public class IrGenerator {
 }
 
 /*
-TODO:
---- Generation ---
-- Correct recursion??
-- Function call generation
-- Function generation
-- Component generation
-
---- After Generation ---
-- Basic Blocks?
-- Output strings, obj?
-- Optimize?
-- Tests
+ * TODO:
+ * --- Generation ---
+ * - Correct recursion??
+ * - Function call generation
+ * - Function generation
+ * - Component generation
+ * 
+ * --- After Generation ---
+ * - Basic Blocks?
+ * - Output strings, obj?
+ * - Optimize?
+ * - Tests
  */

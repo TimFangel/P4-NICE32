@@ -13,7 +13,7 @@ public class ArithUnaryOpExpr extends ArithExpr {
     private ArithUnaryOp op;
     private Expr expr;
 
-    ArithUnaryOpExpr(int lineNumber, ArithUnaryOp op, Expr expr) {
+    public ArithUnaryOpExpr(int lineNumber, ArithUnaryOp op, Expr expr) {
         super(lineNumber);
 
         this.op = op;

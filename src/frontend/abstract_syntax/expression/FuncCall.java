@@ -8,10 +8,10 @@ import lombok.ToString;
 @ToString
 @Getter
 public class FuncCall extends Expr {
-    private Ident identifier; 
+    private Ident identifier;
     private Expr parameter;
 
-    FuncCall(int lineNumber, Ident identifier, Expr parameter) {
+    public FuncCall(int lineNumber, Ident identifier, Expr parameter) {
         super(lineNumber);
         this.identifier = identifier;
         this.parameter = parameter;

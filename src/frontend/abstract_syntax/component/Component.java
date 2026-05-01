@@ -23,9 +23,10 @@ public class Component extends Stmt {
     private DirectionComp direction;
     private List<Decl> variables = new ArrayList<>();
 
-    Component(int lineNumber, Ident identifier, Expr port, ProtocolComp protocol, Expr interval, DirectionComp direction, List<Decl> variables) {
+    public Component(int lineNumber, Ident identifier, Expr port, ProtocolComp protocol, Expr interval,
+            DirectionComp direction, List<Decl> variables) {
         super(lineNumber);
-        this. identifier = identifier;
+        this.identifier = identifier;
         this.port = port;
         this.protocol = protocol;
         this.interval = interval;

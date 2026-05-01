@@ -13,13 +13,16 @@ public class FuncDecl extends Func {
     private Type returnType;
     private Ident identifier;
     private Type paramType;
+    private Ident paramName;
     private BlockStmt statements;
 
-    FuncDecl(int lineNumber, Type returnType, Ident identifier, Type paramType, BlockStmt statements) {
+    public FuncDecl(int lineNumber, Type returnType, Ident identifier, Type paramType, Ident paramName,
+            BlockStmt statements) {
         super(lineNumber);
         this.returnType = returnType;
         this.identifier = identifier;
         this.paramType = paramType;
+        this.paramName = paramName;
         this.statements = statements;
     }
 }

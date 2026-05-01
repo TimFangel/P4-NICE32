@@ -10,12 +10,12 @@ import lombok.ToString;
 @ToString
 @Getter
 public class AssStmt extends Stmt {
-    private Ident variable;
+    private Ident identifier;
     private Expr value;
 
-    public AssStmt(int lineNumber, Ident variable, Expr value) {
+    public AssStmt(int lineNumber, Ident identifier, Expr value) {
         super(lineNumber);
-        this.variable = variable;
+        this.identifier = identifier;
         this.value = value;
     }
 }

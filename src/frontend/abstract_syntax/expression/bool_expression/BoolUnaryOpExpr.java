@@ -13,7 +13,7 @@ public class BoolUnaryOpExpr extends BoolExpr {
     private BoolUnaryOp op;
     private Expr expr;
 
-    BoolUnaryOpExpr(int lineNumber, BoolUnaryOp op, Expr expr) {
+    public BoolUnaryOpExpr(int lineNumber, BoolUnaryOp op, Expr expr) {
         super(lineNumber);
 
         this.op = op;
