@@ -5,11 +5,11 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 class BaseProgramTest {
-    long seed;
-    java.util.Random rng;
+    static long seed;
+    static java.util.Random rng;
 
     @BeforeAll
-    void seedIncluded() {
+    static void seedIncluded() {
         // Read variable form System Properties
         String seedString = System.getProperty("test.seed");
 
