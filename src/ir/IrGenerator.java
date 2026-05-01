@@ -8,7 +8,6 @@ import exception.NoStmtMatchException;
 import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
 import exception.TypeCastException;
-import exception.TypeToIntException;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.Operand;
@@ -48,7 +47,7 @@ public class IrGenerator {
         return code;
     }
 
-    private IrValue newTemp(int type) {
+    private IrValue newTemp(Type type) {
         return new IrValue("t" + tempCounter++, type);
     }
 
@@ -63,18 +62,18 @@ public class IrGenerator {
      */
     public IrValue generateValue(Value value) {
         if (value instanceof IntNum num) {
-            return new IrValue(String.valueOf(num.value()), 0); // 0 -> integer in symbol table.
+            return new IrValue(String.valueOf(num.value()), Type.INT_T);
         }
 
         if (value instanceof FloatNum num) {
-            return new IrValue(String.valueOf(num.value()), 1); // 1 -> float in symbol table.
+            return new IrValue(String.valueOf(num.value()), Type.FLOAT_T); 
         }
 
         if (value instanceof Bool bool) {
-            return new IrValue(String.valueOf(bool.value()), 2); // 0 -> integer in symbol table.
+            return new IrValue(String.valueOf(bool.value()), Type.BOOL_T); 
         }
 
-        throw new NoValueMatchException("No matching value found!");
+        throw new NoValueMatchException("No matching value found! Value: " + value.toString());
     }
 
     /**
@@ -94,17 +93,19 @@ public class IrGenerator {
             // Create temporary value to hold result
             IrValue temp = newTemp(left.getType());
 
+            // add instruction for temp var
             code.add(new IrInstruction(operandMapper.mapArithBin(binop.getOp()), left, right, temp));
 
+            // return temp to be used in parent expr
             return temp;
         }
 
         if (expr instanceof ArithUnaryOpExpr unop) {
-            // assign expression  
             IrValue left = generateExpr(unop.getExpr());
 
             IrValue temp = newTemp(left.getType());
 
+            // add code for temp var
             code.add(new IrInstruction(operandMapper.mapArithUna(unop.getOp()), left, null, temp));
 
             return temp;
@@ -120,6 +121,7 @@ public class IrGenerator {
 
             IrValue temp = newTemp(left.getType());
 
+            // add code for temp var
             code.add(new IrInstruction(operandMapper.mapBoolBin(binop.getOp()), left, right, temp));
 
             return temp;
@@ -128,8 +130,13 @@ public class IrGenerator {
         if (expr instanceof BoolUnaryOpExpr unop) {
             IrValue left = generateExpr(unop.getExpr());
 
+            if (left.getType() != Type.BOOL_T) {
+                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType());
+            }
+
             IrValue temp = newTemp(left.getType());
 
+            // add code for temp var
             code.add(new IrInstruction(operandMapper.mapBoolUna(unop.getOp()), left, null, temp));
 
             return temp;
@@ -140,12 +147,12 @@ public class IrGenerator {
         }
 
         if (expr instanceof Cast cast) {
+            // get expr, then type cast it
             IrValue value = generateExpr(cast.getExpr());
-            int targetType = typeToInt(cast.getTargetType());
-            return typeCast(value, targetType);
+            return typeCast(value, cast.getTargetType());
         }
 
-        throw new NoExprMatchException("No matching expression found!");
+        throw new NoExprMatchException("No matching expression found! Expression: " + expr.toString());
     } 
 
     /**
@@ -200,7 +207,7 @@ public class IrGenerator {
         if (stmt instanceof IfStmt ifStmt) {
             IrValue condition = generateExpr(ifStmt.getCondition());
 
-            if (condition.getType() != 2) {
+            if (condition.getType() != Type.BOOL_T) {
                 throw new NonMatchingTypeException("Condition is not a boolean! Type: " + condition.getType());
             }
 
@@ -209,18 +216,18 @@ public class IrGenerator {
             String endLabel = (ifStmt.getElseStmt() != null) ? newLabel() : null;
 
             // add if condition
-            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(elseLabel, -1)));
+            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(elseLabel, Type.LABEL)));
 
             // generate then statements
             generateStmt(ifStmt.getThenStmt());
 
             // jump to end, only relevant if else exists.
             if (ifStmt.getElseStmt() != null) {
-                code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(endLabel, -1)));
+                code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(endLabel, Type.LABEL)));
             }
 
             // else label
-            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(elseLabel, -1)));
+            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(elseLabel, Type.LABEL)));
 
             // generate else if exists
             if (ifStmt.getElseStmt() != null) {
@@ -228,7 +235,7 @@ public class IrGenerator {
 
                 
                 // end label only needed on else stmt.
-                code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(endLabel, -1)));
+                code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(endLabel, Type.LABEL)));
             }
 
 
@@ -240,19 +247,19 @@ public class IrGenerator {
             String exitLabel = newLabel();
 
             // label before condition check
-            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(startLabel, -1)));
+            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(startLabel, Type.LABEL)));
 
             IrValue condition = generateExpr(whileStmt.getCondition());
 
             // exit if false
-            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(exitLabel, -1)));
+            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(exitLabel, Type.LABEL)));
 
             // else do body and return to start
             generateStmt(whileStmt.getWhileBody());
 
-            code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(startLabel, -1)));
+            code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(startLabel, Type.LABEL)));
 
-            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(exitLabel, -1)));
+            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(exitLabel, Type.LABEL)));
 
             return;
         }
@@ -273,7 +280,7 @@ public class IrGenerator {
             return;
         }
 
-        throw new NoStmtMatchException("No matching statement found!");
+        throw new NoStmtMatchException("No matching statement found! Statement: " + stmt.toString());
     }
 
     /**
@@ -286,12 +293,12 @@ public class IrGenerator {
 
         // make label at start of main.
         String mainStart = newLabel();
-        code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, -1)));
+        code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
 
         generateStmt(program.getMain());
 
         // make last instruction of main return to start of main.
-        code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, -1)));
+        code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
     }
 
     /**
@@ -300,17 +307,17 @@ public class IrGenerator {
      * @param targetType type casted to.
      * @return the type casted variable.
      */
-    public IrValue typeCast(IrValue value, int targetType) {
-        int valueType = value.getType();
+    public IrValue typeCast(IrValue value, Type targetType) {
+        Type valueType = value.getType();
         if (valueType == targetType) {
             return value;
         }
 
         IrValue temp = newTemp(targetType);
 
-        if(valueType == 0 && targetType == 1) {
+        if(valueType == Type.INT_T && targetType == Type.FLOAT_T) {
             code.add(new IrInstruction(IrOperator.INT_TO_FLOAT, value, null, temp));
-        } else if (valueType == 1 && targetType == 0) {
+        } else if (valueType == Type.FLOAT_T && targetType == Type.INT_T) {
             code.add(new IrInstruction(IrOperator.FLOAT_TO_INT, value, null, temp));
         } else {
             throw new TypeCastException("Type cast not possible!");
@@ -320,28 +327,11 @@ public class IrGenerator {
     }
 
     /**
-     * Converts frontend type classes to symbol table types.
-     * @param type to convert.
-     * @return type as an integer.
-     */
-    public int typeToInt(Type type) {
-        switch (type) {
-            case INT_T:
-                return 0;
-            case FLOAT_T:
-                return 1;
-            // Bool not included, since it cannot be type cast.
-        
-            default:
-                throw new TypeToIntException("Unknown type: " + type.toString());
-        }
-    }
-
-    /**
      * Generate IR and output to text file?
      * @param ast abstract syntax tree generated by frontend
      */
     public void generateIR(Program program) {
+        // maybe just run generateProgram, then after pass it to optimizer class?
         // generate ir
         // create basic blocks?
         // (opt) optimize
@@ -356,7 +346,6 @@ TODO:
 - Function call generation
 - Function generation
 - Component generation
-- Make types more readable than integers, might also affect symbol table.
 
 --- After Generation ---
 - Basic Blocks?
