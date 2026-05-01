@@ -28,7 +28,7 @@ public class IrInstruction {
             case ASS:
                 return result.getName() + " := " + arg1.getName();    
 
-            case ADD, SUB, MUL, DIV, MOD, LEQ, LT, GT, GEQ, EQ, NEQ:
+            case ADD, SUB, MUL, DIV, MOD, LEQ, LT, GT, GEQ, EQ, NEQ, AND, OR:
                 return result.getName() + " := " + arg1.getName() + " " + operandToSymbol(operator) + " " + arg2.getName();
         
             case IF_FALSE:
@@ -39,6 +39,15 @@ public class IrInstruction {
 
             case LABEL:
                 return result.getName() + ":";
+
+            case NOT, NEG:
+                return result.getName() + " := " + operandToSymbol(operator) + arg1.getName();
+
+            case INT_TO_FLOAT, FLOAT_TO_INT:
+                return result.getName() + " := " + "(" + operator.toString() + ") " + arg1.getName();
+                
+            case RET:
+                return "RET " + result.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
@@ -67,6 +76,10 @@ public class IrInstruction {
                 return ">=";
             case EQ:
                 return "==";
+            case NOT:
+                return "!";
+            case NEG:
+                return "-";
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (operatorToSymbol): " + operator.toString());
         }
