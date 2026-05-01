@@ -13,6 +13,7 @@ import frontend.abstract_syntax.expression.enums.*;
 import frontend.abstract_syntax.function.*;
 import frontend.abstract_syntax.program.*;
 import frontend.abstract_syntax.statement.*;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.statement.main_statement.*;
 import frontend.abstract_syntax.type.*;
 import frontend.abstract_syntax.value.*;
@@ -88,6 +89,8 @@ Stmt<out Stmt stmt>
 
     |
       IfStmt<out stmt>
+    |
+      WhileStmt<out stmt>
     )
   .
 
@@ -117,13 +120,14 @@ IfStmt<out Stmt stmt>
 WhileStmt<out Stmt stmt>
   = (.
       Expr cond;
-      BlockStmt thenblock;
+      BlockStmt whileBody;
     .)
     "while"
     (. int line = t.line; .)
     "(" Expr<out cond> ")"
-    Block<out thenBlock>
-    (. stmt = new WhileStmt(line, cond, thenBlock); .)
+    Block<out whileBody>
+    (. stmt = new WhileStmt(line, cond, whileBody); .)
+  .
 
 TypeName<out Type type>
   = (. type = Type.INT_T; .)
