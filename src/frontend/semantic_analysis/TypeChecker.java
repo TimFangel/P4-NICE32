@@ -11,7 +11,6 @@ import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
-import frontend.abstract_syntax.expression.bool_expression.BoolExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
@@ -159,7 +158,7 @@ public class TypeChecker {
 
             if (directionType == null) {
                 throw new RuntimeException(
-                        "Direction must be one of the supported protocol values, got " + directionType);
+                        "Direction must be one of the supported direction values, got " + directionType);
             }
 
             return;
