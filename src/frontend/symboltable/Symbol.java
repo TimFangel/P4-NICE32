@@ -1,6 +1,7 @@
 package frontend.symboltable;
 
-import ir.IrValue;
+import frontend.abstract_syntax.type.Type;
+import frontend.symboltable.enums.Category;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,12 +11,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Symbol { 
-    public String name; // Name of symbol
-    public int type; // Type of symbol: int, float, bool
-    public Symbol next; // Next symbol in same scope
-    public int category; // The category of symbol: variable, constant, function, component, scope
-    public Symbol locals; // The local symbols 
-    public int level; // 0 = global, 1 = local
+    public String name; 
+    public Type type; 
+    public Symbol next;         // Next symbol in same scope
+    public Category category;   // The category of symbol: variable, constant, function, component, scope
+    public Symbol locals;       // The local symbols 
+    public int level;           // 0 = global, 1 = local
 
-    public IrValue irvalue; // store IR releveant information
 }

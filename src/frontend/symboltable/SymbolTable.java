@@ -2,7 +2,9 @@ package frontend.symboltable;
 
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
+import frontend.abstract_syntax.type.Type;
 import frontend.coco.Parser;
+import frontend.symboltable.enums.Category;
 
 public class SymbolTable {
     // Types
@@ -14,12 +16,6 @@ public class SymbolTable {
     final int direction = 5;
     final int procedure = 6;
 
-    // Symbol categories
-    final int variable = 0;
-    final int constant = 1;
-    final int function = 2;
-    final int component = 3;
-    final int scope = 4;
 
     public Symbol topScope; // Current scope 
     public int currentScopelevel;
@@ -30,7 +26,7 @@ public class SymbolTable {
     public void OpenNewScope() {
         Symbol scopeObj = new Symbol();
         scopeObj.setName(""); 
-        scopeObj.setCategory(scope); 
+        scopeObj.setCategory(Category.SCOPE); 
         scopeObj.setNext(topScope);
         scopeObj.setLocals(null); // New scope has no locals initially 
         topScope = scopeObj; // Topscope is now the new scope
@@ -45,7 +41,7 @@ public class SymbolTable {
 
     // TODO: fix exception to be custom
     // Create new symbol in current scope - compile time check
-    public Symbol newSymbol(String name, int category, int type) throws NameAlreadyBoundException {
+    public Symbol newSymbol(String name, Category category, Type type) throws NameAlreadyBoundException {
         Symbol topScopeLocals; 
         Symbol last;
         Symbol symbol = new Symbol();
