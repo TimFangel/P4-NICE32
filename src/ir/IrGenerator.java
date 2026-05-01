@@ -7,11 +7,12 @@ import exception.NoExprMatchException;
 import exception.NoStmtMatchException;
 import exception.NoValueMatchException;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
-import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
+import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
@@ -20,8 +21,8 @@ import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
 import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.value.Bool;
-import frontend.abstract_syntax.value.Deci;
-import frontend.abstract_syntax.value.Num;
+import frontend.abstract_syntax.value.FloatNum;
+import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.Symbol;
 import frontend.symboltable.SymbolTable;
@@ -32,7 +33,7 @@ public class IrGenerator {
     private int labelCount = 0;
     private List<IrInstruction> code = new ArrayList<>();
     private SymbolTable symbolTable;
-    private OperandMapper operandMapper = new OperandMapper();
+    private OperatorMapper operandMapper = new OperatorMapper();
 
     public IrGenerator(SymbolTable symbolTable){
         this.symbolTable = symbolTable;
@@ -56,12 +57,12 @@ public class IrGenerator {
      * @return an actual value as an IrValue.
      */
     public IrValue generateValue(Value value) {
-        if (value instanceof Num num) {
+        if (value instanceof IntNum num) {
             return new IrValue(String.valueOf(num.value()), 0); // 0 -> integer in symbol table.
         }
 
-        if (value instanceof Deci dec) {
-            return new IrValue(String.valueOf(dec.value()), 1); // 1 -> float in symbol table.
+        if (value instanceof FloatNum num) {
+            return new IrValue(String.valueOf(num.value()), 1); // 1 -> float in symbol table.
         }
 
         if (value instanceof Bool bool) {
@@ -121,6 +122,10 @@ public class IrGenerator {
             return temp;
         }
 
+        if (expr instanceof Operand operand) {
+            return generateValue(operand.getValue());
+        }
+
         throw new NoExprMatchException("No matching expression found!");
     } 
 
@@ -136,7 +141,7 @@ public class IrGenerator {
                 Symbol symbol = symbolTable.findId(name); 
                 IrValue result = new IrValue(name, symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
-                code.add(new IrInstruction(Operand.ASS, expr, null, result));
+                code.add(new IrInstruction(IrOperator.ASS, expr, null, result));
 
                 return;
             } catch (Exception e) {
@@ -153,7 +158,7 @@ public class IrGenerator {
                 Symbol sym = symbolTable.findId(varName);
                 IrValue left = new IrValue(varName, sym.getType());
 
-                code.add(new IrInstruction(Operand.ASS, right, null, left));
+                code.add(new IrInstruction(IrOperator.ASS, right, null, left));
 
                 return;
             } catch (Exception e) {
@@ -165,44 +170,54 @@ public class IrGenerator {
             IrValue condition = generateExpr(ifStmt.getCondition());
 
             String elseLabel = newLabel();
-            String endLabel = newLabel();
+            // only 
+            String endLabel = (ifStmt.getElseStmt() != null) ? newLabel() : null;
 
             // add if condition
-            code.add(new IrInstruction(Operand.IF, condition, null, new IrValue(elseLabel, -1)));
+            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(elseLabel, -1)));
 
             // generate then statements
             generateStmt(ifStmt.getThenStmt());
 
-            // jump to end
-            code.add(new IrInstruction(Operand.GOTO, null, null, new IrValue(endLabel, -1)));
+            // jump to end, only relevant if else exists.
+            if (ifStmt.getElseStmt() != null) {
+                code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(endLabel, -1)));
+            }
 
             // else label
-            code.add(new IrInstruction(Operand.LABEL, null, null, new IrValue(elseLabel, -1)));
+            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(elseLabel, -1)));
 
             // generate else if exists
             if (ifStmt.getElseStmt() != null) {
                 generateStmt(ifStmt.getElseStmt());
+
+                
+                // end label only needed on else stmt.
+                code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(endLabel, -1)));
             }
 
-            // end label
-            code.add(new IrInstruction(Operand.LABEL, null, null, new IrValue(endLabel, -1)));
 
             return;
         }
 
         if (stmt instanceof WhileStmt whileStmt) {
-            IrValue condition = generateExpr(whileStmt.getCondition());
+            String startLabel = newLabel();
             String exitLabel = newLabel();
-            String toStartLabel = newLabel();
 
-            // add if condition to leave loop
-            code.add(new IrInstruction(Operand.IF, condition, null, new IrValue(exitLabel, -1)));
+            // label before condition check
+            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(startLabel, -1)));
 
-            // create body of while loop
+            IrValue condition = generateExpr(whileStmt.getCondition());
+
+            // exit if false
+            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(exitLabel, -1)));
+
+            // else do body and return to start
             generateStmt(whileStmt.getWhileBody());
 
-            // goto start
-            code.add(new IrInstruction(Operand.GOTO, null, null, new IrValue(toStartLabel, -1)));
+            code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(startLabel, -1)));
+
+            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(exitLabel, -1)));
 
             return;
         }
@@ -218,7 +233,7 @@ public class IrGenerator {
         if (stmt instanceof ReturnStmt retStmt) {
             IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
 
-            code.add(new IrInstruction(Operand.RET, null, null, returnedExpr));
+            code.add(new IrInstruction(IrOperator.RET, null, null, returnedExpr));
 
             return;
         }
@@ -226,16 +241,29 @@ public class IrGenerator {
         throw new NoStmtMatchException("No matching statement found!");
     }
 
+    public void generateProgram(Program program) {
+        generateStmt(program.getSetup());
+        generateStmt(program.getFunctions());
+
+        // make label at start of main.
+        String mainStart = newLabel();
+        code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, -1)));
+
+        generateStmt(program.getMain());
+
+        // make last instruction of main return to start of main.
+        code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, -1)));
+    }
 
     /**
      * Generate IR and output to text file?
      * @param ast abstract syntax tree generated by frontend
      */
-    public void generateIR(AST ast) {
+    public void generateIR(Program program) {
         // generate ir
         // create basic blocks?
         // (opt) optimize
-        // output file
+        // output file or pass to backend
     }
 }
 
@@ -247,8 +275,6 @@ TODO:
 - Function generation
 - Type cast generation
 - Component generatoin
-- Program generation
-- What to do with things 'out of scope', such as hardcoded main{}, setup{} etc.
 
 --- After Generation ---
 - Basic Blocks?

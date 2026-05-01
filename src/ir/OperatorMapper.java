@@ -6,62 +6,62 @@ import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 
 /* Map from frontend operand to IR operands */
-public class OperandMapper {
+public class OperatorMapper {
     
-    public Operand mapArithBin(ArithBinaryOp op) {
+    public IrOperator mapArithBin(ArithBinaryOp op) {
         switch (op) {
             case ADD:
-                return Operand.ADD;
+                return IrOperator.ADD;
 
             case SUB:
-                return Operand.SUB;
+                return IrOperator.SUB;
 
             case MUL:
-                return Operand.MUL;
+                return IrOperator.MUL;
 
             case DIV:
-                return Operand.DIV;
+                return IrOperator.DIV;
 
             case MOD:
-                return Operand.MOD;
+                return IrOperator.MOD;
 
             default:
                 return null;
         }
     }
 
-    public Operand mapArithUna(ArithUnaryOp op) {
+    public IrOperator mapArithUna(ArithUnaryOp op) {
         if (op == ArithUnaryOp.NEG) {
-            return Operand.NEG;
+            return IrOperator.NEG;
         }
 
         return null;
     }
 
-    public Operand mapBoolBin(BoolBinaryOp op) {
+    public IrOperator mapBoolBin(BoolBinaryOp op) {
         switch (op) {
             case AND:
-                return Operand.AND;
+                return IrOperator.AND;
             case OR:
-                return Operand.OR;
+                return IrOperator.OR;
             case LT:
-                return Operand.LT;
+                return IrOperator.LT;
             case GT:
-                return Operand.GT;
+                return IrOperator.GT;
             case EQ:
-                return Operand.EQ;
+                return IrOperator.EQ;
             case LEQ:
-                return Operand.LEQ;
+                return IrOperator.LEQ;
             case GEQ:
-                return Operand.GEQ;
+                return IrOperator.GEQ;
             default:
                 return null;
         }
     }
 
-    public Operand mapBoolUna(BoolUnaryOp op) {
+    public IrOperator mapBoolUna(BoolUnaryOp op) {
         if (op == BoolUnaryOp.NOT) {
-            return Operand.NOT;
+            return IrOperator.NOT;
         }
 
         return null;

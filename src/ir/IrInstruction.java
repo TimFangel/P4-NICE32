@@ -1,12 +1,12 @@
 package ir;
 
 public class IrInstruction {
-    Operand operand;     // "if", "+", "*" etc.
+    IrOperator operand;     // "if", "+", "*" etc.
     IrValue arg1;           
     IrValue arg2;
     IrValue result;
 
-    public IrInstruction(Operand operand, IrValue arg1, IrValue arg2, IrValue result) {
+    public IrInstruction(IrOperator operand, IrValue arg1, IrValue arg2, IrValue result) {
         this.operand = operand;
         this.arg1 = arg1;
         this.arg2 = arg2;
@@ -36,7 +36,7 @@ public class IrInstruction {
         }
     }
 
-    public String operandToSymbol(Operand operand) {
+    public String operandToSymbol(IrOperator operand) {
         switch (operand) {
             case ADD:
                 return "+";
