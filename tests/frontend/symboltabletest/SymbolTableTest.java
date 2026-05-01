@@ -3,9 +3,6 @@ package frontend.symboltabletest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-import frontend.coco.Parser;
-import frontend.symboltable.Symbol;
-
 // Ongoing
 public class SymbolTableTest {
     @Test

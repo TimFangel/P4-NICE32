@@ -9,9 +9,10 @@ import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
+import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolExpr;
-import frontend.abstract_syntax.function.Func;
+import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
@@ -29,8 +30,6 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 
 import java.util.*;
-
-import javax.management.RuntimeErrorException;
 
 public class TypeChecker {
     // TODO: Lige p.t. er dette vores symboltable. Har ikke fået kigget på det som
@@ -145,9 +144,13 @@ public class TypeChecker {
                         protocolType);
             }
 
-            if (c.getInterval() instanceof Operand o && o.getValue() instanceof IntNum n && n.value() >= 0) {
-                // Valid interval.
-            } else {
+            Type intervalType = checkExpr(c.getInterval());
+
+            if (intervalType != Type.INT_T) {
+                throw new RuntimeException("Interval must be of type INT, got " + intervalType);
+            }
+
+            if (c.getInterval() instanceof Operand o && o.getValue() instanceof IntNum n && n.value() < 0) {
                 throw new RuntimeException("Interval must be of type INT, got " + c.getInterval());
             }
 
@@ -239,10 +242,18 @@ public class TypeChecker {
 
                     return Type.BOOL_T;
 
-                case EQ:
+                case EQ, NEQ:
                     if (left != right) {
                         throw new RuntimeException(
                                 "Equality requires same types, got " + left + " and " + right);
+                    }
+
+                    return Type.BOOL_T;
+
+                case LEQ, GEQ, GT, LT:
+                    if (left != Type.BOOL_T && right != Type.BOOL_T) {
+                        throw new RuntimeException(
+                                "Comparison requires ints or floats, got " + left + " and " + right);
                     }
 
                     return Type.BOOL_T;
@@ -252,8 +263,14 @@ public class TypeChecker {
             }
         }
 
-        // Check boolean expressions.
-        if (expr instanceof BoolExpr) {
+        // Check boolean unary expressions.
+        if (expr instanceof BoolUnaryOpExpr b) {
+            Type type = checkExpr(b.getExpr());
+
+            if (type != Type.BOOL_T) {
+                throw new RuntimeException("Negation requires type bool, got " + type);
+            }
+
             return Type.BOOL_T;
         }
 
@@ -278,6 +295,21 @@ public class TypeChecker {
                     throw new RuntimeException("Unknown op: " + a.getOp());
 
             }
+        }
+
+        // Check arithmetic unary expressions.
+        if (expr instanceof ArithUnaryOpExpr a) {
+            Type type = checkExpr(a.getExpr());
+
+            if (type == Type.INT_T) {
+                return Type.INT_T;
+            }
+
+            if (type == Type.FLOAT_T) {
+                return Type.FLOAT_T;
+            }
+
+            throw new RuntimeException("Unary minus requires ints or floats, got " + type);
         }
 
         throw new RuntimeException("Unknown expression: " + expr);
