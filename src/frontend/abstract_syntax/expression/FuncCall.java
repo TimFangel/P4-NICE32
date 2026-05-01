@@ -1,6 +1,5 @@
 package frontend.abstract_syntax.expression;
 
-import frontend.abstract_syntax.value.Ident;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -8,10 +7,10 @@ import lombok.ToString;
 @ToString
 @Getter
 public class FuncCall extends Expr {
-    private Ident identifier;
+    private String identifier;
     private Expr parameter;
 
-    public FuncCall(int lineNumber, Ident identifier, Expr parameter) {
+    public FuncCall(int lineNumber, String identifier, Expr parameter) {
         super(lineNumber);
         this.identifier = identifier;
         this.parameter = parameter;

@@ -1,6 +1,5 @@
 import java.util.*;
 
-import frontend.abstract_syntax.*;
 import frontend.abstract_syntax.component.*;
 import frontend.abstract_syntax.component.constants.*;
 import frontend.abstract_syntax.component.constants.DirectionComp;
@@ -39,74 +38,118 @@ IGNORE ' ' + '\t' + '\n' + '\r'
 
 PRODUCTIONS
 
+// The program consists of 3 code blocks: setup, functions, and main.
 NICE32
   = (. BlockStmt setupBlock;
        BlockStmt functionBlock;
        BlockStmt mainBlock; .)
     "setup"
     (. int line = t.line; .)
-    Block<out setupBlock>
+    SetupBlock<out setupBlock>
     "functions"
-    Block<out functionBlock>
+    FunctionsBlock<out functionBlock>
     "main"
-    Block<out mainBlock>
+    MainBlock<out mainBlock>
     (. mainNode = new Program(line, setupBlock, functionBlock, mainBlock); .)
   .
 
-Block<out BlockStmt block>
+// The setup code block can only contain setup statements.
+SetupBlock<out BlockStmt block>
   = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
     "{" (. int line = t.line; .)
-      { Stmt<out s> (. stmts.add(s); .) }
+      { SetupStmt<out s> (. stmts.add(s); .) }
     "}"
     (. block = new BlockStmt(line, stmts); .)
   .
 
-Stmt<out Stmt stmt>
+// Setup statements can only be variable- and component declarations, control structures, and assignments.
+SetupStmt<out Stmt stmt>
   = (.
        stmt = null;
-       IdentSingle name;
+       String identifier;
     .)
     (
-      IDENT (. name = new IdentSingle(t.val); .)
+      IDENT (. identifier = t.val; .)
       (. int line = t.line; .)
       "="
       Expr<out Expr value>
       ";"
-      (. stmt = new AssStmt(line, name, value); .)
-
+      (. stmt = new AssStmt(line, identifier, value); .)
     |
       IfStmt<out stmt>
     |
-      TypeStmt<out stmt>
+      VarDeclStmt<out stmt>
     |
       ComponentDecl<out stmt>
     )
   .
 
-TypeStmt<out Stmt stmt>
-  = (. stmt = null; .)
-      TypeName<out Type type>
+// The functions block can only contain function statements.
+FunctionsBlock<out BlockStmt block>
+  = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
+    "{" (. int line = t.line; .)
+      { FunctionStmt<out s> (. stmts.add(s); .) }
+    "}"
+    (. block = new BlockStmt(line, stmts); .)
+  .
+
+// Function statements can only be function declarations.
+FunctionStmt<out Stmt stmt>
+  = (. stmt = null; Type type; .)
+    TypeName<out type>
+    FuncDecl<out stmt, type>
+  .
+
+// The main block can only contain main statements.
+MainBlock<out BlockStmt block>
+  = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
+    "{" (. int line = t.line; .)
+      { MainStmt<out s> (. stmts.add(s); .) }
+    "}"
+    (. block = new BlockStmt(line, stmts); .)
+  .
+
+// Main statements can only be variable declarations, control structures, and assignments.
+MainStmt<out Stmt stmt>
+  = (.
+       stmt = null;
+       String identifier;
+    .)
     (
-      FuncDecl<out stmt, type>
+      IDENT (. identifier = t.val; .)
+      (. int line = t.line; .)
+      "="
+      Expr<out Expr value>
+      ";"
+      (. stmt = new AssStmt(line, identifier, value); .)
     |
-      Decl<out stmt, type>
+      IfStmt<out stmt>
+    |
+      VarDeclStmt<out stmt>
     )
   .
 
-Decl<out Stmt stmt, Type type>
-  = (. int line = t.line; .)
-    IDENT (. Ident name = new IdentSingle(t.val); .)
-    "="
-    Expr<out Expr value>
-    ";"
-    (. stmt = new Decl(line, type, name, value); .)
+// Standard code block used in if-statements and function bodies.
+Block<out BlockStmt block>
+  = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
+    "{" (. int line = t.line; .)
+      { MainStmt<out s> (. stmts.add(s); .) }
+    "}"
+    (. block = new BlockStmt(line, stmts); .)
   .
 
-// TODO: Komponenter må kun deklareres i setup
+// Wraps variable declarations so it can be used as a statement.
+VarDeclStmt<out Stmt stmt>
+  = (. Decl decl; .)
+    VarDecl<out decl>
+    (. stmt = decl; .)
+  .
+
+// A component declaration requires port, protocol, interval, and direction, and can have extra optional variable delcarations.
 ComponentDecl<out Stmt stmt>
   = (. 
       int lineNumber;
-      Ident identifier;
+      String identifier;
       Expr port;
       ProtocolComp protocol;
       Expr interval;
@@ -118,7 +161,7 @@ ComponentDecl<out Stmt stmt>
     IDENT
     (.
       lineNumber = t.line;
-      identifier = new IdentSingle(t.val);
+      identifier = t.val;
     .)
     "{"
       "port" ":"
@@ -145,6 +188,7 @@ ComponentDecl<out Stmt stmt>
     (. stmt = new Component(lineNumber, identifier, port, protocol, interval, direction, variables); .)
   .
 
+// Parses the protocol of a component.
 ProtocolName<out ProtocolComp protocol>
   = (. protocol = null; .)
     (
@@ -156,6 +200,7 @@ ProtocolName<out ProtocolComp protocol>
     )
   .
 
+// Parses the direction of a component.
 DirectionName<out DirectionComp direction>
   = (. direction = null; .)
     (
@@ -167,20 +212,22 @@ DirectionName<out DirectionComp direction>
     )
   .
 
+// The declaration of a variable requires the following: type, identifier, and initial value (an expression).
 VarDecl<out Decl decl>
   = (.
       Type type;
-      Ident name;
+      String identifier;
       Expr value;
     .)
     TypeName<out type>
-    IDENT (. name = new IdentSingle(t.val); .)
+    IDENT (. identifier = t.val; .)
     "="
     Expr<out value>
     ";"
-    (. decl = new Decl(t.line, type, name, value); .)
+    (. decl = new Decl(t.line, type, identifier, value); .)
   .
 
+// If statements need a condition, and can have optional else-if chains.
 IfStmt<out Stmt stmt>
   = (.
        Expr cond;
@@ -204,6 +251,7 @@ IfStmt<out Stmt stmt>
     (. stmt = new IfStmt(line, cond, thenBlock, elseBlock); .)
   .
 
+// Parses the different primitive type keywords.
 TypeName<out Type type>
   = (. type = Type.INT_T; .)
     (
@@ -217,6 +265,16 @@ TypeName<out Type type>
       (. type = Type.BOOL_T; .)
     )
   .
+
+// Expressions precedence:
+// 1. PrimaryNoParens   literals, indentifiers, function calls
+// 2. UnaryExpr         (type), -, !
+// 3. MulExpr           *, /, %
+// 4. AddExpr           +, -
+// 5. RelExpr           <, >, <=, >=
+// 6. EqExpr            ==, !=
+// 7. AndExpr           &&
+// 8. OrExpr            ||
 
 Expr<out Expr expr>
   = OrExpr<out expr>
@@ -361,46 +419,7 @@ UnaryExpr<out Expr expr>
     )
   .
 
-// TODO: Funktioner må kun deklareres i functions blokken
-FuncDecl<out Stmt stmt, Type type>
-  = (.
-       IdentSingle callSign;
-       Type paramType;
-       IdentSingle paramName;
-       BlockStmt body;
-    .)
-    "func"
-    (. int line = t.line; .)
-    IDENT (. callSign = new IdentSingle(t.val); .)
-    "(" 
-      TypeName<out paramType>
-      IDENT (. paramName = new IdentSingle(t.val); .)
-    ")"
-    Block<out body>
-    (. stmt = new FuncDecl(line, type, callSign, paramType, paramName, body); .)
-  .
-
-IdentExpr<out Expr expr>
-  = (. 
-      expr = null;
-      int line;
-      Ident identifier;
-    .)
-    IDENT
-    (. 
-      line = t.line;
-      identifier = new IdentSingle(t.val);
-      expr = new Operand(line, identifier);
-    .)
-    [
-      "(" 
-        Expr<out Expr paramExpr> 
-      ")"
-      (. expr = new FuncCall(line, identifier, paramExpr); .)
-    ]
-  .
-
-PrimaryNoParens<out Expr expr>
+  PrimaryNoParens<out Expr expr>
   = (. 
       expr = null;
       int line = t.line;
@@ -420,6 +439,55 @@ PrimaryNoParens<out Expr expr>
     |
       IdentExpr<out expr>
     )
+  .
+
+// Functions must have a return type, identifier, a single input parameter, and a (possibly empty) body block.
+FuncDecl<out Stmt stmt, Type type>
+  = (.
+       String identifier;
+       Type paramType;
+       String parameterIdentifier;
+       BlockStmt body;
+    .)
+    "func"
+    (. int line = t.line; .)
+    IDENT (. identifier = t.val; .)
+    "(" 
+      TypeName<out paramType>
+      IDENT (. parameterIdentifier = t.val; .)
+    ")"
+    Block<out body>
+    (. stmt = new FuncDecl(line, type, identifier, paramType, parameterIdentifier, body); .)
+  .
+
+// Parses identifiers as either variable references, object members, or function calls.
+IdentExpr<out Expr expr>
+  = (.
+      expr = null;
+      int line;
+      String identifier;
+      String field;
+    .)
+    IDENT
+    (.
+      line = t.line;
+      identifier = t.val;
+      expr = new VarExpr(line, identifier);
+    .)
+    [
+      "."
+      IDENT
+      (.
+        field = t.val;
+        expr = new MemberAccess(line, identifier, field);
+      .)
+    ]
+    [
+      "(" 
+        Expr<out Expr paramExpr> 
+      ")"
+      (. expr = new FuncCall(line, identifier, paramExpr); .)
+    ]
   .
 
 END NICE32.
