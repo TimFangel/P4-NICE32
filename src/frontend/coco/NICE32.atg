@@ -84,8 +84,6 @@ SetupStmt<out Stmt stmt>
     |
       WhileStmt<out stmt>
     |
-      TypeStmt<out stmt>
-    |
       ComponentDecl<out stmt>
     )
   .
