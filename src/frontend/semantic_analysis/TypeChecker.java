@@ -7,7 +7,9 @@ import frontend.abstract_syntax.component.constants.component_types.DirectionTyp
 import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.MemberAccess;
 import frontend.abstract_syntax.expression.Operand;
+import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
@@ -22,18 +24,14 @@ import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
-import frontend.abstract_syntax.value.Ident;
-import frontend.abstract_syntax.value.IdentDual;
-import frontend.abstract_syntax.value.IdentSingle;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 
 import java.util.*;
 
 public class TypeChecker {
-    // TODO: Lige p.t. er dette vores symboltable. Har ikke fået kigget på det som
-    // Skipper arbejdede på.
     private final Map<String, Type> symbols = new HashMap<>();
+    private final Map<String, Component> components = new HashMap<>();
 
     public void check(Program program) {
         checkStmt(program.setup);
@@ -43,21 +41,14 @@ public class TypeChecker {
 
     private void checkStmt(Stmt stmt) {
         if (stmt instanceof Decl d) {
-            Ident identifier = d.getIdentifier();
-            String name = null;
+            String identifier = d.getIdentifier();
 
-            if (identifier instanceof IdentSingle single) {
-                name = single.name();
-            } else if (identifier instanceof IdentDual dual) {
-                name = dual.parentName() + "." + dual.childName();
-            }
-
-            if (name == null) {
+            if (identifier == null) {
                 throw new RuntimeException("Could not find identifier for " + identifier);
             }
 
-            if (symbols.containsKey(name)) {
-                throw new RuntimeException("Variable already declared: " + d.getIdentifier());
+            if (symbols.containsKey(identifier)) {
+                throw new RuntimeException("Variable already declared: " + identifier);
             }
 
             Type valueType = checkExpr(d.getValue());
@@ -69,7 +60,7 @@ public class TypeChecker {
                                 + "'");
             }
 
-            symbols.put(name, d.getType());
+            symbols.put(identifier, d.getType());
             return;
         }
 
@@ -79,7 +70,7 @@ public class TypeChecker {
         }
 
         if (stmt instanceof BlockStmt b) {
-            for (Stmt s : b.statements) {
+            for (Stmt s : b.getStatements()) {
                 checkStmt(s);
             }
             return;
@@ -102,26 +93,19 @@ public class TypeChecker {
         }
 
         if (stmt instanceof AssStmt a) {
-            Ident identifier = a.getIdentifier();
-            String name = null;
+            String identifier = a.getIdentifier();
 
-            if (identifier instanceof IdentSingle single) {
-                name = single.name();
-            } else if (identifier instanceof IdentDual dual) {
-                name = dual.parentName() + "." + dual.childName();
-            }
-
-            Type varType = symbols.get(name);
+            Type varType = symbols.get(identifier);
 
             if (varType == null) {
-                throw new RuntimeException("Cannot assign to undeclared variable '" + name + "'");
+                throw new RuntimeException("Cannot assign to undeclared variable '" + identifier + "'");
             }
 
             Type valueType = checkExpr(a.getValue());
 
             if (varType != valueType) {
                 throw new RuntimeException(
-                        "Type error: cannot assign " + valueType + " to " + varType + " variable '" + name
+                        "Type error: cannot assign " + valueType + " to " + varType + " variable '" + identifier
                                 + "'");
             }
 
@@ -129,6 +113,18 @@ public class TypeChecker {
         }
 
         if (stmt instanceof Component c) {
+            String identifier = c.getIdentifier();
+
+            if (identifier == null) {
+                throw new RuntimeException("Component is missing identifier");
+            }
+
+            if (components.containsKey(identifier)) {
+                throw new RuntimeException("Component already declared");
+            }
+
+            components.put(identifier, c);
+
             Type portType = checkExpr(c.getPort());
 
             if (portType != Type.INT_T) {
@@ -183,25 +179,38 @@ public class TypeChecker {
                 return Type.BOOL_T;
             }
 
-            if (value instanceof Ident id) {
-                String name = null;
+            throw new RuntimeException("Unknown operand value: " + value);
+        }
 
-                if (id instanceof IdentSingle single) {
-                    name = single.name();
-                } else if (id instanceof IdentDual dual) {
-                    name = dual.parentName() + "." + dual.childName();
-                }
+        if (expr instanceof VarExpr v) {
+            Type type = symbols.get(v.getName());
 
-                Type type = symbols.get(name);
-
-                if (type == null) {
-                    throw new RuntimeException("Undeclared variable: " + name);
-                }
-
-                return type;
+            if (type == null) {
+                throw new RuntimeException("Undeclared variable: " + v.getName());
             }
 
-            throw new RuntimeException("Unknown operand value: " + value);
+            return type;
+        }
+
+        // Check member access.
+        if (expr instanceof MemberAccess m) {
+            String componentName = m.getComponent();
+            String variableName = m.getVariable();
+
+            Component c = components.get(componentName);
+
+            if (c == null) {
+                throw new RuntimeException("Unknown component: " + componentName);
+            }
+
+            for (Decl d : c.getVariables()) {
+                if (d.getIdentifier().equals(variableName)) {
+                    return d.getType();
+                }
+            }
+
+            throw new RuntimeException(
+                    "Component '" + componentName + "' has no field '" + variableName + "'");
         }
 
         // Check type casting.
@@ -250,7 +259,7 @@ public class TypeChecker {
                     return Type.BOOL_T;
 
                 case LEQ, GEQ, GT, LT:
-                    if (left == Type.BOOL_T || right == Type.BOOL_T) {
+                    if (left == Type.BOOL_T || right == Type.BOOL_T || left != right) {
                         throw new RuntimeException(
                                 "Comparison requires ints or floats, got " + left + " and " + right);
                     }

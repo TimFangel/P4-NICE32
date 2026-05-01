@@ -2,7 +2,6 @@ package frontend.abstract_syntax.function;
 
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.type.Type;
-import frontend.abstract_syntax.value.Ident;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -11,12 +10,12 @@ import lombok.ToString;
 @Getter
 public class FuncDecl extends Func {
     private Type returnType;
-    private Ident identifier;
+    private String identifier;
     private Type paramType;
-    private Ident paramName;
+    private String paramName;
     private BlockStmt statements;
 
-    public FuncDecl(int lineNumber, Type returnType, Ident identifier, Type paramType, Ident paramName,
+    public FuncDecl(int lineNumber, Type returnType, String identifier, Type paramType, String paramName,
             BlockStmt statements) {
         super(lineNumber);
         this.returnType = returnType;
