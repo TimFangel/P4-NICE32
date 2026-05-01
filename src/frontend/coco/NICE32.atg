@@ -114,6 +114,17 @@ IfStmt<out Stmt stmt>
     (. stmt = new IfStmt(line, cond, thenBlock, elseBlock); .)
   .
 
+WhileStmt<out Stmt stmt>
+  = (.
+      Expr cond;
+      BlockStmt thenblock;
+    .)
+    "while"
+    (. int line = t.line; .)
+    "(" Expr<out cond> ")"
+    Block<out thenBlock>
+    (. stmt = new WhileStmt(line, cond, thenBlock); .)
+
 TypeName<out Type type>
   = (. type = Type.INT_T; .)
     (
