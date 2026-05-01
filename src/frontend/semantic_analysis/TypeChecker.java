@@ -251,7 +251,7 @@ public class TypeChecker {
                     return Type.BOOL_T;
 
                 case LEQ, GEQ, GT, LT:
-                    if (left != Type.BOOL_T && right != Type.BOOL_T) {
+                    if (left == Type.BOOL_T || right == Type.BOOL_T) {
                         throw new RuntimeException(
                                 "Comparison requires ints or floats, got " + left + " and " + right);
                     }
