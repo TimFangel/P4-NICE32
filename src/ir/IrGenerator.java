@@ -148,6 +148,10 @@ public class IrGenerator {
         throw new NoExprMatchException("No matching expression found!");
     } 
 
+    /**
+     * Generates IR instructions from statements.
+     * @param stmt statement to convert to IR
+     */
     public void generateStmt(Stmt stmt) {
         // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes efter frontend.
 
@@ -272,6 +276,10 @@ public class IrGenerator {
         throw new NoStmtMatchException("No matching statement found!");
     }
 
+    /**
+     * Generate IR instructions for a NICE32 program.
+     * @param program NICE32 AST's root node.
+     */
     public void generateProgram(Program program) {
         generateStmt(program.getSetup());
         generateStmt(program.getFunctions());
@@ -286,6 +294,12 @@ public class IrGenerator {
         code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, -1)));
     }
 
+    /**
+     * Type casts between integer and float.
+     * @param value value to type cast.
+     * @param targetType type casted to.
+     * @return the type casted variable.
+     */
     public IrValue typeCast(IrValue value, int targetType) {
         int valueType = value.getType();
         if (valueType == targetType) {
@@ -305,6 +319,11 @@ public class IrGenerator {
         return temp;
     }
 
+    /**
+     * Converts frontend type classes to symbol table types.
+     * @param type to convert.
+     * @return type as an integer.
+     */
     public int typeToInt(Type type) {
         switch (type) {
             case INT_T:
@@ -336,8 +355,8 @@ TODO:
 - Correct recursion??
 - Function call generation
 - Function generation
-- Type cast generation
-- Component generatoin
+- Component generation
+- Make types more readable than integers, might also affect symbol table.
 
 --- After Generation ---
 - Basic Blocks?
