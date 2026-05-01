@@ -11,6 +11,7 @@ import frontend.abstract_syntax.expression.enums.*;
 import frontend.abstract_syntax.function.*;
 import frontend.abstract_syntax.program.*;
 import frontend.abstract_syntax.statement.*;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.statement.main_statement.*;
 import frontend.abstract_syntax.type.*;
 import frontend.abstract_syntax.value.*;
@@ -76,9 +77,14 @@ SetupStmt<out Stmt stmt>
       ";"
       (. stmt = new AssStmt(line, identifier, value); .)
     |
+      VarDeclStmt<out stmt>
+      (. stmt = new AssStmt(line, name, value); .)
+    |
       IfStmt<out stmt>
     |
-      VarDeclStmt<out stmt>
+      WhileStmt<out stmt>
+    |
+      TypeStmt<out stmt>
     |
       ComponentDecl<out stmt>
     )
@@ -249,6 +255,18 @@ IfStmt<out Stmt stmt>
       )
     ]
     (. stmt = new IfStmt(line, cond, thenBlock, elseBlock); .)
+  .
+
+WhileStmt<out Stmt stmt>
+  = (.
+      Expr cond;
+      BlockStmt whileBody;
+    .)
+    "while"
+    (. int line = t.line; .)
+    "(" Expr<out cond> ")"
+    Block<out whileBody>
+    (. stmt = new WhileStmt(line, cond, whileBody); .)
   .
 
 // Parses the different primitive type keywords.

@@ -14,7 +14,7 @@ public class WhileStmt extends Stmt {
     private Expr condition;
     private BlockStmt  whileBody;
     
-    WhileStmt(int lineNumber, Expr condition, BlockStmt  whileBody) {
+    public WhileStmt(int lineNumber, Expr condition, BlockStmt  whileBody) {
         super(lineNumber);
         this.condition = condition;
         this.whileBody = whileBody;

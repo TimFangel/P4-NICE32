@@ -1,5 +1,5 @@
 package frontend.abstract_syntax.value;
 
-/* Decimal value */
+/* Float value */
 public record FloatNum(float value) implements Value {
 }

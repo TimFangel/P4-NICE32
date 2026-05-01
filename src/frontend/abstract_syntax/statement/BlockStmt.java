@@ -10,7 +10,7 @@ import lombok.ToString;
 @ToString
 @Getter
 public class BlockStmt extends Stmt {
-    public final List<Stmt> statements;
+    private final List<Stmt> statements;
 
     public BlockStmt(int lineNumber, List<Stmt> statements) {
         super(lineNumber);
