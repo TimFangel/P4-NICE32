@@ -6,6 +6,10 @@ import java.util.List;
 import exception.NoExprMatchException;
 import exception.NoStmtMatchException;
 import exception.NoValueMatchException;
+import exception.NonMatchingTypeException;
+import exception.TypeCastException;
+import exception.TypeToIntException;
+import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
@@ -20,6 +24,7 @@ import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
 import frontend.abstract_syntax.statement.main_statement.WhileStmt;
+import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
@@ -39,7 +44,7 @@ public class IrGenerator {
         this.symbolTable = symbolTable;
     }
 
-    private List<IrInstruction> getCode() {
+    public List<IrInstruction> getCode() {
         return code;
     }
 
@@ -82,6 +87,10 @@ public class IrGenerator {
             IrValue left = generateExpr(binop.getExprLeft());
             IrValue right = generateExpr(binop.getExprRight());
 
+            if (left.getType() != right.getType()) {
+                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+            }
+
             // Create temporary value to hold result
             IrValue temp = newTemp(left.getType());
 
@@ -105,6 +114,10 @@ public class IrGenerator {
             IrValue left = generateExpr(binop.getExprLeft());
             IrValue right = generateExpr(binop.getExprRight());
 
+            if (left.getType() != right.getType()) {
+                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+            }
+
             IrValue temp = newTemp(left.getType());
 
             code.add(new IrInstruction(operandMapper.mapBoolBin(binop.getOp()), left, right, temp));
@@ -126,6 +139,12 @@ public class IrGenerator {
             return generateValue(operand.getValue());
         }
 
+        if (expr instanceof Cast cast) {
+            IrValue value = generateExpr(cast.getExpr());
+            int targetType = typeToInt(cast.getTargetType());
+            return typeCast(value, targetType);
+        }
+
         throw new NoExprMatchException("No matching expression found!");
     } 
 
@@ -141,6 +160,11 @@ public class IrGenerator {
                 Symbol symbol = symbolTable.findId(name); 
                 IrValue result = new IrValue(name, symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
+
+                if (expr.getType() != result.getType()) {
+                    throw new NonMatchingTypeException("Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
+                }
+
                 code.add(new IrInstruction(IrOperator.ASS, expr, null, result));
 
                 return;
@@ -158,6 +182,9 @@ public class IrGenerator {
                 Symbol sym = symbolTable.findId(varName);
                 IrValue left = new IrValue(varName, sym.getType());
 
+                if (left.getType() != right.getType()) {
+                    throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+                }
                 code.add(new IrInstruction(IrOperator.ASS, right, null, left));
 
                 return;
@@ -168,6 +195,10 @@ public class IrGenerator {
 
         if (stmt instanceof IfStmt ifStmt) {
             IrValue condition = generateExpr(ifStmt.getCondition());
+
+            if (condition.getType() != 2) {
+                throw new NonMatchingTypeException("Condition is not a boolean! Type: " + condition.getType());
+            }
 
             String elseLabel = newLabel();
             // only 
@@ -253,6 +284,38 @@ public class IrGenerator {
 
         // make last instruction of main return to start of main.
         code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, -1)));
+    }
+
+    public IrValue typeCast(IrValue value, int targetType) {
+        int valueType = value.getType();
+        if (valueType == targetType) {
+            return value;
+        }
+
+        IrValue temp = newTemp(targetType);
+
+        if(valueType == 0 && targetType == 1) {
+            code.add(new IrInstruction(IrOperator.INT_TO_FLOAT, value, null, temp));
+        } else if (valueType == 1 && targetType == 0) {
+            code.add(new IrInstruction(IrOperator.FLOAT_TO_INT, value, null, temp));
+        } else {
+            throw new TypeCastException("Type cast not possible!");
+        }
+
+        return temp;
+    }
+
+    public int typeToInt(Type type) {
+        switch (type) {
+            case INT_T:
+                return 0;
+            case FLOAT_T:
+                return 1;
+            // Bool not included, since it cannot be type cast.
+        
+            default:
+                throw new TypeToIntException("Unknown type: " + type.toString());
+        }
     }
 
     /**
