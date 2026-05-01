@@ -1,9 +1,18 @@
 setup {
     bool yes = true;
+
+    component lampe {
+        port: 230;
+        protocol: digital;
+        interval: 1000;
+        direction: input;
+
+        int x = 5;
+    }
 }
 
 functions {
-    // ingen funktioner
+    // kommentar
 }
 
 main {
@@ -14,7 +23,7 @@ main {
 
     if (a == 5) {
         float f = 1.2;
-    } else if (a == 5 && yes) {
+    } else if (a == 3 && yes) {
         float g = 55.66;
     }
 

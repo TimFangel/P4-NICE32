@@ -3,6 +3,7 @@ import java.util.*;
 import frontend.abstract_syntax.*;
 import frontend.abstract_syntax.component.*;
 import frontend.abstract_syntax.component.constants.*;
+import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.component_types.*;
 import frontend.abstract_syntax.expression.*;
 import frontend.abstract_syntax.expression.arith_expression.*;
@@ -61,7 +62,7 @@ Block<out BlockStmt block>
   .
 
 Stmt<out Stmt stmt>
-  = (. 
+  = (.
        stmt = null;
        IdentSingle name;
     .)
@@ -77,6 +78,8 @@ Stmt<out Stmt stmt>
       IfStmt<out stmt>
     |
       TypeStmt<out stmt>
+    |
+      ComponentDecl<out stmt>
     )
   .
 
@@ -97,6 +100,85 @@ Decl<out Stmt stmt, Type type>
     Expr<out Expr value>
     ";"
     (. stmt = new Decl(line, type, name, value); .)
+  .
+
+// TODO: Komponenter må kun deklareres i setup
+ComponentDecl<out Stmt stmt>
+  = (. 
+      int lineNumber;
+      Ident identifier;
+      Expr port;
+      ProtocolComp protocol;
+      Expr interval;
+      DirectionComp direction;
+      List<Decl> variables = new ArrayList<>();
+      Decl variable;  
+    .)
+    "component"
+    IDENT
+    (.
+      lineNumber = t.line;
+      identifier = new IdentSingle(t.val);
+    .)
+    "{"
+      "port" ":"
+      Expr<out port>
+      ";"
+
+      "protocol" ":"
+      ProtocolName<out protocol>
+      ";"
+
+      "interval" ":"
+      Expr<out interval>
+      ";"
+
+      "direction" ":"
+      DirectionName<out direction>
+      ";"
+
+      {
+        VarDecl<out variable>
+        (. variables.add(variable); .)
+      }
+    "}"
+    (. stmt = new Component(lineNumber, identifier, port, protocol, interval, direction, variables); .)
+  .
+
+ProtocolName<out ProtocolComp protocol>
+  = (. protocol = null; .)
+    (
+      "digital"
+      (. protocol = new ProtocolComp(t.line, ProtocolType.DIGITAL); .)
+    |
+      "analog"
+      (. protocol = new ProtocolComp(t.line, ProtocolType.ANALOG); .)
+    )
+  .
+
+DirectionName<out DirectionComp direction>
+  = (. direction = null; .)
+    (
+      "input"
+      (. direction = new DirectionComp(t.line, DirectionType.INPUT); .)
+    |
+      "output"
+      (. direction = new DirectionComp(t.line, DirectionType.OUTPUT); .)
+    )
+  .
+
+VarDecl<out Decl decl>
+  = (.
+      Type type;
+      Ident name;
+      Expr value;
+    .)
+    TypeName<out type>
+    IDENT (. name = new IdentSingle(t.val); .)
+    "="
+    Expr<out value>
+    ";"
+    (. decl = new Decl(t.line, type, name, value); .)
   .
 
 IfStmt<out Stmt stmt>
@@ -279,6 +361,7 @@ UnaryExpr<out Expr expr>
     )
   .
 
+// TODO: Funktioner må kun deklareres i functions blokken
 FuncDecl<out Stmt stmt, Type type>
   = (.
        IdentSingle callSign;
@@ -324,10 +407,10 @@ PrimaryNoParens<out Expr expr>
      .)
     (
       INT
-      (. expr = new Operand(line, new Num(Integer.parseInt(t.val))); .)
+      (. expr = new Operand(line, new IntNum(Integer.parseInt(t.val))); .)
     |
       FLOAT
-      (. expr = new Operand(line, new Deci(Float.parseFloat(t.val))); .)
+      (. expr = new Operand(line, new FloatNum(Float.parseFloat(t.val))); .)
     |
       "true"
       (. expr = new Operand(line, new Bool(true)); .)
