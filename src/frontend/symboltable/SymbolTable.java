@@ -31,8 +31,44 @@ public class SymbolTable {
         currentScopelevel--;
     }
 
-    // TODO: fix exception to be custom
-    // Create new symbol in current scope - compile time check
+    /* Create new component symbol in current scope
+     * Compile time check 
+     * Component has no type therefore two newSymbol methods*/
+    public Symbol newSymbol(String name, Category category) throws NameAlreadyBoundException {
+        Symbol topScopeLocals;
+        Symbol last;
+        Symbol symbol = new Symbol();
+        symbol.setName(name);
+        symbol.setCategory(category);
+        symbol.setLevel(currentScopelevel);
+        topScopeLocals = topScope.locals; // Object holding local symbols in current scope
+        last = null;
+        /*
+         * Handle instance when a new Id of symbol in a scope is already declared in the
+         * scope. (Duplicate Id)
+         * The loop is only executed while we have local symbols, otherwise the symbol
+         * will be the first therefore
+         * not need checking.
+         * It iterates through all locals and check if their Id is different from the
+         * new Id of the symbol.
+         */
+        while (topScopeLocals != null) {
+            if (topScopeLocals.getName().equals(name)) {
+                throw new NameAlreadyBoundException("Duplicate: Name already exists!");
+            }
+            last = topScopeLocals;
+            topScopeLocals = topScopeLocals.next;
+        }
+        /* Assign the new symbol to the locals in topscope (if no locals were found) */
+        if (last == null) {
+            topScope.locals = symbol;
+        } else {
+            last.next = symbol; // Assign the new symbol as the next member (Most recent - if locals were found)
+        }
+        return symbol;
+    }
+
+    // Create new symbol in current scope - compile time check (All symbols except component)
     public Symbol newSymbol(String name, Category category, Type type) throws NameAlreadyBoundException {
         Symbol topScopeLocals;
         Symbol last;

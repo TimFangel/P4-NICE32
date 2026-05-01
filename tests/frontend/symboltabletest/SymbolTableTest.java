@@ -1,12 +1,14 @@
-// FIX ackage
+// FIX package
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
+
+import frontend.abstract_syntax.type.Type;
 import frontend.symboltable.Symbol;
 import frontend.symboltable.SymbolTable;
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
-
+import frontend.symboltable.enums.*;;
 public class SymbolTableTest {
 
     @Test
@@ -15,12 +17,12 @@ public class SymbolTableTest {
         // Expected
         Symbol battery = new Symbol();
         battery.setName("battery");
-        battery.setCategory(1);
-        battery.setType(1);
+        battery.setCategory(Category.VARIABLE);
+        battery.setType(Type.INT_T);
 
         // Result 
         SymbolTable symboltable = new SymbolTable(Parser parser);
-        Symbol result = symboltable.newSymbol("x", 1, 1);
+        Symbol result = symboltable.newSymbol("x", Category.VARIABLE, Type.INT_T);
         Assertions.assertEquals(battery.getName(), result.getName());
         Assertions.assertEquals(battery.getCategory(), result.getCategory());
         Assertions.assertEquals(battery.getType(), result.getType());
@@ -34,10 +36,10 @@ public class SymbolTableTest {
         Assertions.assertThrows(NameAlreadyBoundException.class, () -> {
 
             // Create variable 
-            symboltable.newSymbol("battery", 0, 0);
+            symboltable.newSymbol("battery", Category.VARIABLE, Type.INT_T);
 
             // Create varaible with duplicate name
-            symboltable.newSymbol("battery", 0, 1);
+            symboltable.newSymbol("battery", Category.VARIABLE, Type.FLOAT_T);
             }, "This error was expected");
         }
     
@@ -47,12 +49,11 @@ public class SymbolTableTest {
         // Expected
         Symbol counter = new Symbol();
         counter.setName("counter");
-        counter.setCategory(0);
-        counter.setType(0);
+        counter.setCategory(Category.COMPONENT);
 
         // Result
         SymbolTable symboltable = new SymbolTable(Parser parser);
-        symboltable.newSymbol("counter", 0, 0);
+        symboltable.newSymbol("counter", Category.COMPONENT);
         Symbol result = symboltable.findId("counter");
 
         Assertions.assertEquals(result, counter);
@@ -65,8 +66,11 @@ public class SymbolTableTest {
 
         Assertions.assertThrows(NameNotFoundException.class, () -> {
 
+            // New function symbol
+            symboltable.newSymbol("sound", Category.VARIABLE, Type.FLOAT_T);
+            
             // Look-up of undeclared variable.  
-            symboltable.findId("something");
+            symboltable.findId("switch");
 
             }, "This error was expected");
 
