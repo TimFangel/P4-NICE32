@@ -4,5 +4,6 @@ package frontend.abstract_syntax.type;
 public enum Type {
     FLOAT_T,
     INT_T,
-    BOOL_T
+    BOOL_T,
+    LABEL
 }
