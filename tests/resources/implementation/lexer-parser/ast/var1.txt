@@ -1,0 +1,1 @@
+Program(setup=BlockStmt(statements=[]), functions=BlockStmt(statements=[]), main=BlockStmt(statements=[Decl(type=INT_T, identifier=IdentSingle[name=a], value=Operand(value=IntNum[value=1]))]))

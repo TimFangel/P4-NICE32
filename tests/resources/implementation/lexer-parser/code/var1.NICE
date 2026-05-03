@@ -1,0 +1,9 @@
+setup {
+}
+
+functions {
+}
+
+main {
+    int a = 1;
+}

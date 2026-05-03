@@ -1,0 +1,14 @@
+Program(
+  setup=BlockStmt(
+    statements=[
+    ]
+  ),
+  functions=BlockStmt(
+    statements=[
+    ]
+  ),
+  main=BlockStmt(
+    statements=[
+    ]
+  )
+)
