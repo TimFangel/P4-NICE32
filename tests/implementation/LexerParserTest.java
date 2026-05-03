@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.ArrayList;
@@ -16,22 +18,24 @@ import frontend.coco.Parser;
 import frontend.coco.Scanner;
 
 class LexerParserTest {
-    final String basePath = ".\\tests\\resources\\implementation\\lexer-parser\\";
-    final String codePath = "code\\";
+    final Path basePath = Paths.get("tests", "resources", "implementation", "lexer-parser");
+    final String codePath = "code";
     final String codeFileExtension = ".NICE";
-    final String astPath = "ast\\";
+    final String astPath = "ast";
     final String astFileExtension = ".txt";
 
     @Test
     void main() {
         // Read all filenames in the directories
-        List<String> codeFiles = listFilesForFolder(new File(basePath + codePath), codeFileExtension);
-        List<String> astFiles = listFilesForFolder(new File(basePath + astPath), astFileExtension);
+        List<String> codeFiles = listFilesForFolder(basePath.resolve(codePath).toFile(), codeFileExtension);
+        List<String> astFiles = listFilesForFolder(basePath.resolve(astPath).toFile(), astFileExtension);
         
         // Run test for each code file
         for (String codeFile : codeFiles) {
-            String astFile = codeFile.replace(basePath + codePath, basePath + astPath).replace(codeFileExtension,
-                astFileExtension);
+            String astFile = codeFile.replace(
+                basePath.resolve(codePath).toString(),
+                basePath.resolve(astPath).toString())
+                .replace(codeFileExtension, astFileExtension);
             // Check that ast file matching code file exists
             if (!astFiles.contains(astFile)) {
                 fail("Could not find ast file: " + astFile + ".");
@@ -72,7 +76,7 @@ class LexerParserTest {
             } else if (!fileEntry.getPath().endsWith(fileExtension)) {
                 fail("Expected file with extension '" + fileExtension + "' but got '" + fileEntry.getPath() + "'.");
             } else {
-                list.add(fileEntry.getPath());
+                list.add(fileEntry.toPath().normalize().toString());
             }
         }
 
