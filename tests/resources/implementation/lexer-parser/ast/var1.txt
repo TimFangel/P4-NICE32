@@ -1,5 +1,5 @@
 Program(
-  setup=BlockStm(
+  setup=BlockStmt(
     statements=[
     ]
   ),
