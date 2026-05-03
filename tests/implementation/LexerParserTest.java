@@ -108,37 +108,36 @@ class LexerParserTest {
     }
 
     String prettifyAst(String in) {
-        return in;
-        // if (in == null) return "";
+        if (in == null) return "";
 
-        // int indentSize = 2;
-        // int indentLevel = 0;
-        // StringBuilder out = new StringBuilder();
+        int indentSize = 2;
+        int indentLevel = 0;
+        StringBuilder out = new StringBuilder();
 
-        // // add new lines around grouping tokens
-        // in = in.replaceAll("([\\(\\[\\{,])", "$1\n");
-        // in = in.replaceAll("([\\)\\]\\}])", "\n$1");
+        // add new lines around grouping tokens
+        in = in.replaceAll("([\\(\\[\\{,])", "$1\n");
+        in = in.replaceAll("([\\)\\]\\}])", "\n$1");
 
-        // // add indents
-        // for (String line : in.split("\\n")) {
-        //     line = line.strip();
+        // add indents
+        for (String line : in.split("\\n")) {
+            line = line.strip();
 
-        //     if (line.isEmpty()) continue;
+            if (line.isEmpty()) continue;
 
-        //     if (line.startsWith(")") || line.startsWith("]") || line.startsWith("}")) {
-        //         indentLevel = Math.max(0, indentLevel - 1);
-        //     }
+            if (line.startsWith(")") || line.startsWith("]") || line.startsWith("}")) {
+                indentLevel = Math.max(0, indentLevel - 1);
+            }
 
-        //     int spaces = Math.max(0, indentLevel * indentSize);
-        //     if (spaces > 0) out.append(" ".repeat(spaces));
-        //     out.append(line).append('\n');
+            int spaces = Math.max(0, indentLevel * indentSize);
+            if (spaces > 0) out.append(" ".repeat(spaces));
+            out.append(line).append('\n');
 
-        //     if (line.endsWith("(") || line.endsWith("[") || line.endsWith("{")) {
-        //         indentLevel++;
-        //     }
-        // }
+            if (line.endsWith("(") || line.endsWith("[") || line.endsWith("{")) {
+                indentLevel++;
+            }
+        }
 
-        // return out.toString().trim();
+        return out.toString().trim();
     }
 
     String removeWhiteSpaces(String in) {
