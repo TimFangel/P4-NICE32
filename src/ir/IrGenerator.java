@@ -15,6 +15,7 @@ import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
+import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.statement.Decl;
@@ -308,6 +309,22 @@ public class IrGenerator {
             return;
         }
 
+        if (stmt instanceof FuncDecl funcDecl) {
+            IrValue parameter = new IrValue(funcDecl.getParamName(), funcDecl.getParamType());
+
+            IrFunction function = new IrFunction(funcDecl.getIdentifier(), parameter, funcDecl.getReturnType());
+
+            functions.add(function);
+            currentFunction = function; // change scope
+
+            // generate function body
+            generateStmt(funcDecl.getStatements());
+
+            currentFunction = null; // reset scope
+
+            return;
+        }
+
         throw new NoStmtMatchException("No matching statement found! Statement: " + stmt.toString());
     }
 
@@ -379,7 +396,6 @@ public class IrGenerator {
  * --- Generation ---
  * - Correct recursion??
  * - Function call generation
- * - Function generation
  * - Component generation
  * 
  * --- After Generation ---
