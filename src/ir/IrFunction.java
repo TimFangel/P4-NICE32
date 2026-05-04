@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import frontend.abstract_syntax.type.Type;
+import lombok.Getter;
 
+@Getter
 public class IrFunction {
     private String funcName;
     private IrValue parameter;
     private Type retType;
-    List<IrInstruction> code = new ArrayList<>(); // local function code
+    List<IrInstruction> funcBody = new ArrayList<>(); // local function code
 
     public IrFunction(String funcName, IrValue parameter, Type retType) {
         this.funcName = funcName;
@@ -19,7 +21,6 @@ public class IrFunction {
 
     @Override
     public String toString() {
-        // TODO: How to print function body?
         return "func " + funcName + "(" + parameter + "): " + retType.toString();
     }
 }
