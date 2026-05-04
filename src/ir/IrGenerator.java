@@ -202,7 +202,7 @@ public class IrGenerator {
                             "Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
                 }
 
-                code.add(new IrInstruction(IrOperator.ASS, expr, null, result));
+                createIR(new IrInstruction(IrOperator.ASS, expr, null, result));
 
                 return;
             } catch (Exception e) {
@@ -222,7 +222,7 @@ public class IrGenerator {
                     throw new NonMatchingTypeException(
                             "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
                 }
-                code.add(new IrInstruction(IrOperator.ASS, right, null, left));
+                createIR(new IrInstruction(IrOperator.ASS, right, null, left));
 
                 return;
             } catch (Exception e) {
@@ -242,25 +242,25 @@ public class IrGenerator {
             String endLabel = (ifStmt.getElseStmt() != null) ? newLabel() : null;
 
             // add if condition
-            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(elseLabel, Type.LABEL)));
+            createIR(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(elseLabel, Type.LABEL)));
 
             // generate then statements
             generateStmt(ifStmt.getThenStmt());
 
             // jump to end, only relevant if else exists.
             if (ifStmt.getElseStmt() != null) {
-                code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(endLabel, Type.LABEL)));
+                createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(endLabel, Type.LABEL)));
             }
 
             // else label
-            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(elseLabel, Type.LABEL)));
+            createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(elseLabel, Type.LABEL)));
 
             // generate else if exists
             if (ifStmt.getElseStmt() != null) {
                 generateStmt(ifStmt.getElseStmt());
 
                 // end label only needed on else stmt.
-                code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(endLabel, Type.LABEL)));
+                createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(endLabel, Type.LABEL)));
             }
 
             return;
@@ -271,19 +271,19 @@ public class IrGenerator {
             String exitLabel = newLabel();
 
             // label before condition check
-            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(startLabel, Type.LABEL)));
+            createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(startLabel, Type.LABEL)));
 
             IrValue condition = generateExpr(whileStmt.getCondition());
 
             // exit if false
-            code.add(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(exitLabel, Type.LABEL)));
+            createIR(new IrInstruction(IrOperator.IF_FALSE, condition, null, new IrValue(exitLabel, Type.LABEL)));
 
             // else do body and return to start
             generateStmt(whileStmt.getWhileBody());
 
-            code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(startLabel, Type.LABEL)));
+            createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(startLabel, Type.LABEL)));
 
-            code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(exitLabel, Type.LABEL)));
+            createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(exitLabel, Type.LABEL)));
 
             return;
         }
@@ -297,10 +297,13 @@ public class IrGenerator {
         }
 
         if (stmt instanceof ReturnStmt retStmt) {
-            // TODO: ensure not possible in setup & main?
+            if (currentFunction == null) {
+                //TODO: custom exception
+                throw new RuntimeException("Return not allowed in setup/main!");
+            }
             IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
 
-            code.add(new IrInstruction(IrOperator.RET, null, null, returnedExpr));
+            createIR(new IrInstruction(IrOperator.RET, null, null, returnedExpr));
 
             return;
         }
@@ -318,17 +321,17 @@ public class IrGenerator {
         
         // make label to goto to start of main, instead of going to functions.
         String mainStart = newLabel();
-        code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
+        createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
 
         // Generate functions
         generateStmt(program.getFunctions());
 
-        code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
+        createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
 
         generateStmt(program.getMain());
 
         // make last instruction of main return to start of main.
-        code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
+        createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
     }
 
     /**
@@ -347,9 +350,9 @@ public class IrGenerator {
         IrValue temp = newTemp(targetType);
 
         if (valueType == Type.INT_T && targetType == Type.FLOAT_T) {
-            code.add(new IrInstruction(IrOperator.INT_TO_FLOAT, value, null, temp));
+            createIR(new IrInstruction(IrOperator.INT_TO_FLOAT, value, null, temp));
         } else if (valueType == Type.FLOAT_T && targetType == Type.INT_T) {
-            code.add(new IrInstruction(IrOperator.FLOAT_TO_INT, value, null, temp));
+            createIR(new IrInstruction(IrOperator.FLOAT_TO_INT, value, null, temp));
         } else {
             throw new TypeCastException("Type cast not possible!");
         }
