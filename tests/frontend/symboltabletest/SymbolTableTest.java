@@ -1,4 +1,4 @@
-// FIX package
+package frontend.symboltabletest;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
@@ -40,7 +40,7 @@ public class SymbolTableTest {
 
             // Create varaible with duplicate name
             symboltable.newSymbol("battery", Category.VARIABLE, Type.FLOAT_T);
-            }, "This error was expected");
+            }, "This exception was expected");
         }
     
 
@@ -72,7 +72,7 @@ public class SymbolTableTest {
             // Look-up of undeclared variable.  
             symboltable.findId("switch");
 
-            }, "This error was expected");
+            }, "This exception was expected");
 
     }
 
