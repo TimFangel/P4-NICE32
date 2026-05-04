@@ -7,6 +7,7 @@ import exception.NoExprMatchException;
 import exception.NoStmtMatchException;
 import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
+import exception.ScopeException;
 import exception.TypeCastException;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
@@ -311,8 +312,7 @@ public class IrGenerator {
 
         if (stmt instanceof ReturnStmt retStmt) {
             if (currentFunction == null) {
-                //TODO: custom exception
-                throw new RuntimeException("Return not allowed in setup/main!");
+                throw new ScopeException("Return not allowed in setup/main!");
             }
             IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
 
