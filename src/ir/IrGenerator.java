@@ -10,6 +10,7 @@ import exception.NonMatchingTypeException;
 import exception.TypeCastException;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.FuncCall;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
@@ -175,6 +176,17 @@ public class IrGenerator {
             // get expr, then type cast it
             IrValue value = generateExpr(cast.getExpr());
             return typeCast(value, cast.getTargetType());
+        }
+
+        if (expr instanceof FuncCall func) {
+            IrValue parameter = generateExpr(func.getParameter());
+            String ident = func.getIdentifier();
+            Symbol symbol = symbolTable.findId(ident);
+            IrValue result = newTemp(symbol.getType());
+
+            createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.LABEL), result));
+
+            return result;
         }
 
         throw new NoExprMatchException("No matching expression found! Expression: " + expr.toString());
@@ -395,7 +407,7 @@ public class IrGenerator {
  * TODO:
  * --- Generation ---
  * - Correct recursion??
- * - Function call generation
+ * - Function 
  * - Component generation
  * 
  * --- After Generation ---

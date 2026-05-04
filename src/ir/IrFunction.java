@@ -17,4 +17,9 @@ public class IrFunction {
         this.retType = retType;
     }
 
+    @Override
+    public String toString() {
+        // TODO: How to print function body?
+        return "func " + funcName + "(" + parameter + "): " + retType.toString();
+    }
 }
