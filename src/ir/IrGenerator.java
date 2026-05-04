@@ -35,9 +35,16 @@ import frontend.symboltable.SymbolTable;
 public class IrGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
+
+    // main+setup code
     private List<IrInstruction> code = new ArrayList<>();
+
+    // functions
+    private List<IrFunction> functions = new ArrayList<>();
+    private IrFunction currentFunction = null; // start in global scope
+
     private SymbolTable symbolTable;
-    private OperatorMapper operandMapper = new OperatorMapper();
+    private OperatorMapper operatorMapper = new OperatorMapper();
 
     public IrGenerator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -54,6 +61,19 @@ public class IrGenerator {
     private String newLabel() {
         return "L" + labelCount++;
     }
+
+    /**
+     * Creates IR depending on scope.
+     * @param instruction IrInstruction to create.
+     */
+    private void createIR(IrInstruction instruction) {
+        if (currentFunction != null) { // null -> global scope
+            currentFunction.code.add(instruction);
+        } else {
+            code.add(instruction);
+        }
+    }
+
 
     /**
      * Converts actual values into IrValues.
@@ -97,7 +117,7 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add instruction for temp var
-            code.add(new IrInstruction(operandMapper.mapArithBin(binop.getOp()), left, right, temp));
+            createIR(new IrInstruction(operatorMapper.mapArithBin(binop.getOp()), left, right, temp));
 
             // return temp to be used in parent expr
             return temp;
@@ -109,7 +129,7 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            code.add(new IrInstruction(operandMapper.mapArithUna(unop.getOp()), left, null, temp));
+            createIR(new IrInstruction(operatorMapper.mapArithUna(unop.getOp()), left, null, temp));
 
             return temp;
         }
@@ -126,7 +146,7 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            code.add(new IrInstruction(operandMapper.mapBoolBin(binop.getOp()), left, right, temp));
+            createIR(new IrInstruction(operatorMapper.mapBoolBin(binop.getOp()), left, right, temp));
 
             return temp;
         }
@@ -141,7 +161,7 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            code.add(new IrInstruction(operandMapper.mapBoolUna(unop.getOp()), left, null, temp));
+            createIR(new IrInstruction(operatorMapper.mapBoolUna(unop.getOp()), left, null, temp));
 
             return temp;
         }
@@ -169,9 +189,7 @@ public class IrGenerator {
         // efter frontend.
 
         if (stmt instanceof Decl decl) {
-            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel
-            // navn!
-            String name = decl.getIdentifier().toString();
+            String name = decl.getIdentifier();
 
             try {
                 // findId, since frontend has created it before.
@@ -193,9 +211,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
-            // TODO: usikker på om dette virker, måske lav egen toString for at få variabel
-            // navn!
-            String varName = ass.getIdentifier().toString();
+            String varName = ass.getIdentifier();
             IrValue right = generateExpr(ass.getValue());
 
             try {
@@ -281,6 +297,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof ReturnStmt retStmt) {
+            // TODO: ensure not possible in setup & main?
             IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
 
             code.add(new IrInstruction(IrOperator.RET, null, null, returnedExpr));
@@ -298,10 +315,14 @@ public class IrGenerator {
      */
     public void generateProgram(Program program) {
         generateStmt(program.getSetup());
+        
+        // make label to goto to start of main, instead of going to functions.
+        String mainStart = newLabel();
+        code.add(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
+
+        // Generate functions
         generateStmt(program.getFunctions());
 
-        // make label at start of main.
-        String mainStart = newLabel();
         code.add(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
 
         generateStmt(program.getMain());
