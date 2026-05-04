@@ -10,7 +10,7 @@ class BaseProgramTest {
 
     @BeforeAll
     static void seedIncluded() {
-        // Read variable form System Properties
+        // Read variable from System Properties
         String seedString = System.getProperty("test.seed");
 
         if (seedString != null && !seedString.isEmpty()) {
