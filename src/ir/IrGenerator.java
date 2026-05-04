@@ -33,8 +33,10 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.Symbol;
 import frontend.symboltable.SymbolTable;
+import lombok.Getter;
 
 /* Three Access Code Generator */
+@Getter
 public class IrGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
@@ -51,10 +53,6 @@ public class IrGenerator {
 
     public IrGenerator(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
-    }
-
-    public List<IrInstruction> getCode() {
-        return code;
     }
 
     private IrValue newTemp(Type type) {
