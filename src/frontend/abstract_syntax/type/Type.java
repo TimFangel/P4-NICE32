@@ -6,5 +6,6 @@ public enum Type {
     INT_T,
     BOOL_T,
     LABEL,
-    FUNCTION
+    FUNCTION,
+    COMPONENT
 }
