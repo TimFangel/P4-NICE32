@@ -185,7 +185,7 @@ public class IrGenerator {
             Symbol symbol = symbolTable.findId(ident);
             IrValue result = newTemp(symbol.getType());
 
-            createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.LABEL), result));
+            createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
 
             return result;
         }
@@ -407,7 +407,6 @@ public class IrGenerator {
  * TODO:
  * --- Generation ---
  * - Correct recursion??
- * - Function 
  * - Component generation
  * 
  * --- After Generation ---

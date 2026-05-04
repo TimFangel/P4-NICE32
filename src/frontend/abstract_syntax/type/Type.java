@@ -5,5 +5,6 @@ public enum Type {
     FLOAT_T,
     INT_T,
     BOOL_T,
-    LABEL
+    LABEL,
+    FUNCTION
 }
