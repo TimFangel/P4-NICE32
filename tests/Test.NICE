@@ -4,8 +4,18 @@ setup {
 
 functions {
     int func coolFunction(int x) {
+        int a = 5 * 5;
+    }
+
+    float func coolerFunction(float x) {
+        int b = 5 * 5;
+    }
+
+    bool func coolestFunction(bool x) {
+        int c = 5 * 5;
     }
 }
 
 main {
+    int yeah = coolFunction(5);
 }

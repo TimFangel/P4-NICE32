@@ -1,5 +1,21 @@
 --- FUNCTIONS ---
-func coolFunction(IrValue(name=x, type=INT_T)): INT_T
+func coolFunction:
+param x
+t1 := 5 * 5
+t2 := t1
+end function
+
+func coolerFunction:
+param x
+t3 := 5 * 5
+t4 := t3
+end function
+
+func coolestFunction:
+param x
+t5 := 5 * 5
+t6 := t5
+end function
 
 
 

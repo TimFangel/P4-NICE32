@@ -1,17 +1,25 @@
 package frontend.symboltable;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
+import frontend.abstract_syntax.component.Component;
 import frontend.abstract_syntax.type.Type;
 import frontend.coco.Parser;
 import frontend.symboltable.enums.Category;
+import lombok.Getter;
 
+@Getter
 public class SymbolTable {
-    public Symbol topScope; // Current scope
-    public int currentScopelevel;
+    private Symbol topScope; // Current scope
+    private int currentScopelevel;
 
     // Missing import parser class.
     private Parser parser;
+
+    public final Map<String, Component> components = new HashMap<>();
 
     public void OpenNewScope() {
         Symbol scopeObj = new Symbol();
@@ -31,16 +39,19 @@ public class SymbolTable {
         currentScopelevel--;
     }
 
-    /* Create new component symbol in current scope
-     * Compile time check 
-     * Component has no type therefore two newSymbol methods*/
-    public Symbol newSymbol(String name, Category category) throws NameAlreadyBoundException {
+    /*
+     * Create new component symbol in current scope
+     * Compile time check
+     * Component has no type therefore two newSymbol methods
+     */
+    public Symbol newSymbol(String name, Category category, Symbol topScope) throws NameAlreadyBoundException {
         Symbol topScopeLocals;
         Symbol last;
         Symbol symbol = new Symbol();
         symbol.setName(name);
         symbol.setCategory(category);
         symbol.setLevel(currentScopelevel);
+        symbol.setSymbolEnv(topScope);
         topScopeLocals = topScope.locals; // Object holding local symbols in current scope
         last = null;
         /*
@@ -65,11 +76,14 @@ public class SymbolTable {
         } else {
             last.next = symbol; // Assign the new symbol as the next member (Most recent - if locals were found)
         }
+        symbol.symbolEnv = topScope;
         return symbol;
     }
 
-    // Create new symbol in current scope - compile time check (All symbols except component)
-    public Symbol newSymbol(String name, Category category, Type type) throws NameAlreadyBoundException {
+    // Create new symbol in current scope - compile time check (All symbols except
+    // component)
+    public Symbol newSymbol(String name, Category category, Type type, Symbol topScope)
+            throws NameAlreadyBoundException {
         Symbol topScopeLocals;
         Symbol last;
         Symbol symbol = new Symbol();
@@ -77,6 +91,7 @@ public class SymbolTable {
         symbol.setCategory(category);
         symbol.setType(type);
         symbol.setLevel(currentScopelevel);
+        symbol.setSymbolEnv(topScope);
         topScopeLocals = topScope.locals; // Object holding local symbols in current scope
         last = null;
         /*
@@ -101,6 +116,7 @@ public class SymbolTable {
         } else {
             last.next = symbol; // Assign the new symbol as the next member (Most recent - if locals were found)
         }
+        symbol.symbolEnv = topScope;
         return symbol;
     }
 
@@ -112,7 +128,8 @@ public class SymbolTable {
      * I think it is run-time check.
      */
     // TODO: fix exception to be custom.
-    public Symbol findId(String name) throws NameNotFoundException { // Search for a symbol and return the symbol
+    public Symbol findId(String name, Symbol symbolEnv) throws NameNotFoundException { // Search for a symbol and return
+                                                                                       // the symbol
         Symbol symbol;
         Symbol symbolScope;
         symbolScope = topScope;
@@ -120,7 +137,8 @@ public class SymbolTable {
             symbol = symbolScope.locals;
 
             while (symbol != null) { // Iterate through all names in that scope
-                if (symbol.name != null ? symbol.name.equals(name) : name == null) {
+                if (symbol.name != null ? symbol.name.equals(name)
+                        : name == null && symbol.symbolEnv.equals(symbolEnv)) {
                     return symbol;
                 }
                 symbol = symbol.next;

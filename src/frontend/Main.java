@@ -4,6 +4,7 @@ import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.TypeChecker;
+import frontend.symboltable.SymbolTable;
 import ir.IrGenerator;
 import ir.IrPrinter;
 
@@ -25,7 +26,9 @@ public class Main {
 
             Program ast = parser.mainNode;
 
-            TypeChecker checker = new TypeChecker();
+            SymbolTable symbolTable = new SymbolTable(parser);
+
+            TypeChecker checker = new TypeChecker(symbolTable);
             checker.check(ast);
 
             IrGenerator irGenerator = new IrGenerator(null);

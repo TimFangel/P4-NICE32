@@ -10,12 +10,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Symbol { 
-    public String name; 
-    public Type type; 
-    public Symbol next;         // Next symbol in same scope
-    public Category category;   // The category of symbol: variable, constant, function, component, scope
-    public Symbol locals;       // The local symbols 
-    public int level;           // 0 = global, 1 = local
+public class Symbol {
+    public String name;
+    public Type type;
+    public Symbol next; // Next symbol in same scope
+    public Category category; // The category of symbol: variable, constant, function, component, scope
+    public Symbol locals; // The local symbols
+    public int level; // 0 = global, 1 = local
+    public Symbol symbolEnv;
 
 }
