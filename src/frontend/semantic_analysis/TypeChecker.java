@@ -21,6 +21,7 @@ import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
@@ -157,6 +158,10 @@ public class TypeChecker {
                         "Direction must be one of the supported direction values, got " + directionType);
             }
 
+            return;
+        }
+
+        if (stmt instanceof WhileStmt w) {
             return;
         }
 
