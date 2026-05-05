@@ -9,7 +9,7 @@ setup {
 }
 
 functions {
-    float sound(int x) {
+    float func sound(int x) {
     }
 }
 
