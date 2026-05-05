@@ -26,12 +26,16 @@ public class IrPrinter {
             for (IrFunction function : functions) {
                 writer.write(function.toString());
                 writer.newLine();
+                writer.write("param " + function.getParameter().getName());
+                writer.newLine();
                 List<IrInstruction> funcBody = function.getFuncBody();
                 for (IrInstruction instr : funcBody) {
                     writer.write(instr.toString());
                     writer.newLine();
                 }
+                writer.write("end function");
                 writer.newLine(); // space between functions
+                writer.newLine();
             }
 
             // create space between functions and setup/main

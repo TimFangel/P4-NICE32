@@ -21,6 +21,6 @@ public class IrFunction {
 
     @Override
     public String toString() {
-        return "func " + funcName + "(" + parameter + "): " + retType.toString();
+        return "func " + funcName + ":";
     }
 }
