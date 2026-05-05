@@ -13,6 +13,7 @@ import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.FuncCall;
 import frontend.abstract_syntax.expression.Operand;
+import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
@@ -65,6 +66,7 @@ public class IrGenerator {
 
     /**
      * Creates IR depending on scope.
+     * 
      * @param instruction IrInstruction to create.
      */
     private void createIR(IrInstruction instruction) {
@@ -74,7 +76,6 @@ public class IrGenerator {
             code.add(instruction);
         }
     }
-
 
     /**
      * Converts actual values into IrValues.
@@ -144,7 +145,7 @@ public class IrGenerator {
                         "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
             }
 
-            IrValue temp = newTemp(left.getType());
+            IrValue temp = newTemp(Type.BOOL_T);
 
             // add code for temp var
             createIR(new IrInstruction(operatorMapper.mapBoolBin(binop.getOp()), left, right, temp));
@@ -188,6 +189,12 @@ public class IrGenerator {
             return result;
         }
 
+        if (expr instanceof VarExpr var) {
+            IrValue result = newTemp(Type.COMPONENT);
+            createIR(new IrInstruction(IrOperator.GOTO, null, null, result));
+            return result;
+        }
+
         throw new NoExprMatchException("No matching expression found! Expression: " + expr.toString());
     }
 
@@ -215,11 +222,11 @@ public class IrGenerator {
                 }
 
                 createIR(new IrInstruction(IrOperator.ASS, expr, null, result));
-
-                return;
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            return;
         }
 
         if (stmt instanceof AssStmt ass) {
@@ -235,11 +242,11 @@ public class IrGenerator {
                             "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
                 }
                 createIR(new IrInstruction(IrOperator.ASS, right, null, left));
-
-                return;
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            return;
         }
 
         if (stmt instanceof IfStmt ifStmt) {
@@ -335,7 +342,8 @@ public class IrGenerator {
             return;
         }
 
-        throw new NoStmtMatchException("No matching statement found! Statement: " + stmt.toString());
+        throw new NoStmtMatchException(
+                "No matching statement found! Statement: " + stmt.toString());
     }
 
     /**
@@ -345,13 +353,12 @@ public class IrGenerator {
      */
     public void generateProgram(Program program) {
         generateStmt(program.getSetup());
-        
-        // make label to goto to start of main, instead of going to functions.
-        String mainStart = newLabel();
-        createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
 
         // Generate functions
         generateStmt(program.getFunctions());
+
+        // make label to goto to start of main, instead of going to functions.
+        String mainStart = newLabel();
 
         createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
 
