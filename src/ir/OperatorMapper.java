@@ -7,7 +7,7 @@ import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 
 /* Map from frontend operand to IR operands */
 public class OperatorMapper {
-    
+
     public IrOperator mapArithBin(ArithBinaryOp op) {
         switch (op) {
             case ADD:
@@ -26,7 +26,7 @@ public class OperatorMapper {
                 return IrOperator.MOD;
 
             default:
-                return null;
+                throw new RuntimeException("Cannot map binary arithmetic operator " + op);
         }
     }
 
@@ -35,7 +35,7 @@ public class OperatorMapper {
             return IrOperator.NEG;
         }
 
-        return null;
+        throw new RuntimeException("Cannot map unary arithmetic operator " + op);
     }
 
     public IrOperator mapBoolBin(BoolBinaryOp op) {
@@ -50,12 +50,14 @@ public class OperatorMapper {
                 return IrOperator.GT;
             case EQ:
                 return IrOperator.EQ;
+            case NEQ:
+                return IrOperator.NEQ;
             case LEQ:
                 return IrOperator.LEQ;
             case GEQ:
                 return IrOperator.GEQ;
             default:
-                return null;
+                throw new RuntimeException("Cannot map binary boolean operator " + op);
         }
     }
 
@@ -64,6 +66,6 @@ public class OperatorMapper {
             return IrOperator.NOT;
         }
 
-        return null;
+        throw new RuntimeException("Cannot map unary boolean operator " + op);
     }
 }
