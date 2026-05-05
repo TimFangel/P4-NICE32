@@ -9,57 +9,70 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 import java.util.ArrayList;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.TestFactory;
 
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 
 class LexerParserTest {
-    final Path basePath = Paths.get("tests", "resources", "implementation", "lexer-parser");
-    final String codePath = "code";
-    final String codeFileExtension = ".NICE";
-    final String astPath = "ast";
-    final String astFileExtension = ".txt";
+    static final Path basePath = Paths.get("tests", "resources", "implementation", "lexer-parser");
+    static final String CODE_PATH = "code";
+    static final String CODE_FILE_EXTENSION = ".NICE";
+    static final String AST_PATH = "ast";
+    static final String AST_FILE_EXTENSION = ".txt";
 
-    @Test
-    void main() {
-        // Read all filenames in the directories
-        List<String> codeFiles = listFilesForFolder(basePath.resolve(codePath).toFile(), codeFileExtension);
-        List<String> astFiles = listFilesForFolder(basePath.resolve(astPath).toFile(), astFileExtension);
-        
+    // Read all filenames in the directories
+    List<String> codeFiles = listFilesForFolder(basePath.resolve(CODE_PATH).toFile(), CODE_FILE_EXTENSION);
+    List<String> astFiles = listFilesForFolder(basePath.resolve(AST_PATH).toFile(), AST_FILE_EXTENSION);
+
+    @TestFactory
+    Stream<DynamicTest> main() {
+
         // Run test for each code file
-        for (String codeFile : codeFiles) {
-            String astFile = codeFile.replace(
-                basePath.resolve(codePath).toString(),
-                basePath.resolve(astPath).toString())
-                .replace(codeFileExtension, astFileExtension);
-            // Check that ast file matching code file exists
-            if (!astFiles.contains(astFile)) {
-                fail("Could not find ast file: " + astFile + ".");
-                continue;
-            }
+        return codeFiles.stream()
+                .map(cf -> DynamicTest.dynamicTest("Test: " + cf,
+                        () -> testBody(cf, codeToAstWithTest(cf, astFiles))));
 
-            // Read expected output
-            String ast = "";
-            try (java.util.Scanner astScanner = new java.util.Scanner(new File(astFile))) {
-                ast = removeWhiteSpaces(astScanner.useDelimiter("\\Z").next());
-            } catch (FileNotFoundException e) {
-                fail("Could not read ast: " + astFile);
-            } catch (NoSuchElementException e) {
-                fail("ast file was empty");
-            }
+    }
 
-            // Parse input
-            String parsedAst = removeWhiteSpaces(assertDoesNotThrow(() -> parse(codeFile)));
+    static void testBody(String codeFile, String astFile) {
 
-            if (ast.compareTo(parsedAst) != 0) {
-                fail(String.format("AST' does not match. Expected:%n'''%n%s%n'''%nAnd got:%n'''%n%s%n'''", prettifyAst(ast), prettifyAst(parsedAst)));
-            }
+        // Read expected output
+        String ast = "";
+        try (java.util.Scanner astScanner = new java.util.Scanner(new File(astFile))) {
+            ast = removeWhiteSpaces(astScanner.useDelimiter("\\Z").next());
+        } catch (FileNotFoundException e) {
+            fail("Could not read ast: " + astFile);
+        } catch (NoSuchElementException e) {
+            fail("ast file was empty");
         }
 
+        // Parse input
+        String parsedAst = removeWhiteSpaces(assertDoesNotThrow(() -> parse(codeFile)));
+
+        if (ast.compareTo(parsedAst) != 0) {
+            fail(String.format("AST' does not match. Expected:%n'''%n%s%n'''%nAnd got:%n'''%n%s%n'''",
+                    prettifyAst(ast), prettifyAst(parsedAst)));
+        }
+    }
+
+    static String codeToAstWithTest(String codeFile, List<String> astFiles) {
+        String astFile = codeFile.replace(
+                basePath.resolve(CODE_PATH).toString(),
+                basePath.resolve(AST_PATH).toString())
+                .replace(CODE_FILE_EXTENSION, AST_FILE_EXTENSION);
+
+        // Check that ast file matching code file exists
+        if (!astFiles.contains(astFile)) {
+            fail("Could not find ast file: " + astFile + ".");
+        }
+
+        return astFile;
     }
 
     public List<String> listFilesForFolder(final File folder) {
@@ -84,7 +97,7 @@ class LexerParserTest {
     }
 
     // Main program copy
-    String parse(String fileName) {
+    static String parse(String fileName) {
         Program ast = null;
         try {
             Parser parser = new Parser(new Scanner(fileName));
@@ -107,8 +120,9 @@ class LexerParserTest {
         return ast.toString();
     }
 
-    String prettifyAst(String in) {
-        if (in == null) return "";
+    static String prettifyAst(String in) {
+        if (in == null)
+            return "";
 
         int indentSize = 2;
         int indentLevel = 0;
@@ -122,14 +136,16 @@ class LexerParserTest {
         for (String line : in.split("\\n")) {
             line = line.strip();
 
-            if (line.isEmpty()) continue;
+            if (line.isEmpty())
+                continue;
 
             if (line.startsWith(")") || line.startsWith("]") || line.startsWith("}")) {
                 indentLevel = Math.max(0, indentLevel - 1);
             }
 
             int spaces = Math.max(0, indentLevel * indentSize);
-            if (spaces > 0) out.append(" ".repeat(spaces));
+            if (spaces > 0)
+                out.append(" ".repeat(spaces));
             out.append(line).append('\n');
 
             if (line.endsWith("(") || line.endsWith("[") || line.endsWith("{")) {
@@ -140,7 +156,7 @@ class LexerParserTest {
         return out.toString().trim();
     }
 
-    String removeWhiteSpaces(String in) {
+    static String removeWhiteSpaces(String in) {
         return in.replaceAll("\\s+", "");
     }
 }
