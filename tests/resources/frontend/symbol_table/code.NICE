@@ -1,0 +1,18 @@
+setup {
+    int battery = 0;
+    component counter {
+        port: 1;
+        protocol: digital;
+        interval: 1;
+        direction: input;
+    }
+}
+
+functions {
+    float sound(int x) {
+    }
+}
+
+main {
+    float switch = 0.0;
+}
