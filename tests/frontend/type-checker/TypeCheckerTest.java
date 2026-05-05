@@ -53,7 +53,7 @@ public class TypeCheckerTest {
 
         TypeChecker typeChecker = new TypeChecker();
 
-        Assertions.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(InvocationTargetException.class, () -> {
 
             // Use reflection on method 
             Method method = typeChecker.getClass().getDeclaredMethod("checkExpr", Expr.class);
@@ -78,7 +78,7 @@ public class TypeCheckerTest {
 
         TypeChecker typeChecker = new TypeChecker();
 
-        Assertions.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(InvocationTargetException.class, () -> {
 
             // Use reflection on method 
             Method method = typeChecker.getClass().getDeclaredMethod("checkExpr", Expr.class);
@@ -137,10 +137,13 @@ public class TypeCheckerTest {
 
         BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, exprLeft, exprRight);
 
-        Decl decl = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
-        BlockStmt blockStmt = new BlockStmt(0, decl);
+        Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
+        BlockStmt blockStmt = new BlockStmt(0, declOne);
 
-        IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, null, blockStmt);
+        Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
+        ThenkStmt thenStmt = new ThenStmt(0, declTwo);
+
+        IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
 
         // Invoking the now public method "checkStmt" on the typechecker with the statement as argument.
         method.invoke(typeChecker, ifStmt);
@@ -153,7 +156,7 @@ public class TypeCheckerTest {
 
         TypeChecker typeChecker = new TypeChecker();
 
-        Assertions.assertThrows(RuntimeException.class, () -> {
+        Assertions.assertThrows(InvocationTargetException.class, () -> {
 
         // Use reflection on method 
         Method method = typeChecker.getClass().getDeclaredMethod("checkStmt", Stmt.class);
