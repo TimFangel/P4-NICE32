@@ -1,31 +1,11 @@
 setup {
-    bool yes = true;
-
-    component lampe {
-        port: 230;
-        protocol: digital;
-        interval: 1000;
-        direction: input;
-
-        int x = 5;
-    }
+    int d = 10;
 }
 
 functions {
-    // kommentar
+    int func coolFunction(int x) {
+    }
 }
 
 main {
-    int a = 5;
-
-    float b = (float) a + 2.2;
-    int c = (int) a;
-
-    if (a == 5) {
-        float f = 1.2;
-    } else if (a == 3 && yes) {
-        float g = 55.66;
-    }
-
-    a = 12;
 }

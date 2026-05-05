@@ -55,5 +55,3 @@ buildNumber.properties
 !src/frontend/coco/*.frame
 src/frontend/coco/*.java
 src/frontend/coco/*.java.old
-*.NICE
-*.NICEIR

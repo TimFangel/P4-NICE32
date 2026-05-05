@@ -1,0 +1,9 @@
+--- FUNCTIONS ---
+func coolFunction(IrValue(name=x, type=INT_T)): INT_T
+
+
+
+--- Setup & Main ---
+t0 := 10
+L0:
+goto L0
