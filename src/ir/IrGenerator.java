@@ -212,9 +212,10 @@ public class IrGenerator {
 
             try {
                 // findId, since frontend has created it before.
-                Symbol symbol = symbolTable.findId(name);
-                IrValue result = new IrValue(name, symbol.getType());
+                // Symbol symbol = symbolTable.findId(name);
+                // IrValue result = new IrValue(name, symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
+                IrValue result = newTemp(expr.getType());
 
                 if (expr.getType() != result.getType()) {
                     throw new NonMatchingTypeException(
