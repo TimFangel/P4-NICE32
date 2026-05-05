@@ -78,7 +78,6 @@ SetupStmt<out Stmt stmt>
       (. stmt = new AssStmt(line, identifier, value); .)
     |
       VarDeclStmt<out stmt>
-      (. stmt = new AssStmt(line, name, value); .)
     |
       IfStmt<out stmt>
     |
