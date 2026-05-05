@@ -4,6 +4,8 @@ import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.TypeChecker;
+import ir.IrGenerator;
+import ir.IrPrinter;
 
 public class Main {
     public static void main(String[] args) {
@@ -25,6 +27,12 @@ public class Main {
 
             TypeChecker checker = new TypeChecker();
             checker.check(ast);
+
+            IrGenerator irGenerator = new IrGenerator(null);
+            irGenerator.generateProgram(ast);
+
+            IrPrinter irPrinter = new IrPrinter(irGenerator);
+            irPrinter.printIR("TestIr");
 
             System.out.println(ast);
         } catch (Exception e) {
