@@ -1,150 +1,150 @@
 name: Java CI with Maven
 
 on:
-  push:
-    branches: [ "**" ]
-  workflow_dispatch: # Rerun button in GitHub UI with seed input
-    inputs:
-      manual_seed:
-        description: 'Insert a seed (not required)'
-        required: false
-        default: ''
+    push:
+        branches: ["**"]
+    workflow_dispatch: # Rerun button in GitHub UI with seed input
+        inputs:
+            manual_seed:
+                description: "Insert a seed (not required)"
+                required: false
+                default: ""
 
 jobs:
-  # JOB 1: Generates parser, Scanner and seed
-  generate:
-    runs-on: ubuntu-latest
-    # Defines "output", with the seed included seed
-    outputs:
-      test_seed: ${{ steps.seed_logic.outputs.FINAL_SEED }}
-      
-    steps:
-      - uses: actions/checkout@v4
+    # JOB 1: Generates parser, Scanner and seed
+    generate:
+        runs-on: ubuntu-latest
+        # Defines "output", with the seed included seed
+        outputs:
+            test_seed: ${{ steps.seed_logic.outputs.FINAL_SEED }}
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: maven # Caches maven dependencies
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Seed determination (Inserted or generated)
-        id: seed_logic
-        run: |
-          MANUAL_SEED='${{ github.event.inputs.manual_seed }}'
-          if [ "$MANUAL_SEED" != "" ]; then
-            case "$MANUAL_SEED" in
-              ''|*[!0-9]*)
-                echo "Invalid manual seed: must contain digits only." >&2
-                exit 1
-                ;;
-            esac
-            echo "FINAL_SEED=$MANUAL_SEED" >> "$GITHUB_OUTPUT"
-            echo "Uses manual seed: $MANUAL_SEED"
-          else
-            AUTO_SEED=$RANDOM
-            echo "FINAL_SEED=$AUTO_SEED" >> "$GITHUB_OUTPUT"
-            echo "Generated seed: $AUTO_SEED"
-          fi
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  java-version: "25"
+                  distribution: "temurin"
+                  cache: maven # Caches maven dependencies
 
-      - name: Generate Parser and Scanner
-        # coco/r run command (seed not included)
-        run: java -jar src/frontend/coco/Coco.jar src/frontend/coco/NICE32.atg -package "frontend.coco"
+            - name: Seed determination (Inserted or generated)
+              id: seed_logic
+              run: |
+                  MANUAL_SEED='${{ github.event.inputs.manual_seed }}'
+                  if [ "$MANUAL_SEED" != "" ]; then
+                    case "$MANUAL_SEED" in
+                      ''|*[!0-9]*)
+                        echo "Invalid manual seed: must contain digits only." >&2
+                        exit 1
+                        ;;
+                    esac
+                    echo "FINAL_SEED=$MANUAL_SEED" >> "$GITHUB_OUTPUT"
+                    echo "Uses manual seed: $MANUAL_SEED"
+                  else
+                    AUTO_SEED=$RANDOM
+                    echo "FINAL_SEED=$AUTO_SEED" >> "$GITHUB_OUTPUT"
+                    echo "Generated seed: $AUTO_SEED"
+                  fi
 
-      - name: Upload Parser and Scanner
-        uses: actions/upload-artifact@v4
-        with:
-          name: parser-files
-          # Specific files to save
-          path: |
-            src/frontend/coco/Parser.java
-            src/frontend/coco/Scanner.java
+            - name: Generate Parser and Scanner
+              # coco/r run command (seed not included)
+              run: java -jar src/frontend/coco/Coco.jar src/frontend/coco/NICE32.atg -package "frontend.coco"
 
-  # JOB 2: Build a Maven application
-  build:
-    runs-on: ubuntu-latest
-    needs: generate # await generate job
-    steps:
-      - uses: actions/checkout@v4
+            - name: Upload Parser and Scanner
+              uses: actions/upload-artifact@v4
+              with:
+                  name: parser-files
+                  # Specific files to save
+                  path: |
+                      src/frontend/coco/Parser.java
+                      src/frontend/coco/Scanner.java
 
-      - name: Download generated files
-        uses: actions/download-artifact@v4
-        with:
-          name: parser-files
-          path: src/frontend/coco/
+    # JOB 2: Build a Maven application
+    build:
+        runs-on: ubuntu-latest
+        needs: generate # await generate job
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: maven
+            - name: Download generated files
+              uses: actions/download-artifact@v4
+              with:
+                  name: parser-files
+                  path: src/frontend/coco/
 
-      - name: Build with Maven (Skip tests)
-        # The jar file is built without testing
-        run: mvn -B clean package -DskipTests
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  java-version: "25"
+                  distribution: "temurin"
+                  cache: maven
 
-      - name: Upload compiled JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: target/*.jar # Saves application
+            - name: Build with Maven (Skip tests)
+              # The jar file is built without testing
+              run: mvn -B clean package -DskipTests
 
-  # JOB 3: Maven (unit) Tests
-  maven-tests:
-    runs-on: ubuntu-latest
-    needs: generate # Only requires helping files
-    steps:
-      - uses: actions/checkout@v4
+            - name: Upload compiled JAR
+              uses: actions/upload-artifact@v4
+              with:
+                  name: app-jar
+                  path: target/*.jar # Saves application
 
-      - name: Download parser files
-        uses: actions/download-artifact@v4
-        with:
-          name: parser-files
-          path: src/frontend/coco/
+    # JOB 3: Maven (unit) Tests
+    maven-tests:
+        runs-on: ubuntu-latest
+        needs: generate # Only requires helping files
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: maven
+            - name: Download parser files
+              uses: actions/download-artifact@v4
+              with:
+                  name: parser-files
+                  path: src/frontend/coco/
 
-      - name: Run Unit Tests
-        # Runs standard tests
-        run: mvn -B test -Dtest.seed=${{ needs.generate.outputs.test_seed }}
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  java-version: "25"
+                  distribution: "temurin"
+                  cache: maven
 
-  # JOB 4: End-to-End Tests
-  e2e-tests:
-    runs-on: ubuntu-latest
-    needs: [generate, build] # awaits parser and .jar files
-    steps:
-      - uses: actions/checkout@v4
+            - name: Run Unit Tests
+              # Runs standard tests
+              run: mvn test -Dtest.seed=${{ needs.generate.outputs.test_seed }}
 
-      - name: Download app JAR
-        uses: actions/download-artifact@v4
-        with:
-          name: app-jar
-          path: target/
+    # JOB 4: End-to-End Tests
+    e2e-tests:
+        runs-on: ubuntu-latest
+        needs: [generate, build] # awaits parser and .jar files
+        steps:
+            - uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
+            - name: Download app JAR
+              uses: actions/download-artifact@v4
+              with:
+                  name: app-jar
+                  path: target/
 
-      - name: Run E2E Tests
-        # Seed is inserted as an Environment Variable
-        env:
-          MY_SEED: ${{ needs.generate.outputs.test_seed }}
-        run: |
-          echo "Seed: $MY_SEED"
-          
-          # 1. Start Java application in the background (with &)
-          java -jar target/*.jar &
-          
-          # 2. Wait until the server/application is ready
-          sleep 10
-          
-          # 3. Run external test script (e.g. bash script, Postman, Cypress, curl etc.)
-          # ./run-e2e-tests.sh
+            - name: Set up JDK
+              uses: actions/setup-java@v4
+              with:
+                  java-version: "25"
+                  distribution: "temurin"
+
+            - name: Run E2E Tests
+              # Seed is inserted as an Environment Variable
+              env:
+                  MY_SEED: ${{ needs.generate.outputs.test_seed }}
+              run: |
+                  echo "Seed: $MY_SEED"
+
+                  # 1. Start Java application in the background (with &)
+                  java -jar target/*.jar &
+
+                  # 2. Wait until the server/application is ready
+                  sleep 10
+
+                  # 3. Run external test script (e.g. bash script, Postman, Cypress, curl etc.)
+                  # ./run-e2e-tests.sh
