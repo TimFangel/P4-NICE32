@@ -35,7 +35,8 @@ class LexerParserTest {
 
         // Run test for each code file
         return codeFiles.stream()
-                .map(cf -> DynamicTest.dynamicTest("Test", () -> testBody(cf, codeToAstWithTest(cf, astFiles))));
+                .map(cf -> DynamicTest.dynamicTest("Test: " + cf,
+                        () -> testBody(cf, codeToAstWithTest(cf, astFiles))));
 
     }
 
