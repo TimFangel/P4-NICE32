@@ -141,7 +141,7 @@ public class TypeCheckerTest {
         BlockStmt blockStmt = new BlockStmt(0, declOne);
 
         Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
-        ThenkStmt thenStmt = new ThenStmt(0, declTwo);
+        BlockStmt thenStmt = new BlockStmt(0, declTwo);
 
         IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
 
