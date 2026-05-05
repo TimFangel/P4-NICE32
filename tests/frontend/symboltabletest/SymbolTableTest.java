@@ -9,6 +9,7 @@ import frontend.symboltable.SymbolTable;
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
 import frontend.symboltable.enums.*;;
+import frontend.coco.Parser;
 
 public class SymbolTableTest {
 
@@ -20,10 +21,11 @@ public class SymbolTableTest {
         battery.setName("battery");
         battery.setCategory(Category.VARIABLE);
         battery.setType(Type.INT_T);
+        
 
         // Result 
         SymbolTable symboltable = new SymbolTable(Parser parser);
-        Symbol result = symboltable.newSymbol("x", Category.VARIABLE, Type.INT_T);
+        Symbol result = symboltable.newSymbol("x", Category.VARIABLE, Type.INT_T, topScope);
         Assertions.assertEquals(battery.getName(), result.getName());
         Assertions.assertEquals(battery.getCategory(), result.getCategory());
         Assertions.assertEquals(battery.getType(), result.getType());
