@@ -9,6 +9,7 @@ import frontend.symboltable.SymbolTable;
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
 import frontend.symboltable.enums.*;;
+
 public class SymbolTableTest {
 
     @Test
@@ -42,7 +43,6 @@ public class SymbolTableTest {
             symboltable.newSymbol("battery", Category.VARIABLE, Type.FLOAT_T);
             }, "This error was expected");
         }
-    
 
     public void testFindIdReturnsCorrectSymbol() {
         
@@ -77,5 +77,3 @@ public class SymbolTableTest {
     }
 
 }
- 
-
