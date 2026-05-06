@@ -1,25 +1,16 @@
 --- FUNCTIONS ---
-func coolFunction:
-param x
-t1 := 5 * 5
-t2 := t1
-end function
-
-func coolerFunction:
-param x
-t3 := 5 * 5
-t4 := t3
-end function
-
 func coolestFunction:
 param x
-t5 := 5 * 5
-t6 := t5
+t2 := 2 * 2
+t3 := t2
 end function
-
 
 
 --- Setup & Main ---
-t0 := 10
+t1 := true
+SETUP DIGITAL INPUT 5
+
+t0 := true
 L0:
+COMPR t1 5 1500
 goto L0
