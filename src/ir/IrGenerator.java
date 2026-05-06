@@ -218,6 +218,7 @@ public class IrGenerator {
 
             try {
                 // findId, since frontend has created it before.
+                // TODO: incorporate symbol table
                 // Symbol symbol = symbolTable.findId(name);
                 // IrValue result = new IrValue(name, symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
