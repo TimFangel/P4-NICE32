@@ -372,12 +372,6 @@ public class IrGenerator {
             }
 
             components.add(component);
-            // currentFunction = component; // change scope
-
-            // generate function body
-            // generateStmt(compDecl.getStatements());
-
-            // currentFunction = null; // reset scope
 
             return;
         }
