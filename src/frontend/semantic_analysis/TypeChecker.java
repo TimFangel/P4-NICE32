@@ -22,6 +22,7 @@ import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
+import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
 import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
@@ -34,7 +35,8 @@ import java.util.*;
 
 public class TypeChecker {
     SymbolTable symbolTable;
-    private final Map<String, Type> symbols = new HashMap<>();
+
+    private Type currentFunctionReturnType = null;
 
     public TypeChecker(SymbolTable symbolTable) {
         this.symbolTable = symbolTable;
@@ -88,6 +90,8 @@ public class TypeChecker {
             if (type != Type.BOOL_T && type != Type.FLOAT_T && type != Type.INT_T) {
                 throw new RuntimeException("Invalid return type for function " + f.getIdentifier());
             }
+
+            currentFunctionReturnType = type;
 
             Type paramType = f.getParamType();
 
@@ -208,6 +212,16 @@ public class TypeChecker {
             return;
         }
 
+        if (stmt instanceof ReturnStmt r) {
+            Type returnType = checkExpr(r.getExprReturned());
+
+            if (returnType != currentFunctionReturnType) {
+                throw new RuntimeException("Return value does not match function return type: " + returnType + " != "
+                        + currentFunctionReturnType);
+            }
+
+            return;
+        }
         throw new RuntimeException("Unknown statement: " + stmt);
     }
 
