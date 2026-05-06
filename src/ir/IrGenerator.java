@@ -181,7 +181,7 @@ public class IrGenerator {
         if (expr instanceof FuncCall func) {
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
-            Symbol symbol = symbolTable.findId(ident);
+            Symbol symbol = symbolTable.findId(ident, symbolTable.getTopScope());
             IrValue result = newTemp(symbol.getType());
 
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
@@ -190,7 +190,9 @@ public class IrGenerator {
         }
 
         if (expr instanceof VarExpr var) {
-            IrValue result = newTemp(Type.COMPONENT);
+            String ident = var.getName();
+            Symbol symbol = symbolTable.findId(ident, symbolTable.getTopScope());
+            IrValue result = newTemp(symbol.getType());
             createIR(new IrInstruction(IrOperator.GOTO, null, null, result));
             return result;
         }
@@ -235,7 +237,7 @@ public class IrGenerator {
             IrValue right = generateExpr(ass.getValue());
 
             try {
-                Symbol sym = symbolTable.findId(varName);
+                Symbol sym = symbolTable.findId(varName, symbolTable.getTopScope());
                 IrValue left = new IrValue(varName, sym.getType());
 
                 if (left.getType() != right.getType()) {

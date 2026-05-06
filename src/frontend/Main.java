@@ -36,7 +36,7 @@ public class Main {
 
             System.out.println(ast);
 
-            IrGenerator irGenerator = new IrGenerator(null);
+            IrGenerator irGenerator = new IrGenerator(symbolTable);
             irGenerator.generateProgram(ast);
             System.out.println("> IR has been successfully generated <");
 

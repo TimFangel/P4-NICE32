@@ -1,11 +1,15 @@
 package frontend.symboltable;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
 import frontend.abstract_syntax.component.Component;
+import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.type.Type;
 import frontend.coco.Parser;
 import frontend.symboltable.enums.Category;
@@ -20,6 +24,9 @@ public class SymbolTable {
     private Parser parser;
 
     public final Map<String, Component> components = new HashMap<>();
+    public final Map<String, FuncDecl> functions = new HashMap<>();
+    public final Map<String, Type> values = new HashMap<>();
+    public final Set<String> globalIdentifiers = new HashSet<>();
 
     public void OpenNewScope() {
         Symbol scopeObj = new Symbol();

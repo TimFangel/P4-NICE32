@@ -31,8 +31,6 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.SymbolTable;
 
-import java.util.*;
-
 public class TypeChecker {
     SymbolTable symbolTable;
 
@@ -43,8 +41,8 @@ public class TypeChecker {
     }
 
     public void check(Program program) {
-        checkStmt(program.setup);
         checkStmt(program.functions);
+        checkStmt(program.setup);
         checkStmt(program.main);
     }
 
@@ -56,9 +54,17 @@ public class TypeChecker {
                 throw new RuntimeException("Could not find identifier for " + identifier);
             }
 
-            if (symbols.containsKey(identifier)) {
+            if (symbolTable.values.containsKey(identifier)) {
                 throw new RuntimeException("Variable already declared: " + identifier);
             }
+
+            symbolTable.values.put(identifier, d.getType());
+
+            if (symbolTable.globalIdentifiers.contains(identifier)) {
+                throw new RuntimeException("Variable already declared: " + identifier);
+            }
+
+            symbolTable.globalIdentifiers.add(identifier);
 
             Type valueType = checkExpr(d.getValue());
 
@@ -69,7 +75,6 @@ public class TypeChecker {
                                 + "'");
             }
 
-            symbols.put(identifier, d.getType());
             return;
         }
 
@@ -81,9 +86,17 @@ public class TypeChecker {
             }
 
             // TODO: fix symboltable tjek
-            // if (symboltable.functions.containsKey(identifier)) {
-            // throw new RuntimeException("Function already declared: " + identifier);
-            // }
+            if (symbolTable.functions.containsKey(identifier)) {
+                throw new RuntimeException("Function already declared: " + identifier);
+            }
+
+            symbolTable.functions.put(identifier, f);
+
+            if (symbolTable.globalIdentifiers.contains(identifier)) {
+                throw new RuntimeException("Identifier already used: " + identifier);
+            }
+
+            symbolTable.globalIdentifiers.add(identifier);
 
             Type type = f.getReturnType();
 
@@ -134,7 +147,7 @@ public class TypeChecker {
         if (stmt instanceof AssStmt a) {
             String identifier = a.getIdentifier();
 
-            Type varType = symbols.get(identifier);
+            Type varType = symbolTable.values.get(identifier);
 
             if (varType == null) {
                 throw new RuntimeException("Cannot assign to undeclared variable '" + identifier + "'");
@@ -163,6 +176,12 @@ public class TypeChecker {
             }
 
             symbolTable.components.put(identifier, c);
+
+            if (symbolTable.globalIdentifiers.contains(identifier)) {
+                throw new RuntimeException("Identifier already in use: " + identifier);
+            }
+
+            symbolTable.globalIdentifiers.add(identifier);
 
             Type portType = checkExpr(c.getPort());
 
@@ -245,7 +264,7 @@ public class TypeChecker {
         }
 
         if (expr instanceof VarExpr v) {
-            Type type = symbols.get(v.getName());
+            Type type = symbolTable.values.get(v.getName());
 
             if (type == null) {
                 throw new RuntimeException("Undeclared variable: " + v.getName());
@@ -258,9 +277,9 @@ public class TypeChecker {
             String identifier = fc.getIdentifier();
 
             // TODO: fix symboltable tjek
-            // if (!symbolTable.functions.containsKey(identifier)) {
-            // throw new RuntimeException("Cannot call undeclared function " + identifier);
-            // }
+            if (!symbolTable.functions.containsKey(identifier)) {
+                throw new RuntimeException("Cannot call undeclared function '" + identifier + "'");
+            }
 
             Type paramType = checkExpr(fc.getParameter());
 
@@ -269,10 +288,9 @@ public class TypeChecker {
             }
 
             // TODO: fix symboltable tjek
-            // FuncDecl f = symbolTable.functions.get(identifier);
+            FuncDecl f = symbolTable.functions.get(identifier);
 
-            // return f.getReturnType();
-            return Type.INT_T;
+            return f.getReturnType();
         }
 
         // Check member access.
