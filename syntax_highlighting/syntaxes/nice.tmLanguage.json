@@ -1,0 +1,103 @@
+{
+    "scopeName": "source.nice",
+    "patterns": [
+        { "include": "#comments" },
+        { "include": "#components" },
+        { "include": "#function-definitions" },
+        { "include": "#keys" },
+        { "include": "#properties" },
+        { "include": "#keywords" },
+        { "include": "#types" },
+        { "include": "#booleans" },
+        { "include": "#numbers" },
+        { "include": "#functions" }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.nice",
+                    "match": "//.*$"
+                }
+            ]
+        },
+        "components": {
+            "patterns": [
+                {
+                    "match": "\\b(component)\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "keyword.control.nice" },
+                        "2": { "name": "entity.name.type.nice" }
+                    }
+                }
+            ]
+        },
+        "function-definitions": {
+            "patterns": [
+                {
+                    "match": "\\b(func)\\s+[a-zA-Z_]+\\s+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "keyword.control.nice" },
+                        "2": { "name": "entity.name.function.nice" }
+                    }
+                }
+            ]
+        },
+        "keys": {
+            "patterns": [
+                {
+                    "name": "keyword.other.key.nice",
+                    "match": "\\b(port|protocol|interval|direction)(?=\\s*:)"
+                }
+            ]
+        },
+        "properties": {
+            "patterns": [
+                {
+                    "name": "variable.other.property.nice",
+                    "match": "(?<=\\.)[a-zA-Z_][a-zA-Z0-9_]*"
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "name": "entity.name.function.nice",
+                    "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\s*(?=\\()"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.nice",
+                    "match": "\\b(setup|functions|main)\\b"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                    "name": "storage.type.nice",
+                    "match": "\\b(int|bool)\\b"
+                }
+            ]
+        },
+        "booleans": {
+            "patterns": [
+                {
+                    "name": "constant.language.nice",
+                    "match": "\\b(true|false|analog|digital|input|output)\\b"
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.nice",
+                    "match": "\\b\\d+\\b"
+                }
+            ]
+        }
+    }
+}

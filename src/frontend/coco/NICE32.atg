@@ -128,6 +128,8 @@ MainStmt<out Stmt stmt>
     |
       IfStmt<out stmt>
     |
+      WhileStmt<out stmt>
+    |
       VarDeclStmt<out stmt>
     )
   .

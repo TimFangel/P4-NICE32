@@ -7,6 +7,7 @@ import frontend.abstract_syntax.component.constants.component_types.DirectionTyp
 import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.FuncCall;
 import frontend.abstract_syntax.expression.MemberAccess;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
@@ -21,17 +22,24 @@ import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
+import frontend.symboltable.SymbolTable;
 
+import java.lang.foreign.SymbolLookup;
 import java.util.*;
 
 public class TypeChecker {
+    private SymbolTable symbolTable;
     private final Map<String, Type> symbols = new HashMap<>();
-    private final Map<String, Component> components = new HashMap<>();
+
+    public TypeChecker(SymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
 
     public void check(Program program) {
         checkStmt(program.setup);
@@ -119,11 +127,11 @@ public class TypeChecker {
                 throw new RuntimeException("Component is missing identifier");
             }
 
-            if (components.containsKey(identifier)) {
+            if (symbolTable.components.containsKey(identifier)) {
                 throw new RuntimeException("Component already declared");
             }
 
-            components.put(identifier, c);
+            symbolTable.components.put(identifier, c);
 
             Type portType = checkExpr(c.getPort());
 
@@ -160,6 +168,10 @@ public class TypeChecker {
             return;
         }
 
+        if (stmt instanceof WhileStmt w) {
+            return;
+        }
+
         throw new RuntimeException("Unknown statement: " + stmt);
     }
 
@@ -192,12 +204,17 @@ public class TypeChecker {
             return type;
         }
 
+        if (expr instanceof FuncCall f) {
+            // TODO: implement function call
+            return Type.INT_T;
+        }
+
         // Check member access.
         if (expr instanceof MemberAccess m) {
             String componentName = m.getComponent();
             String variableName = m.getVariable();
 
-            Component c = components.get(componentName);
+            Component c = symbolTable.components.get(componentName);
 
             if (c == null) {
                 throw new RuntimeException("Unknown component: " + componentName);
