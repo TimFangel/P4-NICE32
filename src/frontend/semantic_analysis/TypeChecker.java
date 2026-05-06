@@ -330,7 +330,7 @@ public class TypeChecker {
                 case LEQ, GEQ, GT, LT:
                     if (left == Type.BOOL_T || right == Type.BOOL_T || left != right) {
                         throw new RuntimeException(
-                                "Comparison requires ints or floats, got " + left + " and " + right);
+                                "Comparison requires either two ints or two floats, got " + left + " and " + right);
                     }
 
                     return Type.BOOL_T;
@@ -357,7 +357,21 @@ public class TypeChecker {
             Type right = checkExpr(a.getExprRight());
 
             switch (a.getOp()) {
-                case ADD, SUB, MUL, DIV, MOD:
+                case DIV:
+                    if (a.getExprRight() instanceof Operand o) {
+                        Value v = o.getValue();
+                        if (v instanceof IntNum n && n.value() == 0) {
+                            throw new RuntimeException("Illegal division by zero");
+                        }
+
+                        if (v instanceof FloatNum n && n.value() == 0) {
+                            throw new RuntimeException("Illegal division by zero");
+                        }
+                    }
+
+                    // No return, let it continue to the following checks.
+
+                case ADD, SUB, MUL, MOD:
                     if (left != right) {
                         throw new RuntimeException("Type mismatch: " + left + " and " + right);
                     }
