@@ -197,6 +197,15 @@ public class TypeChecker {
         }
 
         if (stmt instanceof WhileStmt w) {
+            Expr condition = w.getCondition();
+            checkExpr(condition);
+
+            BlockStmt body = w.getWhileBody();
+
+            for (Stmt s : body.getStatements()) {
+                checkStmt(s);
+            }
+
             return;
         }
 
