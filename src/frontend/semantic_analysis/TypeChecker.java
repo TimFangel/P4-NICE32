@@ -73,7 +73,35 @@ public class TypeChecker {
         }
 
         if (stmt instanceof FuncDecl f) {
-            // TODO: Lav type tjek til functionsm
+            String identifier = f.getIdentifier();
+
+            if (identifier == null) {
+                throw new RuntimeException("Could not find identifier for " + identifier);
+            }
+
+            // TODO: fix symboltable tjek
+            // if (symboltable.functions.containsKey(identifier)) {
+            // throw new RuntimeException("Function already declared: " + identifier);
+            // }
+
+            Type type = f.getReturnType();
+
+            if (type != Type.BOOL_T && type != Type.FLOAT_T && type != Type.INT_T) {
+                throw new RuntimeException("Invalid return type for function " + f.getIdentifier());
+            }
+
+            Type paramType = f.getParamType();
+
+            if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
+                throw new RuntimeException("Invalid function parameter type " + paramType);
+            }
+
+            BlockStmt stmts = f.getStatements();
+
+            for (Stmt s : stmts.getStatements()) {
+                checkStmt(s);
+            }
+
             return;
         }
 
