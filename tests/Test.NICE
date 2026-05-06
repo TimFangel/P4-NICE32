@@ -1,21 +1,23 @@
 setup {
-    int d = 10;
+    bool yes = true;
+
+    component lamp {
+        port: 5;
+        protocol: digital;
+        interval: 1500;
+        direction: input;
+
+        bool x = true;
+    }
 }
 
 functions {
-    int func coolFunction(int x) {
-        int a = 5 * 5;
-    }
-
-    float func coolerFunction(float x) {
-        int b = 5 * 5;
-    }
-
-    bool func coolestFunction(bool x) {
-        int c = 5 * 5;
+    int func coolestFunction(int x) {
+        int c = 2 * 2;
     }
 }
 
 main {
-    int yeah = coolFunction(5);
+    bool a = lamp.x;
+    int b = coolestFunction(1 + 2 + 3);
 }
