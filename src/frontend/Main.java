@@ -24,20 +24,27 @@ public class Main {
                 return;
             }
 
+            System.out.println("> Successfully parsed input <");
+
             Program ast = parser.mainNode;
 
             SymbolTable symbolTable = new SymbolTable(parser);
 
             TypeChecker checker = new TypeChecker(symbolTable);
             checker.check(ast);
+            System.out.println("> AST passed type checker <");
+
+            System.out.println(ast);
 
             IrGenerator irGenerator = new IrGenerator(null);
             irGenerator.generateProgram(ast);
+            System.out.println("> IR has been successfully generated <");
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
             irPrinter.printIR("TestIr");
 
-            System.out.println(ast);
+            // TODO: oversæt ir til asm
+
         } catch (Exception e) {
             e.printStackTrace();
         }
