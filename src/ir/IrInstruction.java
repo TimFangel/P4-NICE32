@@ -3,13 +3,14 @@ package ir;
 import exception.UnrecognizedOperatorException;
 
 public class IrInstruction {
-    IrOperator operator;    // enum specifying the operation
-    IrValue arg1;           // first argument of operation (null -> not present)
-    IrValue arg2;           // second argument of operation (null -> not present)
-    IrValue result;         // where to store result of operation
+    IrOperator operator; // enum specifying the operation
+    IrValue arg1; // first argument of operation (null -> not present)
+    IrValue arg2; // second argument of operation (null -> not present)
+    IrValue result; // where to store result of operation
 
     /**
      * Constructor for an IrInstruction. null -> not present in instruction.
+     * 
      * @param operator what sort of instruction it is.
      * @param arg1
      * @param arg2
@@ -26,13 +27,14 @@ public class IrInstruction {
     public String toString() {
         switch (operator) {
             case ASS:
-                return result.getName() + " := " + arg1.getName();    
+                return result.getName() + " := " + arg1.getName();
 
             case ADD, SUB, MUL, DIV, MOD, LEQ, LT, GT, GEQ, EQ, NEQ, AND, OR:
-                return result.getName() + " := " + arg1.getName() + " " + operandToSymbol(operator) + " " + arg2.getName();
-        
+                return result.getName() + " := " + arg1.getName() + " " + operandToSymbol(operator) + " "
+                        + arg2.getName();
+
             case IF_FALSE:
-                return "if_false " + arg1.getName() + " goto " + result.getName(); 
+                return "if_false " + arg1.getName() + " goto " + result.getName();
 
             case GOTO:
                 return "goto " + result.getName();
@@ -45,9 +47,12 @@ public class IrInstruction {
 
             case INT_TO_FLOAT, FLOAT_TO_INT:
                 return result.getName() + " := " + "(" + operator.toString() + ") " + arg1.getName();
-                
+
             case RET:
                 return "RET " + result.getName();
+
+            case CALL:
+                return "CALL " + result.getName() + ", " + arg1.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
@@ -76,12 +81,19 @@ public class IrInstruction {
                 return ">=";
             case EQ:
                 return "==";
+            case NEQ:
+                return "!=";
+            case AND:
+                return "&&";
+            case OR:
+                return "||";
             case NOT:
                 return "!";
             case NEG:
                 return "-";
             default:
-                throw new UnrecognizedOperatorException("Unrecognized Operator (operatorToSymbol): " + operator.toString());
+                throw new UnrecognizedOperatorException(
+                        "Unrecognized Operator (operatorToSymbol): " + operator.toString());
         }
     }
 }

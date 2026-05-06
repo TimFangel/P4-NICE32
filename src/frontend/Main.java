@@ -4,6 +4,9 @@ import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.TypeChecker;
+import frontend.symboltable.SymbolTable;
+import ir.IrGenerator;
+import ir.IrPrinter;
 
 public class Main {
     public static void main(String[] args) {
@@ -21,12 +24,27 @@ public class Main {
                 return;
             }
 
+            System.out.println("> Successfully parsed input <");
+
             Program ast = parser.mainNode;
 
-            TypeChecker checker = new TypeChecker();
+            SymbolTable symbolTable = new SymbolTable(parser);
+
+            TypeChecker checker = new TypeChecker(symbolTable);
             checker.check(ast);
+            System.out.println("> AST passed type checker <");
 
             System.out.println(ast);
+
+            IrGenerator irGenerator = new IrGenerator(symbolTable);
+            irGenerator.generateProgram(ast);
+            System.out.println("> IR has been successfully generated <");
+
+            IrPrinter irPrinter = new IrPrinter(irGenerator);
+            irPrinter.printIR("TestIr");
+
+            // TODO: oversæt ir til asm
+
         } catch (Exception e) {
             e.printStackTrace();
         }

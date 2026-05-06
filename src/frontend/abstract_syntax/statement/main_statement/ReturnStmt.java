@@ -12,7 +12,7 @@ import lombok.ToString;
 public class ReturnStmt extends Stmt {
     private Expr exprReturned;
 
-    ReturnStmt(int lineNumber, Expr exprReturned) {
+    public ReturnStmt(int lineNumber, Expr exprReturned) {
         super(lineNumber);
         this.exprReturned = exprReturned;
     }

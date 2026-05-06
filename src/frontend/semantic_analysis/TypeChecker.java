@@ -7,6 +7,7 @@ import frontend.abstract_syntax.component.constants.component_types.DirectionTyp
 import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.abstract_syntax.expression.FuncCall;
 import frontend.abstract_syntax.expression.MemberAccess;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
@@ -21,21 +22,27 @@ import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
+import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
-
-import java.util.*;
+import frontend.symboltable.SymbolTable;
 
 public class TypeChecker {
-    private final Map<String, Type> symbols = new HashMap<>();
-    private final Map<String, Component> components = new HashMap<>();
+    SymbolTable symbolTable;
+
+    private Type currentFunctionReturnType = null;
+
+    public TypeChecker(SymbolTable symbolTable) {
+        this.symbolTable = symbolTable;
+    }
 
     public void check(Program program) {
-        checkStmt(program.setup);
         checkStmt(program.functions);
+        checkStmt(program.setup);
         checkStmt(program.main);
     }
 
@@ -47,9 +54,17 @@ public class TypeChecker {
                 throw new RuntimeException("Could not find identifier for " + identifier);
             }
 
-            if (symbols.containsKey(identifier)) {
+            if (symbolTable.values.containsKey(identifier)) {
                 throw new RuntimeException("Variable already declared: " + identifier);
             }
+
+            symbolTable.values.put(identifier, d.getType());
+
+            if (symbolTable.globalIdentifiers.contains(identifier)) {
+                throw new RuntimeException("Variable already declared: " + identifier);
+            }
+
+            symbolTable.globalIdentifiers.add(identifier);
 
             Type valueType = checkExpr(d.getValue());
 
@@ -60,12 +75,49 @@ public class TypeChecker {
                                 + "'");
             }
 
-            symbols.put(identifier, d.getType());
             return;
         }
 
         if (stmt instanceof FuncDecl f) {
-            // TODO: Lav type tjek til functionsm
+            String identifier = f.getIdentifier();
+
+            if (identifier == null) {
+                throw new RuntimeException("Could not find identifier for " + identifier);
+            }
+
+            // TODO: fix symboltable tjek
+            if (symbolTable.functions.containsKey(identifier)) {
+                throw new RuntimeException("Function already declared: " + identifier);
+            }
+
+            symbolTable.functions.put(identifier, f);
+
+            if (symbolTable.globalIdentifiers.contains(identifier)) {
+                throw new RuntimeException("Identifier already used: " + identifier);
+            }
+
+            symbolTable.globalIdentifiers.add(identifier);
+
+            Type type = f.getReturnType();
+
+            if (type != Type.BOOL_T && type != Type.FLOAT_T && type != Type.INT_T) {
+                throw new RuntimeException("Invalid return type for function " + f.getIdentifier());
+            }
+
+            currentFunctionReturnType = type;
+
+            Type paramType = f.getParamType();
+
+            if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
+                throw new RuntimeException("Invalid function parameter type " + paramType);
+            }
+
+            BlockStmt stmts = f.getStatements();
+
+            for (Stmt s : stmts.getStatements()) {
+                checkStmt(s);
+            }
+
             return;
         }
 
@@ -95,7 +147,7 @@ public class TypeChecker {
         if (stmt instanceof AssStmt a) {
             String identifier = a.getIdentifier();
 
-            Type varType = symbols.get(identifier);
+            Type varType = symbolTable.values.get(identifier);
 
             if (varType == null) {
                 throw new RuntimeException("Cannot assign to undeclared variable '" + identifier + "'");
@@ -119,11 +171,17 @@ public class TypeChecker {
                 throw new RuntimeException("Component is missing identifier");
             }
 
-            if (components.containsKey(identifier)) {
+            if (symbolTable.components.containsKey(identifier)) {
                 throw new RuntimeException("Component already declared");
             }
 
-            components.put(identifier, c);
+            symbolTable.components.put(identifier, c);
+
+            if (symbolTable.globalIdentifiers.contains(identifier)) {
+                throw new RuntimeException("Identifier already in use: " + identifier);
+            }
+
+            symbolTable.globalIdentifiers.add(identifier);
 
             Type portType = checkExpr(c.getPort());
 
@@ -160,6 +218,29 @@ public class TypeChecker {
             return;
         }
 
+        if (stmt instanceof WhileStmt w) {
+            Expr condition = w.getCondition();
+            checkExpr(condition);
+
+            BlockStmt body = w.getWhileBody();
+
+            for (Stmt s : body.getStatements()) {
+                checkStmt(s);
+            }
+
+            return;
+        }
+
+        if (stmt instanceof ReturnStmt r) {
+            Type returnType = checkExpr(r.getExprReturned());
+
+            if (returnType != currentFunctionReturnType) {
+                throw new RuntimeException("Return value does not match function return type: " + returnType + " != "
+                        + currentFunctionReturnType);
+            }
+
+            return;
+        }
         throw new RuntimeException("Unknown statement: " + stmt);
     }
 
@@ -183,7 +264,7 @@ public class TypeChecker {
         }
 
         if (expr instanceof VarExpr v) {
-            Type type = symbols.get(v.getName());
+            Type type = symbolTable.values.get(v.getName());
 
             if (type == null) {
                 throw new RuntimeException("Undeclared variable: " + v.getName());
@@ -192,12 +273,32 @@ public class TypeChecker {
             return type;
         }
 
+        if (expr instanceof FuncCall fc) {
+            String identifier = fc.getIdentifier();
+
+            // TODO: fix symboltable tjek
+            if (!symbolTable.functions.containsKey(identifier)) {
+                throw new RuntimeException("Cannot call undeclared function '" + identifier + "'");
+            }
+
+            Type paramType = checkExpr(fc.getParameter());
+
+            if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
+                throw new RuntimeException("Cannot call function with parameter type " + paramType);
+            }
+
+            // TODO: fix symboltable tjek
+            FuncDecl f = symbolTable.functions.get(identifier);
+
+            return f.getReturnType();
+        }
+
         // Check member access.
         if (expr instanceof MemberAccess m) {
             String componentName = m.getComponent();
             String variableName = m.getVariable();
 
-            Component c = components.get(componentName);
+            Component c = symbolTable.components.get(componentName);
 
             if (c == null) {
                 throw new RuntimeException("Unknown component: " + componentName);
@@ -261,7 +362,7 @@ public class TypeChecker {
                 case LEQ, GEQ, GT, LT:
                     if (left == Type.BOOL_T || right == Type.BOOL_T || left != right) {
                         throw new RuntimeException(
-                                "Comparison requires ints or floats, got " + left + " and " + right);
+                                "Comparison requires either two ints or two floats, got " + left + " and " + right);
                     }
 
                     return Type.BOOL_T;
@@ -288,7 +389,21 @@ public class TypeChecker {
             Type right = checkExpr(a.getExprRight());
 
             switch (a.getOp()) {
-                case ADD, SUB, MUL, DIV, MOD:
+                case DIV:
+                    if (a.getExprRight() instanceof Operand o) {
+                        Value v = o.getValue();
+                        if (v instanceof IntNum n && n.value() == 0) {
+                            throw new RuntimeException("Illegal division by zero");
+                        }
+
+                        if (v instanceof FloatNum n && n.value() == 0) {
+                            throw new RuntimeException("Illegal division by zero");
+                        }
+                    }
+
+                    // No return, let it continue to the following checks.
+
+                case ADD, SUB, MUL, MOD:
                     if (left != right) {
                         throw new RuntimeException("Type mismatch: " + left + " and " + right);
                     }

@@ -78,7 +78,6 @@ SetupStmt<out Stmt stmt>
       (. stmt = new AssStmt(line, identifier, value); .)
     |
       VarDeclStmt<out stmt>
-      (. stmt = new AssStmt(line, name, value); .)
     |
       IfStmt<out stmt>
     |
@@ -129,17 +128,45 @@ MainStmt<out Stmt stmt>
     |
       IfStmt<out stmt>
     |
+      WhileStmt<out stmt>
+    |
       VarDeclStmt<out stmt>
     )
   .
 
-// Standard code block used in if-statements and function bodies.
+// Standard code block used in if-statements.
 Block<out BlockStmt block>
   = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
     "{" (. int line = t.line; .)
       { MainStmt<out s> (. stmts.add(s); .) }
     "}"
     (. block = new BlockStmt(line, stmts); .)
+  .
+
+// Code block used for function bodies.
+FuncBlock<out BlockStmt block>
+  = (.
+      List<Stmt> stmts = new ArrayList<>();
+      Stmt s;
+      Stmt retS;
+    .)
+    "{"
+    (. int line = t.line; .)
+      { MainStmt<out s> (. stmts.add(s); .) }
+      RetStmt<out retS> (. stmts.add(retS); .)
+    "}"
+    (. block = new BlockStmt(line, stmts); .)
+  .
+
+RetStmt<out Stmt stmt>
+  = (.
+      Expr expr;
+   .)
+   "return"
+   (. int line = t.line; .)
+   Expr<out expr>
+   ";"
+   (. stmt = new ReturnStmt(line, expr); .)
   .
 
 // Wraps variable declarations so it can be used as a statement.
@@ -472,7 +499,7 @@ FuncDecl<out Stmt stmt, Type type>
       TypeName<out paramType>
       IDENT (. parameterIdentifier = t.val; .)
     ")"
-    Block<out body>
+    FuncBlock<out body>
     (. stmt = new FuncDecl(line, type, identifier, paramType, parameterIdentifier, body); .)
   .
 
