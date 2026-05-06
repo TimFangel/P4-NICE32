@@ -42,9 +42,9 @@ public class TypeChecker {
     }
 
     public void check(Program program) {
-        checkStmt(program.setup);
-        checkStmt(program.functions);
-        checkStmt(program.main);
+        checkStmt(program.getSetup());
+        checkStmt(program.getFunctions());
+        checkStmt(program.getMain());
     }
 
     private void checkStmt(Stmt stmt) {
