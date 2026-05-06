@@ -30,7 +30,6 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.SymbolTable;
 
-import java.lang.foreign.SymbolLookup;
 import java.util.*;
 
 public class TypeChecker {
@@ -241,7 +240,24 @@ public class TypeChecker {
             return type;
         }
 
-        if (expr instanceof FuncCall f) {
+        if (expr instanceof FuncCall fc) {
+            String identifier = fc.getIdentifier();
+
+            // TODO: fix symboltable tjek
+            // if (!symbolTable.functions.containsKey(identifier)) {
+            // throw new RuntimeException("Cannot call undeclared function " + identifier);
+            // }
+
+            Type paramType = checkExpr(fc.getParameter());
+
+            if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
+                throw new RuntimeException("Cannot call function with parameter type " + paramType);
+            }
+
+            // TODO: fix symboltable tjek
+            // FuncDecl f = symbolTable.functions.get(identifier);
+
+            // return f.getReturnType();
             return Type.INT_T;
         }
 
