@@ -36,8 +36,7 @@ import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
-import frontend.symboltable.Symbol;
-import frontend.symboltable.SymbolTable;
+import frontend.symboltable.NewSymbol;
 import lombok.Getter;
 
 /* Three Access Code Generator */
@@ -55,19 +54,22 @@ public class IrGenerator {
     private List<IrFunction> functions = new ArrayList<>();
     private IrFunction currentFunction = null; // start in global scope
 
-    private SymbolTable symbolTable;
     private OperatorMapper operatorMapper = new OperatorMapper();
 
-    public IrGenerator(SymbolTable symbolTable) {
-        this.symbolTable = symbolTable;
+    public IrGenerator() {
+        // Empty constructor
     }
 
     private IrValue newTemp(Type type) {
         return new IrValue("t" + tempCounter++, type);
     }
-
+    
     private String newLabel() {
         return "L" + labelCount++;
+    }
+    
+    private void newTemp(NewSymbol symbol) {
+        symbol.setIrName("t" + tempCounter++);
     }
 
     /**
@@ -187,7 +189,7 @@ public class IrGenerator {
         if (expr instanceof FuncCall func) {
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
-            Symbol symbol = symbolTable.findId(ident);
+            NewSymbol symbol = func.getSymbolRef();
             IrValue result = newTemp(symbol.getType());
 
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
@@ -218,11 +220,10 @@ public class IrGenerator {
 
             try {
                 // findId, since frontend has created it before.
-                // TODO: incorporate symbol table
-                // Symbol symbol = symbolTable.findId(name);
-                // IrValue result = new IrValue(name, symbol.getType());
+                NewSymbol symbol = decl.getSymbolRef();
+                newTemp(symbol);
+                IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
-                IrValue result = newTemp(expr.getType());
 
                 if (expr.getType() != result.getType()) {
                     throw new NonMatchingTypeException(
@@ -242,8 +243,8 @@ public class IrGenerator {
             IrValue right = generateExpr(ass.getValue());
 
             try {
-                Symbol sym = symbolTable.findId(varName);
-                IrValue left = new IrValue(varName, sym.getType());
+                NewSymbol symbol = ass.getSymbolRef();
+                IrValue left = new IrValue(symbol.getIrName(), symbol.getType());
 
                 if (left.getType() != right.getType()) {
                     throw new NonMatchingTypeException(

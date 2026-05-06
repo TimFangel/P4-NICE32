@@ -3,6 +3,7 @@ package frontend;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
+import frontend.semantic_analysis.SemanticAnalyser;
 import frontend.semantic_analysis.TypeChecker;
 import frontend.symboltable.SymbolTable;
 import ir.IrGenerator;
@@ -26,12 +27,15 @@ public class Main {
 
             Program ast = parser.mainNode;
 
-            SymbolTable symbolTable = new SymbolTable(parser);
+            // SymbolTable symbolTable = new SymbolTable(parser);
 
-            TypeChecker checker = new TypeChecker(symbolTable);
-            checker.check(ast);
+            // TypeChecker checker = new TypeChecker(symbolTable);
+            // checker.check(ast);
 
-            IrGenerator irGenerator = new IrGenerator(null);
+            SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+            semanticAnalyser.traverse(ast);
+
+            IrGenerator irGenerator = new IrGenerator();
             irGenerator.generateProgram(ast);
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
