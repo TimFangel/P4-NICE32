@@ -205,6 +205,7 @@ public class TypeChecker {
         }
 
         if (expr instanceof FuncCall f) {
+            // TODO: implement function call
             return Type.INT_T;
         }
 
