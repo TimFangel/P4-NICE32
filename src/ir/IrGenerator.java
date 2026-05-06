@@ -2,6 +2,7 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BinaryOperator;
 
 import exception.NoExprMatchException;
 import exception.NoStmtMatchException;
@@ -9,6 +10,7 @@ import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
 import exception.ScopeException;
 import exception.TypeCastException;
+import frontend.abstract_syntax.component.Component;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.FuncCall;
@@ -18,6 +20,8 @@ import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
+import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
+import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
@@ -43,7 +47,9 @@ public class IrGenerator {
     private int labelCount = 0;
 
     // main+setup code
+    private IrInstruction mainLoopGoto;
     private List<IrInstruction> code = new ArrayList<>();
+    private List<IrComponent> components = new ArrayList<>();
 
     // functions
     private List<IrFunction> functions = new ArrayList<>();
@@ -343,6 +349,39 @@ public class IrGenerator {
             return;
         }
 
+        if (stmt instanceof Component compDecl) {
+            IrValue port = generateExpr(compDecl.getPort());
+            IrValue interval = generateExpr(compDecl.getInterval());
+
+            IrComponent component = new IrComponent(compDecl.getIdentifier(), compDecl.getProtocol(),
+                    compDecl.getDirection(), port, interval);
+
+            for (Decl decl : compDecl.getVariables()) {
+
+                IrValue expr = generateExpr(decl.getValue());
+                IrValue result = newTemp(expr.getType());
+
+                if (expr.getType() != result.getType()) {
+                    throw new NonMatchingTypeException(
+                            "Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
+                }
+
+                IrInstruction variable = new IrInstruction(IrOperator.ASS, expr, null, result);
+
+                component.addVariable(variable);
+            }
+
+            components.add(component);
+            // currentFunction = component; // change scope
+
+            // generate function body
+            // generateStmt(compDecl.getStatements());
+
+            // currentFunction = null; // reset scope
+
+            return;
+        }
+
         throw new NoStmtMatchException(
                 "No matching statement found! Statement: " + stmt.toString());
     }
@@ -366,7 +405,7 @@ public class IrGenerator {
         generateStmt(program.getMain());
 
         // make last instruction of main return to start of main.
-        createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
+        mainLoopGoto = new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL));
     }
 
     /**

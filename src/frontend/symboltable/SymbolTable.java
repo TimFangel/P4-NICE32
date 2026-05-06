@@ -128,8 +128,9 @@ public class SymbolTable {
      * I think it is run-time check.
      */
     // TODO: fix exception to be custom.
-    public Symbol findId(String name, Symbol symbolEnv) throws NameNotFoundException { // Search for a symbol and return
-                                                                                       // the symbol
+    public Symbol findId(String name) throws NameNotFoundException { // Search for a symbol and return
+                                                                     // the symbol
+        Symbol symbolEnv = new Symbol();
         Symbol symbol;
         Symbol symbolScope;
         symbolScope = topScope;

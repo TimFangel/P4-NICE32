@@ -54,6 +54,9 @@ public class IrInstruction {
             case CALL:
                 return "CALL " + result.getName() + ", " + arg1.getName();
 
+            case SETUP:
+                return "SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
+
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
         }

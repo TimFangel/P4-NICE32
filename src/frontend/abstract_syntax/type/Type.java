@@ -7,5 +7,5 @@ public enum Type {
     BOOL_T,
     LABEL,
     FUNCTION,
-    COMPONENT
+    COMPONENT,
 }

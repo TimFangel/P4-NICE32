@@ -38,19 +38,39 @@ public class IrPrinter {
                 writer.newLine();
             }
 
-            // create space between functions and setup/main
             writer.newLine();
-            writer.newLine();
-
             writer.write("--- Setup & Main ---");
             writer.newLine();
 
+            // Components
+            List<IrComponent> components = ir.getComponents();
+
+            for (IrComponent comp : components) {
+                for (IrInstruction ii : comp.getVariables()) {
+                    writer.write(ii.toString());
+                    writer.newLine();
+                }
+
+                writer.write(comp.getSetup().toString());
+                writer.newLine();
+            }
+            writer.newLine();
+
+            // Main
             List<IrInstruction> code = ir.getCode();
 
             for (IrInstruction instr : code) {
                 writer.write(instr.toString());
                 writer.newLine();
             }
+
+            // Component Polling
+            for (IrComponent comp : components) {
+                writer.write(comp.toString());
+                writer.newLine();
+            }
+
+            writer.write(ir.getMainLoopGoto().toString());
         }
     }
 }
