@@ -30,7 +30,6 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.SymbolTable;
 
-import java.lang.foreign.SymbolLookup;
 import java.util.*;
 
 public class TypeChecker {
@@ -73,7 +72,35 @@ public class TypeChecker {
         }
 
         if (stmt instanceof FuncDecl f) {
-            // TODO: Lav type tjek til functionsm
+            String identifier = f.getIdentifier();
+
+            if (identifier == null) {
+                throw new RuntimeException("Could not find identifier for " + identifier);
+            }
+
+            // TODO: fix symboltable tjek
+            // if (symboltable.functions.containsKey(identifier)) {
+            // throw new RuntimeException("Function already declared: " + identifier);
+            // }
+
+            Type type = f.getReturnType();
+
+            if (type != Type.BOOL_T && type != Type.FLOAT_T && type != Type.INT_T) {
+                throw new RuntimeException("Invalid return type for function " + f.getIdentifier());
+            }
+
+            Type paramType = f.getParamType();
+
+            if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
+                throw new RuntimeException("Invalid function parameter type " + paramType);
+            }
+
+            BlockStmt stmts = f.getStatements();
+
+            for (Stmt s : stmts.getStatements()) {
+                checkStmt(s);
+            }
+
             return;
         }
 
@@ -169,6 +196,15 @@ public class TypeChecker {
         }
 
         if (stmt instanceof WhileStmt w) {
+            Expr condition = w.getCondition();
+            checkExpr(condition);
+
+            BlockStmt body = w.getWhileBody();
+
+            for (Stmt s : body.getStatements()) {
+                checkStmt(s);
+            }
+
             return;
         }
 
@@ -204,7 +240,24 @@ public class TypeChecker {
             return type;
         }
 
-        if (expr instanceof FuncCall f) {
+        if (expr instanceof FuncCall fc) {
+            String identifier = fc.getIdentifier();
+
+            // TODO: fix symboltable tjek
+            // if (!symbolTable.functions.containsKey(identifier)) {
+            // throw new RuntimeException("Cannot call undeclared function " + identifier);
+            // }
+
+            Type paramType = checkExpr(fc.getParameter());
+
+            if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
+                throw new RuntimeException("Cannot call function with parameter type " + paramType);
+            }
+
+            // TODO: fix symboltable tjek
+            // FuncDecl f = symbolTable.functions.get(identifier);
+
+            // return f.getReturnType();
             return Type.INT_T;
         }
 
@@ -277,7 +330,7 @@ public class TypeChecker {
                 case LEQ, GEQ, GT, LT:
                     if (left == Type.BOOL_T || right == Type.BOOL_T || left != right) {
                         throw new RuntimeException(
-                                "Comparison requires ints or floats, got " + left + " and " + right);
+                                "Comparison requires either two ints or two floats, got " + left + " and " + right);
                     }
 
                     return Type.BOOL_T;
@@ -304,7 +357,21 @@ public class TypeChecker {
             Type right = checkExpr(a.getExprRight());
 
             switch (a.getOp()) {
-                case ADD, SUB, MUL, DIV, MOD:
+                case DIV:
+                    if (a.getExprRight() instanceof Operand o) {
+                        Value v = o.getValue();
+                        if (v instanceof IntNum n && n.value() == 0) {
+                            throw new RuntimeException("Illegal division by zero");
+                        }
+
+                        if (v instanceof FloatNum n && n.value() == 0) {
+                            throw new RuntimeException("Illegal division by zero");
+                        }
+                    }
+
+                    // No return, let it continue to the following checks.
+
+                case ADD, SUB, MUL, MOD:
                     if (left != right) {
                         throw new RuntimeException("Type mismatch: " + left + " and " + right);
                     }
