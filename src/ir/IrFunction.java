@@ -11,7 +11,7 @@ public class IrFunction {
     private String funcName;
     private IrValue parameter;
     private Type retType;
-    List<IrInstruction> funcBody = new ArrayList<>(); // local function code
+    private List<IrInstruction> funcBody = new ArrayList<>(); // local function code
 
     public IrFunction(String funcName, IrValue parameter, Type retType) {
         this.funcName = funcName;

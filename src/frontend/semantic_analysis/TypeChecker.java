@@ -34,7 +34,7 @@ import java.lang.foreign.SymbolLookup;
 import java.util.*;
 
 public class TypeChecker {
-    SymbolTable symbolTable;
+    private SymbolTable symbolTable;
     private final Map<String, Type> symbols = new HashMap<>();
 
     public TypeChecker(SymbolTable symbolTable) {

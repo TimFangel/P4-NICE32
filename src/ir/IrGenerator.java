@@ -77,7 +77,7 @@ public class IrGenerator {
      */
     private void createIR(IrInstruction instruction) {
         if (currentFunction != null) { // null -> global scope
-            currentFunction.funcBody.add(instruction);
+            currentFunction.getFuncBody().add(instruction);
         } else {
             code.add(instruction);
         }
