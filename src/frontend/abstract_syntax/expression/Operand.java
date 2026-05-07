@@ -7,9 +7,9 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class Operand extends Expr {
+public final class Operand extends Expr {
     Value value;
-    
+
     public Operand(int lineNumber, Value value) {
         super(lineNumber);
 

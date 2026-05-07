@@ -9,7 +9,7 @@ import lombok.ToString;
 /* Program Node */
 @ToString
 @Getter
-public class Program extends Node {
+public final class Program extends Node {
     private final BlockStmt setup;
     private final BlockStmt functions;
     private final BlockStmt main;

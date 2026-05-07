@@ -14,7 +14,7 @@ import lombok.ToString;
 /* Component Node */
 @ToString
 @Getter
-public class Component extends Stmt {
+public final class Component extends Stmt {
     private String identifier;
     private Expr port;
     private ProtocolComp protocol;

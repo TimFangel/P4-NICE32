@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class VarExpr extends Expr {
+public final class VarExpr extends Expr {
     private final String name;
 
     public VarExpr(int lineNumber, String name) {

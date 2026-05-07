@@ -8,7 +8,7 @@ import lombok.ToString;
 /* Function Declaration */
 @ToString
 @Getter
-public class FuncDecl extends Func {
+public final class FuncDecl extends Func {
     private Type returnType;
     private String identifier;
     private Type paramType;

@@ -9,7 +9,7 @@ import lombok.ToString;
 /* Return Statement */
 @ToString
 @Getter
-public class ReturnStmt extends Stmt {
+public final class ReturnStmt extends Stmt {
     private Expr exprReturned;
 
     ReturnStmt(int lineNumber, Expr exprReturned) {

@@ -9,7 +9,7 @@ import lombok.ToString;
 /* Assignment */
 @ToString
 @Getter
-public class AssStmt extends Stmt {
+public final class AssStmt extends Stmt {
     private String identifier;
     private Expr value;
     private NewSymbol symbolRef = null;

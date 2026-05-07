@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class MemberAccess extends Expr {
+public final class MemberAccess extends Expr {
     private final String component;
     private final String variable;
 

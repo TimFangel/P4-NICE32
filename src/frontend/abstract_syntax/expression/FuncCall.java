@@ -7,7 +7,7 @@ import lombok.ToString;
 /* Function Call Statement */
 @ToString
 @Getter
-public class FuncCall extends Expr {
+public final class FuncCall extends Expr {
     private String identifier;
     private Expr parameter;
     private NewSymbol symbolRef = null;

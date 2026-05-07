@@ -9,7 +9,7 @@ import lombok.ToString;
 /* Declaration Statement */
 @ToString
 @Getter
-public class Decl extends Stmt {
+public final class Decl extends Stmt {
     private Type type;
     private String identifier;
     private Expr value;
