@@ -6,7 +6,6 @@ functions {
 
 main {
     int a = 2;
-    a = 4;
-    int a = 6;
-    a = 8;
+    bool b = false;
+    a = 4 + 2 + 1 + b;
 }
