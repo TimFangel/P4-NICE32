@@ -1,4 +1,4 @@
-package frontend.typecheckertest;
+package frontend.semantic_analyser;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
@@ -14,23 +14,28 @@ import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
+import frontend.abstract_syntax.Node;
 import frontend.abstract_syntax.expression.Expr;
+import frontend.semantic_analysis.SemanticAnalyser;
 import frontend.semantic_analysis.TypeChecker;
 import java.lang.reflect.*;
+import frontend.semantic_analysis.SemanticAnalyser;
+import frontend.symboltable.NewSymbolTable;
+import frontend.symboltable.NewSymbol;
 
 /* Documentation = https://www.youtube.com/watch?v=bhhMJSKNCQY */
 /* The concept of reflection */
 /* Change element of class at runtime */
 
-public class TypeCheckerTest {
+public class SemanticAnalyserTest {
 
     @Test
-    public void testCheckExprReturnsCorrectTypeOnArithBinaryOpExpr() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testArithBinaryOpExprReturnsCorrectType() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        TypeChecker typeChecker = new TypeChecker();
+        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
 
         // Use reflection on method 
-        Method method = typeChecker.getClass().getDeclaredMethod("checkExpr", Expr.class);
+        Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
         method.setAccessible(true);
 
         IntNum leftNum = new IntNum(5);
@@ -42,21 +47,21 @@ public class TypeCheckerTest {
         ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
         
         // Invoking the now public method "checkExpr" on the typechecker with the expression as argument.
-        Type type = (Type)method.invoke(typeChecker, arithBinOpexpr);
+        Type type = (Type)method.invoke(semanticAnalyser, arithBinOpexpr);
 
         Assertions.assertEquals(Type.INT_T, type);
 
     }
 
     @Test // Test to ensure that incorrect operands throws exception.
-    public void testCheckExprThrowsExceptionOnArithBinaryOpExpr() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testArithBinaryOpExprThrowsExceptionOnIncorrectOperands() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        TypeChecker typeChecker = new TypeChecker();
+        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
 
         Assertions.assertThrows(InvocationTargetException.class, () -> {
 
             // Use reflection on method 
-            Method method = typeChecker.getClass().getDeclaredMethod("checkExpr", Expr.class);
+            Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
             method.setAccessible(true);
 
             IntNum leftNum = new IntNum(5);
@@ -68,20 +73,20 @@ public class TypeCheckerTest {
             ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
         
             // Invoking the now public method "checkExpr" on the typechecker with the expression as argument.
-            method.invoke(typeChecker, arithBinOpexpr);
+            method.invoke(semanticAnalyser, arithBinOpexpr);
 
         }, "this exception was expected");
     }
 
     @Test // Test to ensure that division by zero throws exception
-    public void testCheckExprThrowsExceptionOnArithBinaryOpExprZeroDiv() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testArithBinaryOpExprThrowsExceptionOnZeroDiv() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        TypeChecker typeChecker = new TypeChecker();
+        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
 
         Assertions.assertThrows(InvocationTargetException.class, () -> {
 
             // Use reflection on method 
-            Method method = typeChecker.getClass().getDeclaredMethod("checkExpr", Expr.class);
+            Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
             method.setAccessible(true);
 
             IntNum leftNum = new IntNum(5);
@@ -93,31 +98,12 @@ public class TypeCheckerTest {
             ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.DIV, exprLeft, exprRight);
         
             // Invoking the now public method "checkExpr" on the typechecker with the expression as argument.
-            method.invoke(typeChecker, arithBinOpexpr);
+            method.invoke(semanticAnalyser, arithBinOpexpr);
 
         }, "this exception was expected");
     }
     
-    @Test
-    public void TestCheckExprReturnsCorrectTypeOnOperand() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
-
-        TypeChecker typeChecker = new TypeChecker();
-
-        // Use reflection on method 
-        Method method = typeChecker.getClass().getDeclaredMethod("checkExpr", Expr.class);
-        method.setAccessible(true);
-
-        FloatNum floatVal = new FloatNum(2.2f);
-
-        Operand op = new Operand(0, floatVal);
-
-        // Invoking the now public method "checkExpr" on the typechecker with the expression as argument.
-        Type type = (Type)method.invoke(typeChecker, op);
-
-        Assertions.assertEquals(Type.FLOAT_T, type);
-
-    }
-
+    /* Waiting for this in semantic_analyser. */
     @Test
     public void testIfStatement() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
