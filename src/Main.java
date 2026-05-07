@@ -1,4 +1,3 @@
-package frontend;
 
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
@@ -6,7 +5,7 @@ import frontend.coco.Scanner;
 import frontend.semantic_analysis.TypeChecker;
 import frontend.symboltable.SymbolTable;
 import ir.IrGenerator;
-import ir.IrPrinter;
+import ir.util.IrPrinter;
 
 public class Main {
     public static void main(String[] args) {
