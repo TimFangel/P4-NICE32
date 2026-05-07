@@ -1,11 +1,11 @@
 --- FUNCTIONS ---
 
 --- Setup & Main ---
-
+// fix if
 L0:
 t0 := 2
-t1 := 4 + 2
-t2 := t1 + 1
-t3 := t2 + 0
-t0 := t3
+t1 := 3
+t2 := t0 < t1
+if_false t2 goto L1
+L1:
 goto L0

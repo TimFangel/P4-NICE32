@@ -63,11 +63,11 @@ public class IrGenerator {
     private IrValue newTemp(Type type) {
         return new IrValue("t" + tempCounter++, type);
     }
-    
+
     private String newLabel() {
         return "L" + labelCount++;
     }
-    
+
     private void newTemp(NewSymbol symbol) {
         symbol.setIrName("t" + tempCounter++);
     }
@@ -120,7 +120,8 @@ public class IrGenerator {
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
-                        "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+                        "[" + expr.getLineNumber() + "] Type mismatch! Left: " + left.getType() + " Right: "
+                                + right.getType());
             }
 
             // Create temporary value to hold result
@@ -197,10 +198,10 @@ public class IrGenerator {
             return result;
         }
 
-        if (expr instanceof VarExpr var) {
-            IrValue result = newTemp(Type.COMPONENT);
-            createIR(new IrInstruction(IrOperator.GOTO, null, null, result));
-            return result;
+        if (expr instanceof VarExpr varExpr) {
+            NewSymbol symbol = varExpr.getSymbolRef();
+
+            return new IrValue(symbol.getIrName(), symbol.getType());
         }
 
         throw new NoExprMatchException("No matching expression found! Expression: " + expr.toString());
@@ -239,11 +240,10 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
-            String varName = ass.getIdentifier();
+            NewSymbol symbol = ass.getSymbolRef();
             IrValue right = generateExpr(ass.getValue());
 
             try {
-                NewSymbol symbol = ass.getSymbolRef();
                 IrValue left = new IrValue(symbol.getIrName(), symbol.getType());
 
                 if (left.getType() != right.getType()) {

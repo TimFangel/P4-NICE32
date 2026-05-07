@@ -7,16 +7,17 @@ import exception.NonMatchingTypeException;
 import exception.UnrecognizedTypeException;
 import frontend.abstract_syntax.Node;
 import frontend.abstract_syntax.expression.Operand;
+import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
-import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.statement.Decl;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
+import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
@@ -40,6 +41,7 @@ public class SemanticAnalyser {
     void visit(Node n) {
         switch (n) {
             case Program p -> visit(p);
+            case IfStmt is -> visit(is);
             case BlockStmt bs -> visit(bs);
             case Decl d -> visit(d);
             case AssStmt as -> visit(as);
@@ -51,6 +53,19 @@ public class SemanticAnalyser {
 
     void visit(Program program) {
         visit(program.getMain());
+    }
+
+    /* Scope visitors */
+    void visit(IfStmt ifStmt) {
+        // Type checking
+        Type conditionType = visitType(ifStmt.getCondition());
+        if (conditionType != Type.BOOL_T) {
+            throw new NonMatchingTypeException(
+                    "[" + ifStmt.getLineNumber() + "] Type mismatch: cannot use " + conditionType
+                            + " in if statement");
+        }
+
+        // Body
     }
 
     /* Statement visitors */
@@ -105,6 +120,8 @@ public class SemanticAnalyser {
         switch (n) {
             case Operand o:
                 return visitType(o);
+            case VarExpr ve:
+                return visitType(ve);
             case ArithBinaryOpExpr ae:
                 return visitType(ae);
             case ArithUnaryOpExpr ae:
@@ -136,7 +153,23 @@ public class SemanticAnalyser {
         }
     }
 
-    /* Statement visitors */
+    /* Expr visitors */
+    Type visitType(VarExpr varExpr) {
+        NewSymbol symbol;
+
+        // Get symbol
+        try {
+            symbol = symbolTable.lookup(varExpr.getName());
+        } catch (NameNotFoundException e) {
+            throw new NameNotFoundException("[" + varExpr.getLineNumber() + "] " + e.getMessage());
+        }
+
+        // Update ast
+        varExpr.setSymbolRef(symbol);
+
+        return symbol.getType();
+    }
+
     Type visitType(ArithBinaryOpExpr binaryExpr) {
         Type leftType = visitType(binaryExpr.getExprLeft());
         Type rightType = visitType(binaryExpr.getExprRight());
@@ -183,7 +216,7 @@ public class SemanticAnalyser {
                             + " in arithmetic expressions");
         }
 
-        return leftType;
+        return Type.BOOL_T;
     }
 
     Type visitType(BoolUnaryOpExpr unaryExpr) {
