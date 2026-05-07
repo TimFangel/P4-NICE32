@@ -2,7 +2,9 @@ package ir;
 
 import exception.UnrecognizedOperatorException;
 import ir.util.IrOperator;
+import lombok.Getter;
 
+@Getter
 public class IrInstruction {
     IrOperator operator; // enum specifying the operation
     IrValue arg1; // first argument of operation (null -> not present)

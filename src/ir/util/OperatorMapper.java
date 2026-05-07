@@ -4,7 +4,6 @@ import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
 import frontend.abstract_syntax.expression.enums.ArithUnaryOp;
 import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
-import ir.IrOperator;
 
 /* Map from frontend operand to IR operands */
 public class OperatorMapper {

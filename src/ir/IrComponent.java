@@ -6,6 +6,7 @@ import java.util.NoSuchElementException;
 
 import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.ProtocolComp;
+import ir.util.IrOperator;
 import lombok.Getter;
 
 @Getter

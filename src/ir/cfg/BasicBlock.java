@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ir.IrInstruction;
+import lombok.Getter;
 
+@Getter
 public class BasicBlock {
     private final int id;
 
@@ -25,7 +27,7 @@ public class BasicBlock {
 
     public IrInstruction getLastInstruction() {
         if (instructions.isEmpty()) {
-            return null; // TODO: maybe throw exception?
+            return null;
         }
 
         return instructions.get(instructions.size() - 1);
@@ -33,7 +35,7 @@ public class BasicBlock {
 
     public void addChild(BasicBlock child) {
         children.add(child);
-        // remember to add this as parent to child.
+        // remember to add this as parent to new child.
         child.parents.add(this);
     }
 }
