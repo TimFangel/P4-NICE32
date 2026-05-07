@@ -27,16 +27,18 @@ public class SemanticAnalyser {
         visit(ast);
     }
 
-    /*  --- Visitors --- */
+    /* --- Visitors --- */
     void visit(Node n) {
-        // TODO: Change to switch and create sealed classes
-        if (n instanceof Program p) visit(p);
-        else if (n instanceof BlockStmt bs) visit(bs);
-        else if (n instanceof Decl d) visit(d);
-        else if (n instanceof AssStmt as) visit(as);
-        else throw new InvalidNodeException("[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
+        switch (n) {
+            case Program p -> visit(p);
+            case BlockStmt bs -> visit(bs);
+            case Decl d -> visit(d);
+            case AssStmt as -> visit(as);
+            default -> throw new InvalidNodeException(
+                    "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
+        }
     }
-    
+
     void visit(Program program) {
         visit(program.getMain());
     }
@@ -51,9 +53,10 @@ public class SemanticAnalyser {
         // Type checking
         Type valueType = visitType(decl.getValue());
         if (valueType != decl.getType()) {
-            throw new NonMatchingTypeException("[" + decl.getLineNumber() + "] Type mismatch: " + decl.getType() + " and " + valueType);
+            throw new NonMatchingTypeException(
+                    "[" + decl.getLineNumber() + "] Type mismatch: " + decl.getType() + " and " + valueType);
         }
-        
+
         // Update st and ast
         NewSymbol symbol = symbolTable.newVariableSymbol(decl.getIdentifier(), decl.getType());
         decl.setSymbolRef(symbol);
@@ -66,7 +69,8 @@ public class SemanticAnalyser {
         // Type checking
         Type valueType = visitType(assStmt.getValue());
         if (valueType != symbol.getType()) {
-            throw new NonMatchingTypeException("[" + assStmt.getLineNumber() + "] Type mismatch: " + symbol.getType() + " and " + valueType);
+            throw new NonMatchingTypeException(
+                    "[" + assStmt.getLineNumber() + "] Type mismatch: " + symbol.getType() + " and " + valueType);
         }
 
         // Update ast
@@ -75,8 +79,13 @@ public class SemanticAnalyser {
 
     /* --- Type returning visitors --- */
     Type visitType(Node n) {
-        if (n instanceof Operand o) return visitType(o);
-        else throw new InvalidNodeException("[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
+        switch (n) {
+            case Operand o:
+                return visitType(o);
+            default:
+                throw new InvalidNodeException(
+                        "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
+        }
     }
 
     Type visitType(Operand operand) {
@@ -85,7 +94,8 @@ public class SemanticAnalyser {
         if (value instanceof IntNum) {
             return Type.INT_T;
         } else {
-            throw new UnrecognizedTypeException("[" + operand.getLineNumber() + "] Could not find type of '" + operand.toString() + "'");
+            throw new UnrecognizedTypeException(
+                    "[" + operand.getLineNumber() + "] Could not find type of '" + operand.toString() + "'");
         }
     }
 }

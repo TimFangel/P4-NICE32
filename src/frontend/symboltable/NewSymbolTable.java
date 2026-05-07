@@ -1,6 +1,5 @@
 package frontend.symboltable;
 
-
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -8,9 +7,8 @@ import java.util.LinkedList;
 import exception.NameNotFoundException;
 import frontend.abstract_syntax.type.Type;
 
-
 public class NewSymbolTable {
-    Deque<HashMap<String,NewSymbol>> stack = new LinkedList<>();
+    Deque<HashMap<String, NewSymbol>> stack = new LinkedList<>();
 
     public NewSymbolTable() {
         enterScope(); // Creates root scope
@@ -24,7 +22,7 @@ public class NewSymbolTable {
 
     // Deletes current scope and returns to super scope
     public void exitScope() {
-        stack.removeLast();
+        stack.removeFirst();
     }
 
     // Create new variable symbol and add it to current scope
@@ -35,7 +33,7 @@ public class NewSymbolTable {
     }
 
     public NewSymbol lookup(String name) {
-        for (HashMap<String,NewSymbol> scope : stack) {
+        for (HashMap<String, NewSymbol> scope : stack) {
             if (scope.containsKey(name)) {
                 return scope.get(name);
             }
@@ -46,6 +44,6 @@ public class NewSymbolTable {
 
     // add to current scope
     void addSymbol(NewSymbol symbol) {
-        stack.getFirst().put(symbol.getName(),symbol);
+        stack.getFirst().put(symbol.getName(), symbol);
     }
 }
