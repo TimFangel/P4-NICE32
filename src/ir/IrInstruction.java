@@ -1,6 +1,7 @@
 package ir;
 
 import exception.UnrecognizedOperatorException;
+import ir.util.IrOperator;
 
 public class IrInstruction {
     IrOperator operator; // enum specifying the operation
