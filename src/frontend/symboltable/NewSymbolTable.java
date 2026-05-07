@@ -4,6 +4,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
 import frontend.abstract_syntax.type.Type;
 
@@ -44,6 +45,12 @@ public class NewSymbolTable {
 
     // add to current scope
     void addSymbol(NewSymbol symbol) {
-        stack.getFirst().put(symbol.getName(), symbol);
+        HashMap<String, NewSymbol> scope = stack.getFirst();
+
+        if (scope.containsKey(symbol.getName())) {
+            throw new NameAlreadyBoundException("Symbol " + symbol.getName() + " already exists");
+        }
+
+        scope.put(symbol.getName(), symbol);
     }
 }
