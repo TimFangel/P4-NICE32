@@ -19,7 +19,6 @@ public final class FuncDecl extends Func {
     private String paramName;
     private BlockStmt statements;
     private FunctionSymbol symbolRef = null;
-    private VariableSymbol paramSymbolRef = null;
 
     public FuncDecl(int lineNumber, Type returnType, String identifier, Type paramType, String paramName,
             BlockStmt statements) {
@@ -39,11 +38,7 @@ public final class FuncDecl extends Func {
         }
     }
 
-    public void setParamSymbolRef(Symbol symbolRef) {
-        if (symbolRef instanceof VariableSymbol vs) {
-            this.paramSymbolRef = vs;
-        } else {
-            throw new NonMatchingSymbolException("Parameter symbol must be of type: variable");
-        }
+    public VariableSymbol getParamSymbolRef() {
+        return symbolRef.getParameterSymbolRef();
     }
 }

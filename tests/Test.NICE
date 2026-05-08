@@ -1,14 +1,15 @@
 setup {
+    int a = 2;
 }
 
 functions {
-    int func f(int c) {
-        return c;
+    int func f(bool c) {
+        int b = 3;
+        return b;
     }
 }
 
 main {
-    int a = 2;
-    int b = 2 + f(a);
+    int b = a + f(true);
     
 }

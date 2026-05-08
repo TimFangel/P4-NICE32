@@ -153,11 +153,9 @@ public class SemanticAnalyser {
     }
 
     void visit(FuncDecl fd) {
-
         // Create function symbol and assign it to currentFunctionSymbol
         try {
-            currentFunctionSymbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType(),
-                    fd.getParamType());
+            currentFunctionSymbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType());
             fd.setSymbolRef(currentFunctionSymbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
@@ -182,7 +180,7 @@ public class SemanticAnalyser {
         // Create parameter symbol
         try {
             VariableSymbol paramSymbol = symbolTable.newVariableSymbol(fd.getParamName(), fd.getParamType());
-            fd.setParamSymbolRef(paramSymbol);
+            currentFunctionSymbol.setParameterSymbolRef(paramSymbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
         } catch (NonMatchingSymbolException e) {
@@ -532,12 +530,17 @@ public class SemanticAnalyser {
         Symbol funcSymbol = symbolTable.lookup(funcCall.getIdentifier());
 
         try {
-            funcCall.setSymbolRef(funcSymbol);
+            funcCall.setFunctionSymbolRef(funcSymbol);
         } catch (NonMatchingSymbolException e) {
             throw new NonMatchingSymbolException("[" + funcCall.getLineNumber() + "] " + e.getMessage());
         }
 
         Type parameterType = visitType(funcCall.getParameter());
+        if (parameterType != funcCall.getParameterSymbolRef().getType()) {
+            throw new NonMatchingTypeException(
+                    "[" + funcCall.getLineNumber() + "] Type mismatch: " + parameterType + " and "
+                            + funcCall.getParameterSymbolRef().getType());
+        }
 
         return funcSymbol.getType();
     }

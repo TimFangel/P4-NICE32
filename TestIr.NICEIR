@@ -1,12 +1,16 @@
 --- FUNCTIONS ---
 func f:
-param t0
-RET t0
-end function
+param t1
+t2 := 3
+RET t2
+end func
 
 
 --- Setup & Main ---
 
+t0 := 2
 L0:
-t1 := 2
+CALL f, true
+t4 := t0 + t2
+t3 := t4
 goto L0

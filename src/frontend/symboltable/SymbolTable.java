@@ -34,8 +34,8 @@ public class SymbolTable {
     }
 
     // Create new function symbol and add it to current scope
-    public FunctionSymbol newFunctionSymbol(String name, Type type, Type paramType) {
-        FunctionSymbol symbol = new FunctionSymbol(name, type, paramType);
+    public FunctionSymbol newFunctionSymbol(String name, Type type) {
+        FunctionSymbol symbol = new FunctionSymbol(name, type);
         addSymbol(symbol);
         return symbol;
     }

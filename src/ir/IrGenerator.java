@@ -36,7 +36,9 @@ import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
+import frontend.symboltable.FunctionSymbol;
 import frontend.symboltable.Symbol;
+import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
 
 /* Three Access Code Generator */
@@ -68,7 +70,7 @@ public class IrGenerator {
         return "L" + labelCount++;
     }
 
-    private void newTemp(Symbol symbol) {
+    private void newTemp(VariableSymbol symbol) {
         symbol.setIrName("t" + tempCounter++);
     }
 
@@ -114,9 +116,9 @@ public class IrGenerator {
      * @return the temporary variable generated.
      */
     public IrValue generateExpr(Expr expr) {
-        if (expr instanceof ArithBinaryOpExpr binop) {
-            IrValue left = generateExpr(binop.getExprLeft());
-            IrValue right = generateExpr(binop.getExprRight());
+        if (expr instanceof ArithBinaryOpExpr binOp) {
+            IrValue left = generateExpr(binOp.getExprLeft());
+            IrValue right = generateExpr(binOp.getExprRight());
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
@@ -128,26 +130,26 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add instruction for temp var
-            createIR(new IrInstruction(operatorMapper.mapArithBin(binop.getOp()), left, right, temp));
+            createIR(new IrInstruction(operatorMapper.mapArithBin(binOp.getOp()), left, right, temp));
 
             // return temp to be used in parent expr
             return temp;
         }
 
-        if (expr instanceof ArithUnaryOpExpr unop) {
-            IrValue left = generateExpr(unop.getExpr());
+        if (expr instanceof ArithUnaryOpExpr unOp) {
+            IrValue left = generateExpr(unOp.getExpr());
 
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            createIR(new IrInstruction(operatorMapper.mapArithUna(unop.getOp()), left, null, temp));
+            createIR(new IrInstruction(operatorMapper.mapArithUna(unOp.getOp()), left, null, temp));
 
             return temp;
         }
 
-        if (expr instanceof BoolBinaryOpExpr binop) {
-            IrValue left = generateExpr(binop.getExprLeft());
-            IrValue right = generateExpr(binop.getExprRight());
+        if (expr instanceof BoolBinaryOpExpr binOp) {
+            IrValue left = generateExpr(binOp.getExprLeft());
+            IrValue right = generateExpr(binOp.getExprRight());
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
@@ -157,13 +159,13 @@ public class IrGenerator {
             IrValue temp = newTemp(Type.BOOL_T);
 
             // add code for temp var
-            createIR(new IrInstruction(operatorMapper.mapBoolBin(binop.getOp()), left, right, temp));
+            createIR(new IrInstruction(operatorMapper.mapBoolBin(binOp.getOp()), left, right, temp));
 
             return temp;
         }
 
-        if (expr instanceof BoolUnaryOpExpr unop) {
-            IrValue left = generateExpr(unop.getExpr());
+        if (expr instanceof BoolUnaryOpExpr unOp) {
+            IrValue left = generateExpr(unOp.getExpr());
 
             if (left.getType() != Type.BOOL_T) {
                 throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType());
@@ -172,7 +174,7 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            createIR(new IrInstruction(operatorMapper.mapBoolUna(unop.getOp()), left, null, temp));
+            createIR(new IrInstruction(operatorMapper.mapBoolUna(unOp.getOp()), left, null, temp));
 
             return temp;
         }
@@ -190,16 +192,17 @@ public class IrGenerator {
         if (expr instanceof FuncCall func) {
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
-            Symbol symbol = func.getSymbolRef();
-            IrValue result = newTemp(symbol.getType());
+            FunctionSymbol funcSymbol = func.getFunctionSymbolRef();
+            IrValue result = new IrValue(funcSymbol.getName(), funcSymbol.getType());
 
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
 
-            return result;
+            // Return return symbol
+            return new IrValue(funcSymbol.getReturnIrName(), funcSymbol.getType());
         }
 
         if (expr instanceof VarExpr varExpr) {
-            Symbol symbol = varExpr.getSymbolRef();
+            VariableSymbol symbol = varExpr.getSymbolRef();
 
             return new IrValue(symbol.getIrName(), symbol.getType());
         }
@@ -221,7 +224,7 @@ public class IrGenerator {
 
             try {
                 // findId, since frontend has created it before.
-                Symbol symbol = decl.getSymbolRef();
+                VariableSymbol symbol = decl.getSymbolRef();
                 newTemp(symbol);
                 IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
@@ -240,7 +243,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
-            Symbol symbol = ass.getSymbolRef();
+            VariableSymbol symbol = ass.getSymbolRef();
             IrValue right = generateExpr(ass.getValue());
 
             try {
@@ -328,9 +331,12 @@ public class IrGenerator {
             if (currentFunction == null) {
                 throw new ScopeException("Return not allowed in setup/main!");
             }
-            IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
 
+            // Generate RET line
+            IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
             createIR(new IrInstruction(IrOperator.RET, null, null, returnedExpr));
+
+            retStmt.getFunctionSymbol().setReturnIrName(returnedExpr.getName());
 
             return;
         }
