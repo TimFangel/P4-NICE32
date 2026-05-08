@@ -3,7 +3,6 @@ package frontend.semantic_analysis;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import exception.InvalidDirectionException;
@@ -31,6 +30,7 @@ import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
+import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
 import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
@@ -397,19 +397,41 @@ public class SemanticAnalyser {
     Type visitType(ArithBinaryOpExpr binaryExpr) {
         Type leftType = visitType(binaryExpr.getExprLeft());
         Type rightType = visitType(binaryExpr.getExprRight());
+        ArithBinaryOp operator = binaryExpr.getOp();
 
-        // Type checking
-        if (leftType != rightType) {
-            throw new NonMatchingTypeException(
-                    "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
-        }
-        if (leftType != Type.FLOAT_T && leftType != Type.INT_T) {
-            throw new NonMatchingTypeException(
-                    "[" + binaryExpr.getLineNumber() + "] Type mismatch: cannot use " + leftType
-                            + " in arithmetic expressions");
-        }
+        switch (operator) {
+            case DIV:
+                if (binaryExpr.getExprRight() instanceof Operand o) {
+                    Value v = o.getValue();
+                    if (v instanceof IntNum n && n.value() == 0) {
+                        throw new NoValueMatchException(
+                                "[" + binaryExpr.getLineNumber() + "] Illegal division by zero");
+                    }
 
-        return leftType;
+                    if (v instanceof FloatNum n && n.value() == 0) {
+                        throw new NoValueMatchException(
+                                "[" + binaryExpr.getLineNumber() + "] Illegal division by zero");
+                    }
+                }
+
+                // No return, continue to following checks.
+
+            case ADD, SUB, MUL, MOD:
+                if (leftType != rightType) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
+                }
+
+                if (leftType != Type.INT_T && leftType != Type.FLOAT_T) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber() + "] Arithmetic operation on non-number: " + leftType);
+                }
+                return leftType;
+
+            default:
+                throw new UnrecognizedOperatorException(
+                        "[" + binaryExpr.getLineNumber() + "] Unrecognized operator: " + operator);
+        }
     }
 
     Type visitType(ArithUnaryOpExpr unaryExpr) {
