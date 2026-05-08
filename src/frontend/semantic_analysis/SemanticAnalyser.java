@@ -7,6 +7,7 @@ import exception.NonMatchingTypeException;
 import exception.UnrecognizedOperatorException;
 import exception.UnrecognizedTypeException;
 import frontend.abstract_syntax.Node;
+import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
@@ -202,6 +203,8 @@ public class SemanticAnalyser {
                 return visitType(be);
             case BoolUnaryOpExpr be:
                 return visitType(be);
+            case Cast c:
+                return visitType(c);
             default:
                 throw new InvalidNodeException(
                         "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
@@ -321,5 +324,23 @@ public class SemanticAnalyser {
         }
 
         return Type.BOOL_T;
+    }
+
+    Type visitType(Cast cast) {
+        Type initType = visitType(cast.getExpr());
+        Type targetType = cast.getTargetType();
+
+        // Type checking
+        if (initType != Type.FLOAT_T && initType != Type.INT_T) {
+            throw new NonMatchingTypeException(
+                    "[" + cast.getLineNumber() + "] Type mismatch: cannot type cast from " + initType);
+        }
+
+        if (targetType != Type.FLOAT_T && targetType != Type.INT_T) {
+            throw new NonMatchingTypeException(
+                    "[" + cast.getLineNumber() + "] Type mismatch: cannot type cast to " + targetType);
+        }
+
+        return targetType;
     }
 }
