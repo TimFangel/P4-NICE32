@@ -524,6 +524,8 @@ public class SemanticAnalyser {
             throw new NonMatchingSymbolException("[" + funcCall.getLineNumber() + "] " + e.getMessage());
         }
 
+        Type parameterType = visitType(funcCall.getParameter());
+
         return funcSymbol.getType();
     }
 
