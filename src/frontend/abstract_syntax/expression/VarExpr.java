@@ -1,5 +1,7 @@
 package frontend.abstract_syntax.expression;
 
+import exception.NonMatchingSymbolException;
+import frontend.symboltable.FunctionSymbol;
 import frontend.symboltable.NewSymbol;
 import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
@@ -17,6 +19,10 @@ public final class VarExpr extends Expr {
     }
 
     public void setSymbolRef(NewSymbol symbolRef) {
-        this.symbolRef = symbolRef;
+        if (symbolRef instanceof VariableSymbol vs) {
+            this.symbolRef = vs;
+        } else {
+            throw new NonMatchingSymbolException("Symbol must be of type: variable");
+        }
     }
 }

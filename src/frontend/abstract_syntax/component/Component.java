@@ -3,9 +3,11 @@ package frontend.abstract_syntax.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.symboltable.ComponentSymbol;
 import frontend.symboltable.FunctionSymbol;
+import frontend.symboltable.NewSymbol;
 import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.ProtocolComp;
 import frontend.abstract_syntax.expression.Expr;
@@ -36,7 +38,11 @@ public final class Component extends Stmt {
         this.variables = variables;
     }
 
-    public void setSymbolRef(ComponentSymbol symbolRef) {
-        this.symbolRef = symbolRef;
+    public void setSymbolRef(NewSymbol symbolRef) {
+        if (symbolRef instanceof ComponentSymbol cs) {
+            this.symbolRef = cs;
+        } else {
+            throw new NonMatchingSymbolException("Symbol must be of type: component");
+        }
     }
 }

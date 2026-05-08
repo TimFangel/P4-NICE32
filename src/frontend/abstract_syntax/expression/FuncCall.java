@@ -24,7 +24,7 @@ public final class FuncCall extends Expr {
         if (symbolRef instanceof FunctionSymbol fs) {
             this.symbolRef = fs;
         } else {
-            throw new NonMatchingSymbolException("Symbol must be of type: function")
+            throw new NonMatchingSymbolException("Symbol must be of type: function");
         }
     }
 }
