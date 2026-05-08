@@ -1,11 +1,20 @@
 package frontend.semantic_analysis;
 
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import exception.InvalidDirectionException;
 import exception.InvalidNodeException;
+import exception.InvalidPortException;
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
 import exception.NonMatchingSymbolException;
 import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
+import exception.PortAlreadyAssignedException;
 import exception.UnrecognizedOperatorException;
 import exception.UnrecognizedTypeException;
 import frontend.abstract_syntax.Node;
@@ -44,9 +53,30 @@ import frontend.symboltable.SymbolTable;
 public class SemanticAnalyser {
     private final SymbolTable symbolTable;
     private Type currentFunctionReturnType = null;
+    private HashSet<Integer> usedPorts = new HashSet<>();
+    private HashMap<Integer, EnumSet<DirectionType>> allowedPorts = new HashMap<>();
 
     public SemanticAnalyser() {
         this.symbolTable = new SymbolTable();
+
+        allowedPorts.put(2, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+        allowedPorts.put(4, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+        allowedPorts.put(5, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+
+        allowedPorts.put(12, EnumSet.of(DirectionType.OUTPUT));
+
+        for (int i = 13; i <= 33; i++) {
+            Set<Integer> unavailablePorts = Set.of(20, 24, 28, 29, 30, 31);
+            if (unavailablePorts.contains(i)) {
+                continue;
+            }
+            allowedPorts.put(i, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+        }
+
+        allowedPorts.put(34, EnumSet.of(DirectionType.INPUT));
+        allowedPorts.put(35, EnumSet.of(DirectionType.INPUT));
+        allowedPorts.put(36, EnumSet.of(DirectionType.INPUT));
+        allowedPorts.put(39, EnumSet.of(DirectionType.INPUT));
     }
 
     public void traverse(Node ast) {
@@ -141,6 +171,7 @@ public class SemanticAnalyser {
 
     void visit(Component c) {
         ComponentSymbol symbol;
+        int portNumber = -1;
 
         try {
             symbol = symbolTable.newComponentSymbol(c.getIdentifier(), Type.COMPONENT);
@@ -156,6 +187,17 @@ public class SemanticAnalyser {
         if (portType != Type.INT_T) {
             throw new NonMatchingTypeException(
                     "[" + c.getLineNumber() + "] Port has to be of type int, got " + portType);
+        }
+
+        if (c.getPort() instanceof Operand o && o.getValue() instanceof IntNum n) {
+            portNumber = n.value();
+
+            if (usedPorts.contains(portNumber)) {
+                throw new PortAlreadyAssignedException("[" + c.getLineNumber() + "] Port " + portNumber
+                        + " has already been assigned to a different component");
+            } else {
+                usedPorts.add(portNumber);
+            }
         }
 
         ProtocolComp protocolComp = c.getProtocol();
@@ -184,6 +226,17 @@ public class SemanticAnalyser {
         if (directionType == null) {
             throw new NonMatchingTypeException("[" + c.getLineNumber()
                     + "] Direction must be one of the supported direction values, got " + directionType);
+        }
+
+        EnumSet<DirectionType> allowedDirections = allowedPorts.get(portNumber);
+
+        if (allowedDirections == null) {
+            throw new InvalidPortException("[" + c.getLineNumber() + "] Port " + portNumber + " cannot be used");
+        }
+
+        if (!allowedDirections.contains(directionType)) {
+            throw new InvalidDirectionException("[" + c.getLineNumber() + "] Port " + portNumber + " only supports "
+                    + allowedDirections + ", got " + directionType);
         }
 
         symbolTable.enterScope();
