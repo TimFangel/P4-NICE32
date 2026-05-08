@@ -336,7 +336,9 @@ public class IrGenerator {
         }
 
         if (stmt instanceof FuncDecl funcDecl) {
-            IrValue parameter = new IrValue(funcDecl.getParamName(), funcDecl.getParamType());
+            newTemp(funcDecl.getParamSymbolRef());
+
+            IrValue parameter = new IrValue(funcDecl.getParamSymbolRef().getIrName(), funcDecl.getParamType());
 
             IrFunction function = new IrFunction(funcDecl.getIdentifier(), parameter, funcDecl.getReturnType());
 

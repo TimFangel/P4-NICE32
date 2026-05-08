@@ -1,13 +1,12 @@
 --- FUNCTIONS ---
+func f:
+param t0
+RET t0
+end function
+
 
 --- Setup & Main ---
 
 L0:
-t1 := (FLOAT_TO_INT) 2.2
-t0 := t1
-t2 := 3
-t3 := t0 < t2
-if_false t3 goto L1
-t4 := 1
-L1:
+t1 := 2
 goto L0

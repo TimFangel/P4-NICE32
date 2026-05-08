@@ -2,13 +2,13 @@ setup {
 }
 
 functions {
-    int func f(int a) {
-        return a;
+    int func f(int c) {
+        return c;
     }
 }
 
 main {
     int a = 2;
-    int b = 3 + f(a);
+    int b = 2 + f(a);
     
 }

@@ -4,6 +4,7 @@ import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.symboltable.FunctionSymbol;
+import frontend.symboltable.VariableSymbol;
 import frontend.symboltable.Symbol;
 import lombok.Getter;
 import lombok.ToString;
@@ -18,6 +19,7 @@ public final class FuncDecl extends Func {
     private String paramName;
     private BlockStmt statements;
     private FunctionSymbol symbolRef = null;
+    private VariableSymbol paramSymbolRef = null;
 
     public FuncDecl(int lineNumber, Type returnType, String identifier, Type paramType, String paramName,
             BlockStmt statements) {
@@ -33,7 +35,15 @@ public final class FuncDecl extends Func {
         if (symbolRef instanceof FunctionSymbol fs) {
             this.symbolRef = fs;
         } else {
-            throw new NonMatchingSymbolException("Symbol must be of type: function");
+            throw new NonMatchingSymbolException("Function symbol must be of type: function");
+        }
+    }
+
+    public void setParamSymbolRef(Symbol symbolRef) {
+        if (symbolRef instanceof VariableSymbol vs) {
+            this.paramSymbolRef = vs;
+        } else {
+            throw new NonMatchingSymbolException("Parameter symbol must be of type: variable");
         }
     }
 }
