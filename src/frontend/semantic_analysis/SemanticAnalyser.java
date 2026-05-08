@@ -113,6 +113,8 @@ public class SemanticAnalyser {
             fd.setSymbolRef(symbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + fd.getLineNumber() + "] " + e.getMessage());
         }
 
         // Set current function return type.
@@ -146,6 +148,8 @@ public class SemanticAnalyser {
             c.setSymbolRef(symbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + c.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + c.getLineNumber() + "] " + e.getMessage());
         }
 
         Type portType = visitType(c.getPort());
@@ -213,6 +217,8 @@ public class SemanticAnalyser {
             decl.setSymbolRef(symbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + decl.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + decl.getLineNumber() + "] " + e.getMessage());
         }
     }
 
@@ -234,7 +240,11 @@ public class SemanticAnalyser {
         }
 
         // Update ast
-        assStmt.setSymbolRef(symbol);
+        try {
+            assStmt.setSymbolRef(symbol);
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + assStmt.getLineNumber() + "] " + e.getMessage());
+        }
     }
 
     void visit(ReturnStmt rs) {
@@ -306,7 +316,11 @@ public class SemanticAnalyser {
         }
 
         // Update ast
-        varExpr.setSymbolRef(symbol);
+        try {
+            varExpr.setSymbolRef(symbol);
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + varExpr.getLineNumber() + "] " + e.getMessage());
+        }
 
         return symbol.getType();
     }
