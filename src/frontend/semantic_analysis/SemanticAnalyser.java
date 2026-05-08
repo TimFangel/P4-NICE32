@@ -50,12 +50,13 @@ import frontend.symboltable.ComponentSymbol;
 import frontend.symboltable.FunctionSymbol;
 import frontend.symboltable.Symbol;
 import frontend.symboltable.SymbolTable;
+import frontend.symboltable.VariableSymbol;
 
 public class SemanticAnalyser {
     private final SymbolTable symbolTable;
-    private Type currentFunctionReturnType = null;
     private HashSet<Integer> usedPorts = new HashSet<>();
     private HashMap<Integer, EnumSet<DirectionType>> allowedPorts = new HashMap<>();
+    private FunctionSymbol currentFunctionSymbol = null;
 
     public SemanticAnalyser() {
         this.symbolTable = new SymbolTable();
@@ -152,38 +153,48 @@ public class SemanticAnalyser {
     }
 
     void visit(FuncDecl fd) {
-        FunctionSymbol symbol;
 
+        // Create function symbol and assign it to currentFunctionSymbol
         try {
-            symbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType(), fd.getParamType());
-            fd.setSymbolRef(symbol);
+            currentFunctionSymbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType(),
+                    fd.getParamType());
+            fd.setSymbolRef(currentFunctionSymbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
         } catch (NonMatchingSymbolException e) {
             throw new NonMatchingSymbolException("[" + fd.getLineNumber() + "] " + e.getMessage());
         }
 
-        // Set current function return type.
-        currentFunctionReturnType = fd.getReturnType();
-
-        if (currentFunctionReturnType != Type.BOOL_T && currentFunctionReturnType != Type.FLOAT_T
-                && currentFunctionReturnType != Type.INT_T) {
+        // Return type check
+        if (currentFunctionSymbol.getType() != Type.BOOL_T && currentFunctionSymbol.getType() != Type.FLOAT_T
+                && currentFunctionSymbol.getType() != Type.INT_T) {
             throw new NonMatchingTypeException("Invalid return type for function " + fd.getIdentifier());
         }
 
+        // Param type check
         Type paramType = fd.getParamType();
-
         if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
             throw new NonMatchingTypeException("Invalid function parameter type " + paramType);
         }
 
         symbolTable.enterScope();
-        symbolTable.newVariableSymbol(fd.getParamName(), fd.getParamType());
+
+        // Create parameter symbol
+        try {
+            VariableSymbol paramSymbol = symbolTable.newVariableSymbol(fd.getParamName(), fd.getParamType());
+            fd.setParamSymbolRef(paramSymbol);
+        } catch (NameAlreadyBoundException e) {
+            throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        }
+
         visit(fd.getStatements());
+
         symbolTable.exitScope();
 
         // Reset current function return type.
-        currentFunctionReturnType = null;
+        currentFunctionSymbol = null;
     }
 
     void visit(Component c) {
@@ -319,16 +330,18 @@ public class SemanticAnalyser {
     void visit(ReturnStmt rs) {
         Type actualReturnType = visitType(rs.getExprReturned());
 
-        if (currentFunctionReturnType == null) {
+        if (currentFunctionSymbol == null) {
             throw new NonMatchingTypeException(
                     "[" + rs.getLineNumber() + "] Return statement outside function");
         }
 
-        if (actualReturnType != currentFunctionReturnType) {
+        if (actualReturnType != currentFunctionSymbol.getType()) {
             throw new NonMatchingTypeException(
                     "[" + rs.getLineNumber() + "] Return type mismatch: expected "
-                            + currentFunctionReturnType + " but got " + actualReturnType);
+                            + currentFunctionSymbol.getType() + " but got " + actualReturnType);
         }
+
+        rs.setSymbolRef(currentFunctionSymbol);
     }
 
     /* --- Type returning visitors --- */
