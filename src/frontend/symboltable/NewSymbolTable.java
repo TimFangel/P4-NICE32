@@ -27,8 +27,15 @@ public class NewSymbolTable {
     }
 
     // Create new variable symbol and add it to current scope
-    public NewSymbol newVariableSymbol(String name, Type type) {
-        NewSymbol symbol = new VariableSymbol(name, type);
+    public VariableSymbol newVariableSymbol(String name, Type type) {
+        VariableSymbol symbol = new VariableSymbol(name, type);
+        addSymbol(symbol);
+        return symbol;
+    }
+
+    // Create new function symbol and add it to current scope
+    public FunctionSymbol newFunctionSymbol(String name, Type type, Type paramType) {
+        FunctionSymbol symbol = new FunctionSymbol(name, type, paramType);
         addSymbol(symbol);
         return symbol;
     }
