@@ -3,10 +3,16 @@ package frontend.semantic_analysis;
 import exception.InvalidNodeException;
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
+import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
 import exception.UnrecognizedOperatorException;
 import exception.UnrecognizedTypeException;
 import frontend.abstract_syntax.Node;
+import frontend.abstract_syntax.component.Component;
+import frontend.abstract_syntax.component.constants.DirectionComp;
+import frontend.abstract_syntax.component.constants.ProtocolComp;
+import frontend.abstract_syntax.component.constants.component_types.DirectionType;
+import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
@@ -27,8 +33,11 @@ import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
+import frontend.symboltable.ComponentSymbol;
+import frontend.symboltable.FunctionSymbol;
 import frontend.symboltable.NewSymbol;
 import frontend.symboltable.NewSymbolTable;
+import frontend.symboltable.VariableSymbol;
 
 public class SemanticAnalyser {
     private final NewSymbolTable symbolTable;
@@ -52,6 +61,7 @@ public class SemanticAnalyser {
             case Decl d -> visit(d);
             case AssStmt as -> visit(as);
             case FuncDecl fd -> visit(fd);
+            case Component c -> visit(c);
             default ->
                 throw new InvalidNodeException(
                         "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
@@ -88,7 +98,7 @@ public class SemanticAnalyser {
     }
 
     void visit(FuncDecl fd) {
-        NewSymbol symbol;
+        FunctionSymbol symbol;
 
         try {
             symbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType(), fd.getParamType());
@@ -120,6 +130,58 @@ public class SemanticAnalyser {
         currentFunctionReturnType = null;
     }
 
+    void visit(Component c) {
+        ComponentSymbol symbol;
+
+        try {
+            symbol = symbolTable.newComponentSymbol(c.getIdentifier(), Type.COMPONENT);
+            c.setSymbolRef(symbol);
+        } catch (NameAlreadyBoundException e) {
+            throw new NameAlreadyBoundException("[" + c.getLineNumber() + "] " + e.getMessage());
+        }
+
+        Type portType = visitType(c.getPort());
+
+        if (portType != Type.INT_T) {
+            throw new NonMatchingTypeException(
+                    "[" + c.getLineNumber() + "] Port has to be of type int, got " + portType);
+        }
+
+        ProtocolComp protocolComp = c.getProtocol();
+        ProtocolType protocolType = protocolComp == null ? null : protocolComp.getProtocol();
+
+        if (protocolType == null) {
+            throw new NonMatchingTypeException("[" + c.getLineNumber()
+                    + "] Protocol must be one of the supported protocol values, got " + protocolType);
+        }
+
+        Type intervalType = visitType(c.getInterval());
+
+        if (intervalType != Type.INT_T) {
+            throw new NonMatchingTypeException(
+                    "[" + c.getLineNumber() + "] Interval has to be of type int, got " + intervalType);
+        }
+
+        if (c.getInterval() instanceof Operand o && o.getValue() instanceof IntNum n && n.value() < 0) {
+            throw new NoValueMatchException(
+                    "[" + c.getLineNumber() + "] Interval must be a positive integer, got " + n.value());
+        }
+
+        DirectionComp directionComp = c.getDirection();
+        DirectionType directionType = directionComp == null ? null : directionComp.getDirection();
+
+        if (directionType == null) {
+            throw new NonMatchingTypeException("[" + c.getLineNumber()
+                    + "] Direction must be one of the supported direction values, got " + directionType);
+        }
+
+        symbolTable.enterScope();
+        for (Decl d : c.getVariables()) {
+            visit(d);
+        }
+        symbolTable.exitScope();
+    }
+
     /* Statement visitors */
     void visit(BlockStmt blockStmt) {
         for (Stmt stmt : blockStmt.getStatements()) {
@@ -128,7 +190,7 @@ public class SemanticAnalyser {
     }
 
     void visit(Decl decl) {
-        NewSymbol symbol;
+        VariableSymbol symbol;
 
         // Type checking
         Type valueType = visitType(decl.getValue());

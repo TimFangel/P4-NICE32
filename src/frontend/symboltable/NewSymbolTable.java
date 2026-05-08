@@ -40,6 +40,13 @@ public class NewSymbolTable {
         return symbol;
     }
 
+    // Create new component symbol and add it to current scope
+    public ComponentSymbol newComponentSymbol(String name, Type type) {
+        ComponentSymbol symbol = new ComponentSymbol(name, type);
+        addSymbol(symbol);
+        return symbol;
+    }
+
     public NewSymbol lookup(String name) {
         for (HashMap<String, NewSymbol> scope : stack) {
             if (scope.containsKey(name)) {
@@ -50,7 +57,7 @@ public class NewSymbolTable {
         throw new NameNotFoundException("Could not find symbol name '" + name + "'");
     }
 
-    // add to current scope
+    // Add to current scope
     void addSymbol(NewSymbol symbol) {
         HashMap<String, NewSymbol> scope = stack.getFirst();
 
