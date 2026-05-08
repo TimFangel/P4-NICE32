@@ -13,6 +13,7 @@ import frontend.abstract_syntax.component.Component;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.expression.FuncCall;
+import frontend.abstract_syntax.expression.MemberAccess;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
@@ -58,16 +59,18 @@ public class IrGenerator {
         // Empty constructor
     }
 
-    private IrValue newTemp(Type type) {
-        return new IrValue("t" + tempCounter++, type);
-    }
-
     private String newLabel() {
         return "L" + labelCount++;
     }
 
-    private void newTemp(VariableSymbol symbol) {
-        symbol.setIrName("t" + tempCounter++);
+    private IrValue newTemp(Type type) {
+        return new IrValue("t" + tempCounter++, type);
+    }
+
+    private IrValue newTemp(VariableSymbol symbol) {
+        String name = "t" + tempCounter++;
+        symbol.setIrName(name);
+        return new IrValue(name, symbol.getType());
     }
 
     /**
@@ -203,6 +206,12 @@ public class IrGenerator {
             return new IrValue(symbol.getIrName(), symbol.getType());
         }
 
+        if (expr instanceof MemberAccess memberAccess) {
+            VariableSymbol symbol = memberAccess.getSymbolRef();
+
+            return new IrValue(symbol.getIrName(), symbol.getType());
+        }
+
         throw new NoExprMatchException("No matching expression found! Expression: " + expr.toString());
     }
 
@@ -216,8 +225,7 @@ public class IrGenerator {
             try {
                 // Create resulting temp and evaluate expression
                 VariableSymbol symbol = decl.getSymbolRef();
-                newTemp(symbol);
-                IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
+                IrValue result = newTemp(symbol);
                 IrValue expr = generateExpr(decl.getValue());
 
                 if (expr.getType() != result.getType()) {
@@ -333,9 +341,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof FuncDecl funcDecl) {
-            newTemp(funcDecl.getParamSymbolRef());
-
-            IrValue parameter = new IrValue(funcDecl.getParamSymbolRef().getIrName(), funcDecl.getParamType());
+            IrValue parameter = newTemp(funcDecl.getParamSymbolRef());
 
             IrFunction function = new IrFunction(funcDecl.getIdentifier(), parameter, funcDecl.getReturnType());
 
@@ -358,9 +364,10 @@ public class IrGenerator {
                     compDecl.getDirection(), port, interval);
 
             for (Decl decl : compDecl.getVariables()) {
+                VariableSymbol symbol = decl.getSymbolRef();
 
                 IrValue expr = generateExpr(decl.getValue());
-                IrValue result = newTemp(expr.getType());
+                IrValue result = newTemp(symbol);
 
                 if (expr.getType() != result.getType()) {
                     throw new NonMatchingTypeException(

@@ -1,5 +1,14 @@
 setup {
     int a = 2;
+
+    component c {
+        port: 2;
+        protocol: digital;
+        interval: 10;
+        direction: input;
+
+        int x = 0;
+    }
 }
 
 functions {
@@ -10,6 +19,6 @@ functions {
 }
 
 main {
-    int b = a + f(true);
-    
+    //int b = a + f(true);
+    int x = c.x;
 }

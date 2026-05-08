@@ -1,16 +1,17 @@
 --- FUNCTIONS ---
 func f:
-param t1
-t2 := 3
-RET t2
+param t2
+t3 := 3
+RET t3
 end func
 
 
 --- Setup & Main ---
+t1 := 0
+SETUP DIGITAL INPUT 2
 
 t0 := 2
 L0:
-CALL f, true
-t4 := t0 + t2
-t3 := t4
+t4 := t1
+COMPR t1 2 10
 goto L0
