@@ -265,12 +265,14 @@ public class SemanticAnalyser {
         // Check port and direction match
         EnumSet<DirectionType> allowedDirections = allowedPorts.get(portNumber);
 
+        String portValue = portNumber == -1 ? "(not set)" : portNumber + "";
+
         if (allowedDirections == null) {
-            throw new InvalidPortException("[" + c.getLineNumber() + "] Port " + portNumber + " cannot be used");
+            throw new InvalidPortException("[" + c.getLineNumber() + "] Port " + portValue + " cannot be used");
         }
 
         if (!allowedDirections.contains(directionType)) {
-            throw new InvalidDirectionException("[" + c.getLineNumber() + "] Port " + portNumber + " only supports "
+            throw new InvalidDirectionException("[" + c.getLineNumber() + "] Port " + portValue + " only supports "
                     + allowedDirections + ", got " + directionType);
         }
 
