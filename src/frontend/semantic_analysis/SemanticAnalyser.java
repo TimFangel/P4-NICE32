@@ -14,6 +14,7 @@ import exception.NonMatchingSymbolException;
 import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
 import exception.PortAlreadyAssignedException;
+import exception.ScopeException;
 import exception.UnrecognizedOperatorException;
 import exception.UnrecognizedTypeException;
 import frontend.abstract_syntax.Node;
@@ -24,6 +25,7 @@ import frontend.abstract_syntax.component.constants.component_types.DirectionTyp
 import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Cast;
 import frontend.abstract_syntax.expression.FuncCall;
+import frontend.abstract_syntax.expression.MemberAccess;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
@@ -199,6 +201,7 @@ public class SemanticAnalyser {
         ComponentSymbol symbol;
         int portNumber = -1;
 
+        // Create component symbol
         try {
             symbol = symbolTable.newComponentSymbol(c.getIdentifier(), Type.COMPONENT);
             c.setSymbolRef(symbol);
@@ -210,11 +213,13 @@ public class SemanticAnalyser {
 
         Type portType = visitType(c.getPort());
 
+        // port type check
         if (portType != Type.INT_T) {
             throw new NonMatchingTypeException(
                     "[" + c.getLineNumber() + "] Port has to be of type int, got " + portType);
         }
 
+        // Port availability check
         if (c.getPort() instanceof Operand o && o.getValue() instanceof IntNum n) {
             portNumber = n.value();
 
@@ -226,6 +231,7 @@ public class SemanticAnalyser {
             }
         }
 
+        // Get and check protocol
         ProtocolComp protocolComp = c.getProtocol();
         ProtocolType protocolType = protocolComp == null ? null : protocolComp.getProtocol();
 
@@ -234,6 +240,7 @@ public class SemanticAnalyser {
                     + "] Protocol must be one of the supported protocol values, got " + protocolType);
         }
 
+        // Get and check interval
         Type intervalType = visitType(c.getInterval());
 
         if (intervalType != Type.INT_T) {
@@ -246,6 +253,7 @@ public class SemanticAnalyser {
                     "[" + c.getLineNumber() + "] Interval must be a positive integer, got " + n.value());
         }
 
+        // Get and check direction
         DirectionComp directionComp = c.getDirection();
         DirectionType directionType = directionComp == null ? null : directionComp.getDirection();
 
@@ -254,6 +262,7 @@ public class SemanticAnalyser {
                     + "] Direction must be one of the supported direction values, got " + directionType);
         }
 
+        // Check port and direction match
         EnumSet<DirectionType> allowedDirections = allowedPorts.get(portNumber);
 
         if (allowedDirections == null) {
@@ -266,9 +275,19 @@ public class SemanticAnalyser {
         }
 
         symbolTable.enterScope();
+
+        // Attach scope
+        try {
+            c.getSymbolRef().setLocalScope(symbolTable.getCurrentScope());
+        } catch (ScopeException e) {
+            throw new ScopeException("[" + c.getLineNumber() + "] " + e.getMessage());
+        }
+
+        // Visit all variable declarations
         for (Decl d : c.getVariables()) {
             visit(d);
         }
+
         symbolTable.exitScope();
     }
 
@@ -361,6 +380,8 @@ public class SemanticAnalyser {
                 return visitType(c);
             case FuncCall fc:
                 return visitType(fc);
+            case MemberAccess ma:
+                return visitType(ma);
             default:
                 throw new InvalidNodeException(
                         "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
@@ -545,6 +566,27 @@ public class SemanticAnalyser {
         return funcSymbol.getType();
     }
 
-}
+    Type visitType(MemberAccess memberAccess) {
+        Symbol component = null;
+        Symbol variable;
 
-// TODO: memberCall
+        // Get component
+        try {
+            component = symbolTable.lookup(memberAccess.getComponent());
+
+        } catch (NameNotFoundException e) {
+            throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "]" + e.getMessage());
+        }
+
+        // Get variable
+        if (component instanceof ComponentSymbol cs) {
+            variable = cs.getLocalScope().get(memberAccess.getVariable());
+        } else {
+            throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "] could not find component");
+        }
+
+        memberAccess.setSymbolRef(variable);
+
+        return variable.getType();
+    }
+}

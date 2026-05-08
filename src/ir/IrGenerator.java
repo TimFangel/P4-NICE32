@@ -2,7 +2,6 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BinaryOperator;
 
 import exception.NoExprMatchException;
 import exception.NoStmtMatchException;
@@ -20,8 +19,6 @@ import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
 import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
-import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
-import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
 import frontend.abstract_syntax.statement.BlockStmt;
@@ -37,7 +34,6 @@ import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.Symbol;
 import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
 
@@ -216,14 +212,9 @@ public class IrGenerator {
      * @param stmt statement to convert to IR
      */
     public void generateStmt(Stmt stmt) {
-        // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes
-        // efter frontend.
-
         if (stmt instanceof Decl decl) {
-            String name = decl.getIdentifier();
-
             try {
-                // findId, since frontend has created it before.
+                // Create resulting temp and evaluate expression
                 VariableSymbol symbol = decl.getSymbolRef();
                 newTemp(symbol);
                 IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
@@ -454,10 +445,6 @@ public class IrGenerator {
 
 /*
  * TODO:
- * --- Generation ---
- * - Correct recursion??
- * - Component generation
- * 
  * --- After Generation ---
  * - Basic Blocks?
  * - Output strings, obj?

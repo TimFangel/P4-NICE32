@@ -3,6 +3,7 @@ package frontend.symboltable;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
@@ -47,6 +48,7 @@ public class SymbolTable {
         return symbol;
     }
 
+    // lookup symbol
     public Symbol lookup(String name) {
         for (HashMap<String, Symbol> scope : stack) {
             if (scope.containsKey(name)) {
@@ -70,5 +72,9 @@ public class SymbolTable {
 
     public boolean symbolExistsLocal(Symbol symbol) {
         return stack.getFirst().containsKey(symbol.getName());
+    }
+
+    public Map<String, Symbol> getCurrentScope() {
+        return stack.getFirst();
     }
 }

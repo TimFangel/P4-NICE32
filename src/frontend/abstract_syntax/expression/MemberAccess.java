@@ -1,5 +1,8 @@
 package frontend.abstract_syntax.expression;
 
+import exception.NonMatchingSymbolException;
+import frontend.symboltable.Symbol;
+import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -8,10 +11,19 @@ import lombok.ToString;
 public final class MemberAccess extends Expr {
     private final String component;
     private final String variable;
+    private VariableSymbol symbolRef = null;
 
     public MemberAccess(int lineNumber, String component, String variable) {
         super(lineNumber);
         this.component = component;
         this.variable = variable;
+    }
+
+    public void setSymbolRef(Symbol symbolRef) {
+        if (symbolRef instanceof VariableSymbol vs) {
+            this.symbolRef = vs;
+        } else {
+            throw new NonMatchingSymbolException("Symbol must be of type: variable");
+        }
     }
 }
