@@ -2,10 +2,14 @@ setup {
 }
 
 functions {
+
 }
 
 main {
-    int a = 2;
-    bool b = false;
-    a = 4 + 2 + 1 + b;
+    int a = (int) 2.2;
+    int b = 3;
+    if (a < b) {
+        int a = 1;
+    }
+    
 }

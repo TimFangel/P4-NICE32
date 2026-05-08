@@ -3,9 +3,11 @@
 --- Setup & Main ---
 
 L0:
-t0 := 2
-t1 := 4 + 2
-t2 := t1 + 1
-t3 := t2 + 0
-t0 := t3
+t1 := (FLOAT_TO_INT) 2.2
+t0 := t1
+t2 := 3
+t3 := t0 < t2
+if_false t3 goto L1
+t4 := 1
+L1:
 goto L0
