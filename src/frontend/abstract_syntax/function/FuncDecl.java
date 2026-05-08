@@ -1,5 +1,6 @@
 package frontend.abstract_syntax.function;
 
+import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.symboltable.FunctionSymbol;
@@ -28,7 +29,11 @@ public final class FuncDecl extends Func {
         this.statements = statements;
     }
 
-    public void setSymbolRef(FunctionSymbol symbolRef) {
-        this.symbolRef = symbolRef;
+    public void setSymbolRef(NewSymbol symbolRef) {
+        if (symbolRef instanceof FunctionSymbol fs) {
+            this.symbolRef = fs;
+        } else {
+            throw new NonMatchingSymbolException("Symbol must be of type: function");
+        }
     }
 }
