@@ -3,6 +3,7 @@ package frontend.abstract_syntax.statement.main_statement;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.symboltable.NewSymbol;
+import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -12,7 +13,7 @@ import lombok.ToString;
 public final class AssStmt extends Stmt {
     private String identifier;
     private Expr value;
-    private NewSymbol symbolRef = null;
+    private VariableSymbol symbolRef = null;
 
     public AssStmt(int lineNumber, String identifier, Expr value) {
         super(lineNumber);

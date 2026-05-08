@@ -3,6 +3,7 @@ package frontend.abstract_syntax.statement;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.type.Type;
 import frontend.symboltable.NewSymbol;
+import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -13,7 +14,7 @@ public final class Decl extends Stmt {
     private Type type;
     private String identifier;
     private Expr value;
-    private NewSymbol symbolRef = null;
+    private VariableSymbol symbolRef = null;
 
     public Decl(int lineNumber, Type type, String identifier, Expr value) {
         super(lineNumber);
