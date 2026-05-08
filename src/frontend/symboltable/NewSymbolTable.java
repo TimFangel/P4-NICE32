@@ -60,4 +60,8 @@ public class NewSymbolTable {
 
         scope.put(symbol.getName(), symbol);
     }
+
+    public boolean symbolExistsLocal(NewSymbol symbol) {
+        return stack.getFirst().containsKey(symbol.getName());
+    }
 }

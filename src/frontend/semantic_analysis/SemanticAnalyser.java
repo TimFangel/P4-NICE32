@@ -75,16 +75,21 @@ public class SemanticAnalyser {
         }
 
         // Body
+        symbolTable.enterScope();
         BlockStmt thenStatements = ifStmt.getThenStmt();
         if (thenStatements != null) {
             visit(thenStatements);
         }
+        symbolTable.exitScope();
 
         // Else
+        symbolTable.enterScope();
         BlockStmt elseStatement = ifStmt.getElseStmt();
         if (elseStatement != null) {
             visit(elseStatement);
         }
+        symbolTable.exitScope();
+
     }
 
     void visit(FuncDecl fd) {
