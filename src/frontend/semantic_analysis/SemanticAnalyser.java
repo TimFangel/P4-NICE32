@@ -40,6 +40,7 @@ import frontend.abstract_syntax.statement.Stmt;
 import frontend.abstract_syntax.statement.main_statement.AssStmt;
 import frontend.abstract_syntax.statement.main_statement.IfStmt;
 import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
+import frontend.abstract_syntax.statement.main_statement.WhileStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
@@ -88,6 +89,7 @@ public class SemanticAnalyser {
         switch (n) {
             case Program p -> visit(p);
             case IfStmt is -> visit(is);
+            case WhileStmt ws -> visit(ws);
             case BlockStmt bs -> visit(bs);
             case ReturnStmt rs -> visit(rs);
             case Decl d -> visit(d);
@@ -132,6 +134,21 @@ public class SemanticAnalyser {
         }
         symbolTable.exitScope();
 
+    }
+
+    void visit(WhileStmt ws) {
+        Type conditionType = visitType(ws.getCondition());
+
+        if (conditionType != Type.BOOL_T) {
+            throw new NonMatchingTypeException(
+                    "[" + ws.getLineNumber() + "] Type mismatch: cannot use " + conditionType
+                            + " in while statement");
+        }
+
+        // Body
+        symbolTable.enterScope();
+        visit(ws.getWhileBody());
+        symbolTable.exitScope();
     }
 
     void visit(FuncDecl fd) {
