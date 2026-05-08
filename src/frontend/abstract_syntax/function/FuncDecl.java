@@ -4,7 +4,7 @@ import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.type.Type;
 import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.NewSymbol;
+import frontend.symboltable.Symbol;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -29,7 +29,7 @@ public final class FuncDecl extends Func {
         this.statements = statements;
     }
 
-    public void setSymbolRef(NewSymbol symbolRef) {
+    public void setSymbolRef(Symbol symbolRef) {
         if (symbolRef instanceof FunctionSymbol fs) {
             this.symbolRef = fs;
         } else {

@@ -3,8 +3,7 @@ package frontend.abstract_syntax.statement;
 import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.type.Type;
-import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.NewSymbol;
+import frontend.symboltable.Symbol;
 import frontend.symboltable.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
@@ -25,7 +24,7 @@ public final class Decl extends Stmt {
         this.value = value;
     }
 
-    public void setSymbolRef(NewSymbol symbolRef) {
+    public void setSymbolRef(Symbol symbolRef) {
         if (symbolRef instanceof VariableSymbol vs) {
             this.symbolRef = vs;
         } else {

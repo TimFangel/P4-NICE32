@@ -6,8 +6,7 @@ import java.util.List;
 import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.Stmt;
 import frontend.symboltable.ComponentSymbol;
-import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.NewSymbol;
+import frontend.symboltable.Symbol;
 import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.ProtocolComp;
 import frontend.abstract_syntax.expression.Expr;
@@ -38,7 +37,7 @@ public final class Component extends Stmt {
         this.variables = variables;
     }
 
-    public void setSymbolRef(NewSymbol symbolRef) {
+    public void setSymbolRef(Symbol symbolRef) {
         if (symbolRef instanceof ComponentSymbol cs) {
             this.symbolRef = cs;
         } else {

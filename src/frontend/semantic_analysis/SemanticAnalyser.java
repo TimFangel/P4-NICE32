@@ -38,16 +38,15 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
 import frontend.symboltable.ComponentSymbol;
 import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.NewSymbol;
-import frontend.symboltable.NewSymbolTable;
-import frontend.symboltable.VariableSymbol;
+import frontend.symboltable.Symbol;
+import frontend.symboltable.SymbolTable;
 
 public class SemanticAnalyser {
-    private final NewSymbolTable symbolTable;
+    private final SymbolTable symbolTable;
     private Type currentFunctionReturnType = null;
 
     public SemanticAnalyser() {
-        this.symbolTable = new NewSymbolTable();
+        this.symbolTable = new SymbolTable();
     }
 
     public void traverse(Node ast) {
@@ -202,7 +201,7 @@ public class SemanticAnalyser {
     }
 
     void visit(Decl decl) {
-        VariableSymbol symbol;
+        Symbol symbol;
 
         // Type checking
         Type valueType = visitType(decl.getValue());
@@ -223,7 +222,7 @@ public class SemanticAnalyser {
     }
 
     void visit(AssStmt assStmt) {
-        NewSymbol symbol;
+        Symbol symbol;
 
         // Get symbol
         try {
@@ -306,7 +305,7 @@ public class SemanticAnalyser {
 
     /* Expr visitors */
     Type visitType(VarExpr varExpr) {
-        NewSymbol symbol;
+        Symbol symbol;
 
         // Get symbol
         try {
@@ -425,7 +424,7 @@ public class SemanticAnalyser {
     }
 
     Type visitType(FuncCall funcCall) {
-        NewSymbol funcSymbol = symbolTable.lookup(funcCall.getIdentifier());
+        Symbol funcSymbol = symbolTable.lookup(funcCall.getIdentifier());
 
         try {
             funcCall.setSymbolRef(funcSymbol);

@@ -2,7 +2,7 @@ package frontend.abstract_syntax.expression;
 
 import exception.NonMatchingSymbolException;
 import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.NewSymbol;
+import frontend.symboltable.Symbol;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -20,7 +20,7 @@ public final class FuncCall extends Expr {
         this.parameter = parameter;
     }
 
-    public void setSymbolRef(NewSymbol symbolRef) {
+    public void setSymbolRef(Symbol symbolRef) {
         if (symbolRef instanceof FunctionSymbol fs) {
             this.symbolRef = fs;
         } else {

@@ -36,7 +36,7 @@ import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
-import frontend.symboltable.NewSymbol;
+import frontend.symboltable.Symbol;
 import lombok.Getter;
 
 /* Three Access Code Generator */
@@ -68,7 +68,7 @@ public class IrGenerator {
         return "L" + labelCount++;
     }
 
-    private void newTemp(NewSymbol symbol) {
+    private void newTemp(Symbol symbol) {
         symbol.setIrName("t" + tempCounter++);
     }
 
@@ -190,7 +190,7 @@ public class IrGenerator {
         if (expr instanceof FuncCall func) {
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
-            NewSymbol symbol = func.getSymbolRef();
+            Symbol symbol = func.getSymbolRef();
             IrValue result = newTemp(symbol.getType());
 
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
@@ -199,7 +199,7 @@ public class IrGenerator {
         }
 
         if (expr instanceof VarExpr varExpr) {
-            NewSymbol symbol = varExpr.getSymbolRef();
+            Symbol symbol = varExpr.getSymbolRef();
 
             return new IrValue(symbol.getIrName(), symbol.getType());
         }
@@ -221,7 +221,7 @@ public class IrGenerator {
 
             try {
                 // findId, since frontend has created it before.
-                NewSymbol symbol = decl.getSymbolRef();
+                Symbol symbol = decl.getSymbolRef();
                 newTemp(symbol);
                 IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
                 IrValue expr = generateExpr(decl.getValue());
@@ -240,7 +240,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
-            NewSymbol symbol = ass.getSymbolRef();
+            Symbol symbol = ass.getSymbolRef();
             IrValue right = generateExpr(ass.getValue());
 
             try {
