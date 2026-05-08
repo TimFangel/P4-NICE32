@@ -271,31 +271,50 @@ public class SemanticAnalyser {
     Type visitType(BoolBinaryOpExpr binaryExpr) {
         Type leftType = visitType(binaryExpr.getExprLeft());
         Type rightType = visitType(binaryExpr.getExprRight());
+        BoolBinaryOp operator = binaryExpr.getOp();
 
-        // Type checking
-        if (leftType != rightType) {
-            throw new NonMatchingTypeException(
-                    "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
-        }
-        if (leftType != Type.FLOAT_T && leftType != Type.INT_T) {
-            throw new NonMatchingTypeException(
-                    "[" + binaryExpr.getLineNumber() + "] Type mismatch: cannot use " + leftType
-                            + " in arithmetic expressions");
-        }
+        switch (operator) {
+            case AND, OR:
+                if (leftType != Type.BOOL_T || rightType != Type.BOOL_T) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
+                }
 
-        return Type.BOOL_T;
+                return Type.BOOL_T;
+
+            case EQ, NEQ:
+                if (leftType != rightType) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
+                }
+
+                return Type.BOOL_T;
+
+            case LEQ, GEQ, LT, GT:
+                if (leftType == Type.BOOL_T || rightType == Type.BOOL_T || leftType != rightType) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber()
+                                    + "] Comparison requires both operands to be of type int or float, got " + leftType
+                                    + " and " + rightType);
+                }
+
+                return Type.BOOL_T;
+
+            default:
+                throw new UnrecognizedOperatorException(
+                        "[" + binaryExpr.getLineNumber() + "] Unknown operator: " + operator);
+        }
     }
 
     Type visitType(BoolUnaryOpExpr unaryExpr) {
         Type type = visitType(unaryExpr.getExpr());
 
         // Type checking
-        if (type != Type.FLOAT_T && type != Type.INT_T) {
+        if (type != Type.BOOL_T) {
             throw new NonMatchingTypeException(
-                    "[" + unaryExpr.getLineNumber() + "] Type mismatch: cannot use " + type
-                            + " in arithmetic expressions");
+                    "[" + unaryExpr.getLineNumber() + "] Negation requires type bool, got " + type);
         }
 
-        return type;
+        return Type.BOOL_T;
     }
 }
