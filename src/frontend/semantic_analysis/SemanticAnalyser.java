@@ -3,6 +3,7 @@ package frontend.semantic_analysis;
 import exception.InvalidNodeException;
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
+import exception.NonMatchingSymbolException;
 import exception.NoValueMatchException;
 import exception.NonMatchingTypeException;
 import exception.UnrecognizedOperatorException;
@@ -14,6 +15,7 @@ import frontend.abstract_syntax.component.constants.ProtocolComp;
 import frontend.abstract_syntax.component.constants.component_types.DirectionType;
 import frontend.abstract_syntax.component.constants.component_types.ProtocolType;
 import frontend.abstract_syntax.expression.Cast;
+import frontend.abstract_syntax.expression.FuncCall;
 import frontend.abstract_syntax.expression.Operand;
 import frontend.abstract_syntax.expression.VarExpr;
 import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
@@ -267,6 +269,8 @@ public class SemanticAnalyser {
                 return visitType(be);
             case Cast c:
                 return visitType(c);
+            case FuncCall fc:
+                return visitType(fc);
             default:
                 throw new InvalidNodeException(
                         "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
@@ -405,4 +409,19 @@ public class SemanticAnalyser {
 
         return targetType;
     }
+
+    Type visitType(FuncCall funcCall) {
+        NewSymbol funcSymbol = symbolTable.lookup(funcCall.getIdentifier());
+
+        try {
+            funcCall.setSymbolRef(funcSymbol);
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + funcCall.getLineNumber() + "] " + e.getMessage());
+        }
+
+        return funcSymbol.getType();
+    }
+
 }
+
+// TODO: memberCall

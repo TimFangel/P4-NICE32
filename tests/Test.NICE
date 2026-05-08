@@ -2,14 +2,13 @@ setup {
 }
 
 functions {
-
+    int func f(int a) {
+        return a;
+    }
 }
 
 main {
-    int a = (int) 2.2;
-    int b = 3;
-    if (a < b) {
-        int a = 1;
-    }
+    int a = 2;
+    int b = 3 + f(a);
     
 }
