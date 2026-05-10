@@ -82,7 +82,7 @@ jobs:
 
             - name: Build with Maven (Skip tests)
               # The jar file is built without testing
-              run: mvn -B clean package -DskipTests
+              run: mvn -B "-Dmaven.test.skip=true" clean package
 
             - name: Upload compiled JAR
               uses: actions/upload-artifact@v4
