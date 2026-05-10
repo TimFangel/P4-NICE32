@@ -1,22 +1,13 @@
 setup {
     int a = 2;
-
-    component c {
-        port: 2;
-        protocol: digital;
-        interval: 10;
-        direction: input;
-
-        bool x = true;
-    }
 }
 
 functions {
     int func f(int c) {
-        return c
+        return c;
     }
 }
 
 main {
-    int b = f(1);
+    int b = f(1) + 0 + f(2);
 }

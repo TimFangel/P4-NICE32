@@ -1,25 +1,17 @@
 --- FUNCTIONS ---
 func f:
-param t2
-t3 := 0
-if_false t2 goto L0
-t3 := 2
-goto L1
-L0:
-t3 := 1
-L1:
-RET t3
+param t1
+RET t1
 end func
 
 
 --- Setup & Main ---
-t1 := true
-SETUP DIGITAL INPUT 2
 
 t0 := 2
-L2:
-CALL f, t1
-t5 := t0 + t3
-t4 := t5
-COMPR t1 2 10
-goto L2
+L0:
+CALL f, 1
+t3 := t1 + 0
+CALL f, 2
+t4 := t3 + t1
+t2 := t4
+goto L0
