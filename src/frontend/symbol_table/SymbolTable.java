@@ -10,7 +10,7 @@ import exception.NameNotFoundException;
 import frontend.abstract_syntax.type.Type;
 
 public class SymbolTable {
-    Deque<HashMap<String, Symbol>> stack = new LinkedList<>();
+    private Deque<HashMap<String, Symbol>> stack = new LinkedList<>();
 
     public SymbolTable() {
         enterScope(); // Creates root scope
@@ -60,7 +60,7 @@ public class SymbolTable {
     }
 
     // Add to current scope
-    void addSymbol(Symbol symbol) {
+    private void addSymbol(Symbol symbol) {
         HashMap<String, Symbol> scope = stack.getFirst();
 
         if (scope.containsKey(symbol.getName())) {
