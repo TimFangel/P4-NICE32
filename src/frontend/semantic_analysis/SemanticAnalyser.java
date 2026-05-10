@@ -547,7 +547,13 @@ public class SemanticAnalyser {
 
         // Get variable
         if (component instanceof ComponentSymbol cs) {
-            variable = cs.getLocalScope().get(memberAccess.getVariable());
+            HashMap<String, Symbol> variableScope = cs.getLocalScope();
+
+            if (variableScope.isEmpty()) {
+                throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "] could not find component");
+            }
+
+            variable = variableScope.get(memberAccess.getVariable());
         } else {
             throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "] could not find component");
         }
