@@ -71,8 +71,8 @@ public class SemanticAnalyser {
     }
 
     void visit(Program program) {
-        visit(program.getFunctions());
         visit(program.getSetup());
+        visit(program.getFunctions());
         visit(program.getMain());
     }
 
