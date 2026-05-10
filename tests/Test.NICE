@@ -9,5 +9,5 @@ functions {
 }
 
 main {
-    int b = f(1) + 0 + f(2);
+    int b = f(1) + f(2);
 }

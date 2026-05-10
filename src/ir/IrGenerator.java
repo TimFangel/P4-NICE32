@@ -171,12 +171,17 @@ public class IrGenerator {
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
             FunctionSymbol funcSymbol = func.getFunctionSymbolRef();
-            IrValue result = new IrValue(funcSymbol.getName(), funcSymbol.getType());
+            Type returnType = funcSymbol.getType();
 
+            IrValue result = new IrValue(funcSymbol.getName(), returnType);
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
 
-            // Return return symbol
-            return new IrValue(funcSymbol.getReturnIrName(), funcSymbol.getType());
+            // Create and return new symbol
+            IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
+            IrValue temp = newTemp(returnType);
+            createIR(new IrInstruction(IrOperator.ASS, returnValue, null, temp));
+
+            return temp;
         }
 
         if (expr instanceof VarExpr varExpr) {
