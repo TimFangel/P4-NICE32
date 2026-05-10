@@ -1,7 +1,6 @@
 package frontend.abstract_syntax.expression;
 
 import exception.NonMatchingSymbolException;
-import frontend.symbol_table.FunctionSymbol;
 import frontend.symbol_table.Symbol;
 import frontend.symbol_table.VariableSymbol;
 import lombok.Getter;
