@@ -1,4 +1,4 @@
-package frontend.symboltable;
+package frontend.symbol_table;
 
 import java.util.Deque;
 import java.util.HashMap;

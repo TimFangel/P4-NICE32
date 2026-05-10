@@ -34,8 +34,8 @@ import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
-import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.VariableSymbol;
+import frontend.symbol_table.FunctionSymbol;
+import frontend.symbol_table.VariableSymbol;
 import lombok.Getter;
 
 /* Three Access Code Generator */

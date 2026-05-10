@@ -3,8 +3,8 @@ package frontend.abstract_syntax.statement.main_statement;
 import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.statement.Stmt;
-import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.Symbol;
+import frontend.symbol_table.FunctionSymbol;
+import frontend.symbol_table.Symbol;
 import lombok.Getter;
 import lombok.ToString;
 

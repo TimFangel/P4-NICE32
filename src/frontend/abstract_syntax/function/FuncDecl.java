@@ -3,9 +3,9 @@ package frontend.abstract_syntax.function;
 import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.BlockStmt;
 import frontend.abstract_syntax.type.Type;
-import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.VariableSymbol;
-import frontend.symboltable.Symbol;
+import frontend.symbol_table.FunctionSymbol;
+import frontend.symbol_table.Symbol;
+import frontend.symbol_table.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
 

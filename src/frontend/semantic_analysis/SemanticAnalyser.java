@@ -48,11 +48,11 @@ import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.value.Value;
-import frontend.symboltable.ComponentSymbol;
-import frontend.symboltable.FunctionSymbol;
-import frontend.symboltable.Symbol;
-import frontend.symboltable.SymbolTable;
-import frontend.symboltable.VariableSymbol;
+import frontend.symbol_table.ComponentSymbol;
+import frontend.symbol_table.FunctionSymbol;
+import frontend.symbol_table.Symbol;
+import frontend.symbol_table.SymbolTable;
+import frontend.symbol_table.VariableSymbol;
 
 public class SemanticAnalyser {
     private final SymbolTable symbolTable;

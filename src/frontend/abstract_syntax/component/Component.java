@@ -5,8 +5,8 @@ import java.util.List;
 
 import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.Stmt;
-import frontend.symboltable.ComponentSymbol;
-import frontend.symboltable.Symbol;
+import frontend.symbol_table.ComponentSymbol;
+import frontend.symbol_table.Symbol;
 import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.ProtocolComp;
 import frontend.abstract_syntax.expression.Expr;

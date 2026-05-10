@@ -1,4 +1,4 @@
-package frontend.symboltable;
+package frontend.symbol_table;
 
 import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.type.Type;

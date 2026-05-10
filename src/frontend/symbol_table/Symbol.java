@@ -1,4 +1,4 @@
-package frontend.symboltable;
+package frontend.symbol_table;
 
 import frontend.abstract_syntax.type.Type;
 import lombok.Getter;

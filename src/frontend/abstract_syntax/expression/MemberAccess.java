@@ -1,8 +1,8 @@
 package frontend.abstract_syntax.expression;
 
 import exception.NonMatchingSymbolException;
-import frontend.symboltable.Symbol;
-import frontend.symboltable.VariableSymbol;
+import frontend.symbol_table.Symbol;
+import frontend.symbol_table.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
 

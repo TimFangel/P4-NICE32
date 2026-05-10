@@ -17,9 +17,10 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.Node;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.semantic_analysis.SemanticAnalyser;
+import frontend.symbol_table.Symbol;
+import frontend.symbol_table.SymbolTable;
+
 import java.lang.reflect.*;
-import frontend.symboltable.SymbolTable;
-import frontend.symboltable.Symbol;
 
 /* Documentation = https://www.youtube.com/watch?v=bhhMJSKNCQY */
 /* The concept of reflection */
