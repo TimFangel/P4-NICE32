@@ -5,7 +5,7 @@ import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.SemanticAnalyser;
 import ir.IrGenerator;
-import ir.IrPrinter;
+import ir.util.IrPrinter;
 
 public class Main {
     public static void main(String[] args) {

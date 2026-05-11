@@ -1,4 +1,4 @@
-package ir;
+package ir.util;
 
 import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
 import frontend.abstract_syntax.expression.enums.ArithUnaryOp;
