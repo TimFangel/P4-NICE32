@@ -1,3 +1,4 @@
+package frontend;
 
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
