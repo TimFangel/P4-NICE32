@@ -8,7 +8,7 @@ import lombok.ToString;
 /* Component Constant Superclass */
 @ToString
 @Getter
-public abstract class CompConst extends Node {
+public abstract sealed class CompConst extends Node permits DirectionComp, ProtocolComp {
     CompConst(int lineNumber) {
         super(lineNumber);
     }

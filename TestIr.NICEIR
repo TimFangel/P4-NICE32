@@ -1,16 +1,18 @@
 --- FUNCTIONS ---
-func coolestFunction:
-param x
-t2 := 2 * 2
-t3 := t2
-end function
+func f:
+param t1
+RET t1
+end func
 
 
 --- Setup & Main ---
-t1 := true
-SETUP DIGITAL INPUT 5
 
-t0 := true
+t0 := 2
 L0:
-COMPR t1 5 1500
+CALL f, 1
+t3 := t1
+CALL f, 2
+t4 := t1
+t5 := t3 + t4
+t2 := t5
 goto L0

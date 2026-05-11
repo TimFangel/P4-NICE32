@@ -3,7 +3,10 @@ package frontend.abstract_syntax.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.statement.Stmt;
+import frontend.symbol_table.ComponentSymbol;
+import frontend.symbol_table.Symbol;
 import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.ProtocolComp;
 import frontend.abstract_syntax.expression.Expr;
@@ -14,13 +17,14 @@ import lombok.ToString;
 /* Component Node */
 @ToString
 @Getter
-public class Component extends Stmt {
+public final class Component extends Stmt {
     private String identifier;
     private Expr port;
     private ProtocolComp protocol;
     private Expr interval;
     private DirectionComp direction;
     private List<Decl> variables = new ArrayList<>();
+    private ComponentSymbol symbolRef = null;
 
     public Component(int lineNumber, String identifier, Expr port, ProtocolComp protocol, Expr interval,
             DirectionComp direction, List<Decl> variables) {
@@ -31,5 +35,13 @@ public class Component extends Stmt {
         this.interval = interval;
         this.direction = direction;
         this.variables = variables;
+    }
+
+    public void setSymbolRef(Symbol symbolRef) {
+        if (symbolRef instanceof ComponentSymbol cs) {
+            this.symbolRef = cs;
+        } else {
+            throw new NonMatchingSymbolException("Symbol must be of type: component");
+        }
     }
 }

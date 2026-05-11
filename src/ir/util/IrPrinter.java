@@ -38,7 +38,7 @@ public class IrPrinter {
                     writer.write(instr.toString());
                     writer.newLine();
                 }
-                writer.write("end function");
+                writer.write("end func");
                 writer.newLine(); // space between functions
                 writer.newLine();
             }

@@ -8,7 +8,7 @@ import lombok.ToString;
 /* Boolean Expression */
 @ToString
 @Getter
-public abstract class BoolExpr extends Expr {
+public abstract sealed class BoolExpr extends Expr permits BoolBinaryOpExpr, BoolUnaryOpExpr {
     BoolExpr(int lineNumber) {
         super(lineNumber);
     }

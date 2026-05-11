@@ -9,10 +9,10 @@ import lombok.ToString;
 /* Program Node */
 @ToString
 @Getter
-public class Program extends Node {
-    public final BlockStmt setup;
-    public final BlockStmt functions;
-    public final BlockStmt main;
+public final class Program extends Node {
+    private final BlockStmt setup;
+    private final BlockStmt functions;
+    private final BlockStmt main;
 
     public Program(int lineNumber, BlockStmt setup, BlockStmt functions, BlockStmt main) {
         super(lineNumber);

@@ -7,7 +7,7 @@ import lombok.ToString;
 /* Direction Constant */
 @ToString
 @Getter
-public class DirectionComp extends CompConst {
+public final class DirectionComp extends CompConst {
     private DirectionType direction;
 
     public DirectionComp(int lineNumber, DirectionType direction) {

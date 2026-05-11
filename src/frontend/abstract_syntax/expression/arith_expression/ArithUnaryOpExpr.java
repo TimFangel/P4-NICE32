@@ -9,7 +9,7 @@ import lombok.ToString;
 /* Unary Arithmetic Operator */
 @ToString
 @Getter
-public class ArithUnaryOpExpr extends ArithExpr {
+public final class ArithUnaryOpExpr extends ArithExpr {
     private ArithUnaryOp op;
     private Expr expr;
 
