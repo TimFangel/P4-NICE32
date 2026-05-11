@@ -14,6 +14,19 @@ public class BasicBlockGenerator {
 
     private List<BasicBlock> blocks = new ArrayList<>();
 
+    private boolean isLeader(IrInstruction instr) {
+        return instr.getOperator() == IrOperator.LABEL;
+    }
+
+    private boolean isTerminator(IrInstruction instr) {
+        switch (instr.getOperator()) {
+            case GOTO, IF_FALSE, RET:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     public void generateBasicBlocks(List<IrInstruction> instructions) {
         BasicBlock currentBlock = new BasicBlock(blockIdCount++);
 
@@ -44,19 +57,6 @@ public class BasicBlockGenerator {
         // ensure final block is added
         if (!blocks.contains(currentBlock) && !currentBlock.getInstructions().isEmpty()) {
             blocks.add(currentBlock);
-        }
-    }
-
-    private boolean isLeader(IrInstruction instr) {
-        return instr.getOperator() == IrOperator.LABEL;
-    }
-
-    private boolean isTerminator(IrInstruction instr) {
-        switch (instr.getOperator()) {
-            case GOTO, IF_FALSE, RET:
-                return true;
-            default:
-                return false;
         }
     }
 
