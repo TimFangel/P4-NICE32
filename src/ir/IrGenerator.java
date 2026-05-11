@@ -209,9 +209,6 @@ public class IrGenerator {
      * @param stmt statement to convert to IR
      */
     public void generateStmt(Stmt stmt) {
-        // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes
-        // efter frontend.
-
         if (stmt instanceof Decl decl) {
             String name = decl.getIdentifier();
 
