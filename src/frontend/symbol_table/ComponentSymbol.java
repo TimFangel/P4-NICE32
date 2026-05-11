@@ -9,9 +9,9 @@ import lombok.Getter;
 
 @Getter
 public class ComponentSymbol extends Symbol {
-    HashMap<String, Symbol> localScope = null;
+    private HashMap<String, Symbol> localScope = null;
 
-    ComponentSymbol(String name, Type type) {
+    public ComponentSymbol(String name, Type type) {
         super(name, type);
     }
 
