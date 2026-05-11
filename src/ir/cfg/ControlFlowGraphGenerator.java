@@ -11,6 +11,7 @@ import lombok.Getter;
 import ir.IrInstruction;
 import ir.util.IrOperator;
 
+// Class generating basic blocks, then relations between the blocks, and then returning a cfg.
 @Getter
 public class ControlFlowGraphGenerator {
     private int blockIdCount = 0;
@@ -18,12 +19,22 @@ public class ControlFlowGraphGenerator {
     // list to contain all basic blocks of the program.
     private List<BasicBlock> blocks = new ArrayList<>();
 
-    // returns true, if instruction is possible leader of basic block.
+    /**
+     * returns true, if instruction is possible leader of basic block.
+     * 
+     * @param instr IrInstruction to check.
+     * @return true for leader, false for anything else.
+     */
     private boolean isLeader(IrInstruction instr) {
         return instr.getOperator() == IrOperator.LABEL;
     }
 
-    // returns true, if instruction is possible terminator of basic block.
+    /**
+     * returns true, if instruction is possible terminator of basic block.
+     * 
+     * @param instr IrInstruction to check.
+     * @return true for terminator, false for anything else.
+     */
     private boolean isTerminator(IrInstruction instr) {
         switch (instr.getOperator()) {
             case GOTO, IF_FALSE, RET:
