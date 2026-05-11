@@ -10,7 +10,7 @@ import lombok.ToString;
 /* If Statement */
 @ToString
 @Getter
-public class IfStmt extends Stmt{
+public final class IfStmt extends Stmt{
     private Expr condition;
     private BlockStmt  thenStmt;
     private BlockStmt  elseStmt;

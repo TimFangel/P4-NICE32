@@ -9,11 +9,11 @@ import lombok.ToString;
 /* Binary Boolean Operator */
 @ToString
 @Getter
-public class BoolBinaryOpExpr extends BoolExpr {
+public final class BoolBinaryOpExpr extends BoolExpr {
     private BoolBinaryOp op;
     private Expr exprLeft;
     private Expr exprRight;
-    
+
     public BoolBinaryOpExpr(int lineNumber, BoolBinaryOp op, Expr exprLeft, Expr exprRight) {
         super(lineNumber);
 

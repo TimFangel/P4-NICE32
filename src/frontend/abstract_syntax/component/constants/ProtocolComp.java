@@ -7,7 +7,7 @@ import lombok.ToString;
 /* Protocol Constant */
 @ToString
 @Getter
-public class ProtocolComp extends CompConst {
+public final class ProtocolComp extends CompConst {
     private ProtocolType protocol;
 
     public ProtocolComp(int lineNumber, ProtocolType protocol) {

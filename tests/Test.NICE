@@ -1,23 +1,13 @@
 setup {
-    bool yes = true;
-
-    component lamp {
-        port: 5;
-        protocol: digital;
-        interval: 1500;
-        direction: input;
-
-        bool x = true;
-    }
+    int a = 2;
 }
 
 functions {
-    int func coolestFunction(int x) {
-        int c = 2 * 2;
+    int func f(int c) {
+        return c;
     }
 }
 
 main {
-    bool a = lamp.x;
-    int b = coolestFunction(1 + 2 + 3);
+    int b = f(1) + f(2);
 }

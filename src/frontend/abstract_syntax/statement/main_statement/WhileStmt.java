@@ -10,7 +10,7 @@ import lombok.ToString;
 /* While Statement */
 @ToString
 @Getter
-public class WhileStmt extends Stmt {
+public final class WhileStmt extends Stmt {
     private Expr condition;
     private BlockStmt  whileBody;
     

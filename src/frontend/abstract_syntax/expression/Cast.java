@@ -6,7 +6,7 @@ import lombok.ToString;
 
 @ToString
 @Getter
-public class Cast extends Expr {
+public final class Cast extends Expr {
     public final Type targetType;
     public final Expr expr;
 

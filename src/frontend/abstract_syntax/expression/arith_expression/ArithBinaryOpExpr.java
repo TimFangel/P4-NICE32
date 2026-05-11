@@ -9,11 +9,11 @@ import lombok.ToString;
 /* Binary Arithmetic Operator */
 @ToString
 @Getter
-public class ArithBinaryOpExpr extends ArithExpr {
+public final class ArithBinaryOpExpr extends ArithExpr {
     private ArithBinaryOp op;
     private Expr exprLeft;
     private Expr exprRight;
-    
+
     public ArithBinaryOpExpr(int lineNumber, ArithBinaryOp op, Expr exprLeft, Expr exprRight) {
         super(lineNumber);
 

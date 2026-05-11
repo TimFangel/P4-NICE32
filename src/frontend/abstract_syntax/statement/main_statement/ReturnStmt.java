@@ -1,19 +1,30 @@
 package frontend.abstract_syntax.statement.main_statement;
 
+import exception.NonMatchingSymbolException;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.abstract_syntax.statement.Stmt;
-
+import frontend.symbol_table.FunctionSymbol;
+import frontend.symbol_table.Symbol;
 import lombok.Getter;
 import lombok.ToString;
 
 /* Return Statement */
 @ToString
 @Getter
-public class ReturnStmt extends Stmt {
+public final class ReturnStmt extends Stmt {
     private Expr exprReturned;
+    private FunctionSymbol functionSymbol = null;
 
-    ReturnStmt(int lineNumber, Expr exprReturned) {
+    public ReturnStmt(int lineNumber, Expr exprReturned) {
         super(lineNumber);
         this.exprReturned = exprReturned;
+    }
+
+    public void setSymbolRef(Symbol symbolRef) {
+        if (symbolRef instanceof FunctionSymbol fs) {
+            this.functionSymbol = fs;
+        } else {
+            throw new NonMatchingSymbolException("Function symbol must be of type: function");
+        }
     }
 }

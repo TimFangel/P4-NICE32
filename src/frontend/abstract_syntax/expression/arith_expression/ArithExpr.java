@@ -8,9 +8,8 @@ import lombok.ToString;
 /* Arithmetic Expression */
 @ToString
 @Getter
-public abstract class ArithExpr extends Expr {
+public abstract sealed class ArithExpr extends Expr permits ArithBinaryOpExpr, ArithUnaryOpExpr {
     ArithExpr(int lineNumber) {
         super(lineNumber);
     }
 }
-

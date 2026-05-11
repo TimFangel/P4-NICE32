@@ -9,7 +9,7 @@ import lombok.ToString;
 /* Unary Boolean Operator */
 @ToString
 @Getter
-public class BoolUnaryOpExpr extends BoolExpr {
+public final class BoolUnaryOpExpr extends BoolExpr {
     private BoolUnaryOp op;
     private Expr expr;
 

@@ -8,7 +8,7 @@ import lombok.ToString;
 /* Function */
 @ToString
 @Getter
-public abstract class Func extends Stmt {
+public abstract sealed class Func extends Stmt permits FuncDecl {
     Func(int lineNumber) {
         super(lineNumber);
     }
