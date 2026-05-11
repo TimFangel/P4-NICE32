@@ -15,12 +15,15 @@ import ir.util.IrOperator;
 public class ControlFlowGraphGenerator {
     private int blockIdCount = 0;
 
+    // list to contain all basic blocks of the program.
     private List<BasicBlock> blocks = new ArrayList<>();
 
+    // returns true, if instruction is possible leader of basic block.
     private boolean isLeader(IrInstruction instr) {
         return instr.getOperator() == IrOperator.LABEL;
     }
 
+    // returns true, if instruction is possible terminator of basic block.
     private boolean isTerminator(IrInstruction instr) {
         switch (instr.getOperator()) {
             case GOTO, IF_FALSE, RET:
