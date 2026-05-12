@@ -54,6 +54,8 @@ public class ControlFlowGraphGenerator {
             if (i > 0 && isLeader(instr)) {
                 if (!currentBlock.getInstructions().isEmpty()) {
                     blocks.add(currentBlock);
+                } else {
+                    blockIdCount--;
                 }
                 currentBlock = new BasicBlock(blockIdCount++);
             }

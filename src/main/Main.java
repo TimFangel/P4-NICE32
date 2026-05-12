@@ -45,11 +45,14 @@ public class Main {
             IrPrinter irPrinter = new IrPrinter(irGenerator);
             irPrinter.printIR("TestIr");
 
+            // System.out.println(ast);
             System.out.println("> IR has been successfully generated <");
 
             // --- ControlFlowGraph ---
-            ControlFlowGraphGenerator cfgg = new ControlFlowGraphGenerator();
-            ControlFlowGraph cfg = cfgg.generateCFG(irGenerator.getInstructions());
+            ControlFlowGraphGenerator controlFlowGraphGenerator = new ControlFlowGraphGenerator();
+            ControlFlowGraph cfg = controlFlowGraphGenerator.generateCFG(irGenerator.getCode());
+
+            cfg.printCFG();
 
             // --- Assembly Generator ---
             AssemblyGenerator ag = new AssemblyGenerator();
