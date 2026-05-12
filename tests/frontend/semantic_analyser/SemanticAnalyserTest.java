@@ -84,11 +84,9 @@ public class SemanticAnalyserTest {
             } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof NonMatchingTypeException) {
-                    System.out.println("InvocationTargetException caused by" + cause );
-                    throw new NonMatchingTypeException("NonMatchingTypeException was thrown");
-                } else {
-                    System.out.println("InvocationTargetException caused by unknown exception");
+                    throw (NonMatchingTypeException) cause;
                 }
+                throw e;
             }
             
         }, "this exception was expected");  
