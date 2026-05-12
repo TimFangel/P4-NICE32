@@ -1,9 +1,11 @@
 package ir;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
 import exception.UnrecognizedOperatorException;
+import frontend.abstract_syntax.type.Type;
 import ir.util.IrOperator;
 import lombok.Getter;
 
@@ -17,6 +19,8 @@ public final class IrInstruction implements IrInstructionInterface {
     // sets used for liveness analysis.
     private Set<String> gen = new HashSet<>(); // read
     private Set<String> kill = new HashSet<>(); // write
+    private Set<String> in = new HashSet<>();
+    private Set<String> out = new HashSet<>();
 
     /**
      * Constructor for an IrInstruction. null -> not present in instruction.
@@ -31,6 +35,9 @@ public final class IrInstruction implements IrInstructionInterface {
         this.arg1 = arg1;
         this.arg2 = arg2;
         this.result = result;
+
+        findGen();
+        findKill();
     }
 
     @Override
@@ -107,6 +114,28 @@ public final class IrInstruction implements IrInstructionInterface {
             default:
                 throw new UnrecognizedOperatorException(
                         "Unrecognized Operator (operatorToSymbol): " + operator.toString());
+        }
+    }
+
+    public void findGen() {
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T);
+
+        // add arg1 and arg2 to gen, if valid type.
+        if (set.contains(arg1.getType())) {
+            gen.add(arg1.getName());
+        }
+
+        if (set.contains(arg2.getType())) {
+            gen.add(arg2.getName());
+        }
+    }
+
+    public void findKill() {
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T);
+
+        // add result to kill, if valid type.
+        if (set.contains(result.getType())) {
+            kill.add(result.getName());
         }
     }
 }

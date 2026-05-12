@@ -1,13 +1,16 @@
 package ir.cfg;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
 import ir.IrInstruction;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class BasicBlock {
     private final int id;
 
@@ -20,13 +23,15 @@ public class BasicBlock {
 
     /* Liveness Variables */
     // variables used before def.
-    private Set<String> use;
+    private Set<String> gen;
     // variables assigned
-    private Set<String> def;
+    private Set<String> kill;
 
     // in and out from liveness analysis
-    private Set<String> liveIn;
-    private Set<String> liveOut;
+    private HashMap<String, List<String>> inPrev;
+    private HashMap<String, List<String>> outPrev;
+    private HashMap<String, List<String>> inCurrent;
+    private HashMap<String, List<String>> outCurrent;
 
     public BasicBlock(int id) {
         this.id = id;

@@ -1,8 +1,0 @@
---- FUNCTIONS ---
-
---- Setup & Main ---
-
-L0:
-t0 := 2
-t1 := t0
-goto L0

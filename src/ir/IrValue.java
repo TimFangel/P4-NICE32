@@ -8,7 +8,7 @@ import lombok.ToString;
 @ToString
 public class IrValue {
     private String name; // t1, 2, 2.5, true
-    private Type type; // type from symbol table. -1 = label, -2 = goto
+    private Type type; // bool, int, func, label etc.
 
     public IrValue(String name, Type type) {
         this.name = name;
