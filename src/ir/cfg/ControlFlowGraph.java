@@ -3,6 +3,7 @@ package ir.cfg;
 import java.util.ArrayList;
 import java.util.List;
 
+import ir.IrInstruction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +31,14 @@ public class ControlFlowGraph {
             System.out.print(" Children: ");
             for (BasicBlock child : block.getChildren()) {
                 System.out.print(child.getId() + " ");
+            }
+
+            System.out.println();
+            System.out.println();
+
+            System.out.println(" Instructions: ");
+            for (IrInstruction instr : block.getInstructions()) {
+                System.out.println("  " + instr.toString());
             }
 
             System.out.println();
