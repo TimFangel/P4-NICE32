@@ -16,7 +16,8 @@ Program(
           value=IntNum[
             value=1
           ]
-        )
+        ),
+        symbolRef=null
       )
     ]
   )
