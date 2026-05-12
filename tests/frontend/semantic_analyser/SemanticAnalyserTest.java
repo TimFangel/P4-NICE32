@@ -22,11 +22,10 @@ import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.Node;
 import frontend.abstract_syntax.expression.Expr;
 import frontend.semantic_analysis.SemanticAnalyser;
-import frontend.semantic_analysis.TypeChecker;
+import frontend.symbol_table.Symbol;
+import frontend.symbol_table.SymbolTable;
+
 import java.lang.reflect.*;
-import frontend.semantic_analysis.SemanticAnalyser;
-import frontend.symboltable.NewSymbolTable;
-import frontend.symboltable.NewSymbol;
 
 /* Documentation = https://www.youtube.com/watch?v=bhhMJSKNCQY */
 /* Documentation = https://www.baeldung.com/java-lang-reflect-invocationtargetexception */
@@ -36,11 +35,12 @@ import frontend.symboltable.NewSymbol;
 public class SemanticAnalyserTest {
 
     @Test
-    public void testArithBinaryOpExprReturnsCorrectType() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testArithBinaryOpExprReturnsCorrectType()
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
         SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
 
-        // Use reflection on method 
+        // Use reflection on method
         Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
         method.setAccessible(true);
 
@@ -102,7 +102,7 @@ public class SemanticAnalyserTest {
 
         Assertions.assertThrows(InvocationTargetException.class, () -> {
 
-            // Use reflection on method 
+            // Use reflection on method
             Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
             method.setAccessible(true);
 
@@ -132,21 +132,21 @@ public class SemanticAnalyserTest {
         Method method = semanticAnalyser.getClass().getDeclaredMethod("visit", IfStmt.class);
         method.setAccessible(true);
 
-        IntNum leftNum = new IntNum(5);
-        IntNum rightNum = new IntNum(4);
+            IntNum leftNum = new IntNum(5);
+            IntNum rightNum = new IntNum(4);
 
         Operand operandLeft = new Operand(0, leftNum);
         Operand operandRight = new Operand(0, rightNum);
         
         BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0,BoolBinaryOp.GT,operandLeft,operandRight);
 
-        Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
-        BlockStmt blockStmt = new BlockStmt(0, declOne);
+            Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
+            BlockStmt blockStmt = new BlockStmt(0, declOne);
 
-        Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
-        BlockStmt thenStmt = new BlockStmt(0, declTwo);
+            Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
+            BlockStmt thenStmt = new BlockStmt(0, declTwo);
 
-        IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
+            IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
 
         // Invoking 
         method.invoke(semanticAnalyser, ifStmt);
@@ -234,7 +234,8 @@ public class SemanticAnalyserTest {
     }
 
     @Test
-    public void testIfStatementThrowsExceptionOnInvalidCondition() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testIfStatementThrowsExceptionOnInvalidCondition()
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
         SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
 
@@ -244,18 +245,18 @@ public class SemanticAnalyserTest {
         Method method = semanticAnalyser.getClass().getDeclaredMethod("visit", Node.class);
         method.setAccessible(true);
 
-        IntNum leftNum = new IntNum(5);
-        IntNum rightNum = new IntNum(4);
+            IntNum leftNum = new IntNum(5);
+            IntNum rightNum = new IntNum(4);
 
         Operand exprLeft = new Operand(0, leftNum);
         Operand exprRight = new Operand(0, rightNum);
 
-        ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
+            ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
 
-        Decl decl = new Decl(0, Type.INT_T, "y", arithBinOpexpr);
-        BlockStmt blockStmt = new BlockStmt(0, decl);
+            Decl decl = new Decl(0, Type.INT_T, "y", arithBinOpexpr);
+            BlockStmt blockStmt = new BlockStmt(0, decl);
 
-        IfStmt ifStmt = new IfStmt(0, arithBinOpexpr, null, blockStmt);
+            IfStmt ifStmt = new IfStmt(0, arithBinOpexpr, null, blockStmt);
 
         // Invoking
         method.invoke(semanticAnalyser, ifStmt);
@@ -272,6 +273,5 @@ public class SemanticAnalyserTest {
 
         }, "this exception was expected");
     }
-
 
 }

@@ -1,9 +1,14 @@
-package ir;
+package ir.util;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
+
+import ir.IrComponent;
+import ir.IrFunction;
+import ir.IrGenerator;
+import ir.IrInstruction;
 
 /**
  * Prints IR code to a file.
@@ -33,7 +38,7 @@ public class IrPrinter {
                     writer.write(instr.toString());
                     writer.newLine();
                 }
-                writer.write("end function");
+                writer.write("end func");
                 writer.newLine(); // space between functions
                 writer.newLine();
             }

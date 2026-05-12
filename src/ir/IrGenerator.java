@@ -2,41 +2,20 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BinaryOperator;
 
-import exception.NoExprMatchException;
-import exception.NoStmtMatchException;
-import exception.NoValueMatchException;
-import exception.NonMatchingTypeException;
-import exception.ScopeException;
-import exception.TypeCastException;
+import exception.*;
 import frontend.abstract_syntax.component.Component;
-import frontend.abstract_syntax.expression.Cast;
-import frontend.abstract_syntax.expression.Expr;
-import frontend.abstract_syntax.expression.FuncCall;
-import frontend.abstract_syntax.expression.Operand;
-import frontend.abstract_syntax.expression.VarExpr;
-import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
-import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
-import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
-import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
-import frontend.abstract_syntax.expression.enums.ArithBinaryOp;
-import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
+import frontend.abstract_syntax.expression.*;
+import frontend.abstract_syntax.expression.arith_expression.*;
+import frontend.abstract_syntax.expression.bool_expression.*;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
-import frontend.abstract_syntax.statement.BlockStmt;
-import frontend.abstract_syntax.statement.Decl;
-import frontend.abstract_syntax.statement.Stmt;
-import frontend.abstract_syntax.statement.main_statement.AssStmt;
-import frontend.abstract_syntax.statement.main_statement.IfStmt;
-import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
-import frontend.abstract_syntax.statement.main_statement.WhileStmt;
+import frontend.abstract_syntax.statement.*;
+import frontend.abstract_syntax.statement.main_statement.*;
 import frontend.abstract_syntax.type.Type;
-import frontend.abstract_syntax.value.Bool;
-import frontend.abstract_syntax.value.FloatNum;
-import frontend.abstract_syntax.value.IntNum;
-import frontend.abstract_syntax.value.Value;
-import frontend.symboltable.NewSymbol;
+import frontend.abstract_syntax.value.*;
+import frontend.symbol_table.*;
+import ir.util.*;
 import lombok.Getter;
 
 /* Three Access Code Generator */
@@ -60,16 +39,18 @@ public class IrGenerator {
         // Empty constructor
     }
 
-    private IrValue newTemp(Type type) {
-        return new IrValue("t" + tempCounter++, type);
-    }
-
     private String newLabel() {
         return "L" + labelCount++;
     }
 
-    private void newTemp(NewSymbol symbol) {
-        symbol.setIrName("t" + tempCounter++);
+    private IrValue newTemp(Type type) {
+        return new IrValue("t" + tempCounter++, type);
+    }
+
+    private IrValue newTemp(VariableSymbol symbol) {
+        String name = "t" + tempCounter++;
+        symbol.setIrName(name);
+        return new IrValue(name, symbol.getType());
     }
 
     /**
@@ -114,9 +95,9 @@ public class IrGenerator {
      * @return the temporary variable generated.
      */
     public IrValue generateExpr(Expr expr) {
-        if (expr instanceof ArithBinaryOpExpr binop) {
-            IrValue left = generateExpr(binop.getExprLeft());
-            IrValue right = generateExpr(binop.getExprRight());
+        if (expr instanceof ArithBinaryOpExpr binOp) {
+            IrValue left = generateExpr(binOp.getExprLeft());
+            IrValue right = generateExpr(binOp.getExprRight());
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
@@ -128,26 +109,26 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add instruction for temp var
-            createIR(new IrInstruction(operatorMapper.mapArithBin(binop.getOp()), left, right, temp));
+            createIR(new IrInstruction(operatorMapper.mapArithBin(binOp.getOp()), left, right, temp));
 
             // return temp to be used in parent expr
             return temp;
         }
 
-        if (expr instanceof ArithUnaryOpExpr unop) {
-            IrValue left = generateExpr(unop.getExpr());
+        if (expr instanceof ArithUnaryOpExpr unOp) {
+            IrValue left = generateExpr(unOp.getExpr());
 
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            createIR(new IrInstruction(operatorMapper.mapArithUna(unop.getOp()), left, null, temp));
+            createIR(new IrInstruction(operatorMapper.mapArithUna(unOp.getOp()), left, null, temp));
 
             return temp;
         }
 
-        if (expr instanceof BoolBinaryOpExpr binop) {
-            IrValue left = generateExpr(binop.getExprLeft());
-            IrValue right = generateExpr(binop.getExprRight());
+        if (expr instanceof BoolBinaryOpExpr binOp) {
+            IrValue left = generateExpr(binOp.getExprLeft());
+            IrValue right = generateExpr(binOp.getExprRight());
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
@@ -157,13 +138,13 @@ public class IrGenerator {
             IrValue temp = newTemp(Type.BOOL_T);
 
             // add code for temp var
-            createIR(new IrInstruction(operatorMapper.mapBoolBin(binop.getOp()), left, right, temp));
+            createIR(new IrInstruction(operatorMapper.mapBoolBin(binOp.getOp()), left, right, temp));
 
             return temp;
         }
 
-        if (expr instanceof BoolUnaryOpExpr unop) {
-            IrValue left = generateExpr(unop.getExpr());
+        if (expr instanceof BoolUnaryOpExpr unOp) {
+            IrValue left = generateExpr(unOp.getExpr());
 
             if (left.getType() != Type.BOOL_T) {
                 throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType());
@@ -172,7 +153,7 @@ public class IrGenerator {
             IrValue temp = newTemp(left.getType());
 
             // add code for temp var
-            createIR(new IrInstruction(operatorMapper.mapBoolUna(unop.getOp()), left, null, temp));
+            createIR(new IrInstruction(operatorMapper.mapBoolUna(unOp.getOp()), left, null, temp));
 
             return temp;
         }
@@ -190,16 +171,28 @@ public class IrGenerator {
         if (expr instanceof FuncCall func) {
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
-            NewSymbol symbol = func.getSymbolRef();
-            IrValue result = newTemp(symbol.getType());
+            FunctionSymbol funcSymbol = func.getFunctionSymbolRef();
+            Type returnType = funcSymbol.getType();
 
+            IrValue result = new IrValue(funcSymbol.getName(), returnType);
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
 
-            return result;
+            // Create and return new symbol
+            IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
+            IrValue temp = newTemp(returnType);
+            createIR(new IrInstruction(IrOperator.ASS, returnValue, null, temp));
+
+            return temp;
         }
 
         if (expr instanceof VarExpr varExpr) {
-            NewSymbol symbol = varExpr.getSymbolRef();
+            VariableSymbol symbol = varExpr.getSymbolRef();
+
+            return new IrValue(symbol.getIrName(), symbol.getType());
+        }
+
+        if (expr instanceof MemberAccess memberAccess) {
+            VariableSymbol symbol = memberAccess.getSymbolRef();
 
             return new IrValue(symbol.getIrName(), symbol.getType());
         }
@@ -213,17 +206,11 @@ public class IrGenerator {
      * @param stmt statement to convert to IR
      */
     public void generateStmt(Stmt stmt) {
-        // TODO: usikker på om temp variable i stmt bruges rigtigt, kan først testes
-        // efter frontend.
-
         if (stmt instanceof Decl decl) {
-            String name = decl.getIdentifier();
-
             try {
-                // findId, since frontend has created it before.
-                NewSymbol symbol = decl.getSymbolRef();
-                newTemp(symbol);
-                IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
+                // Create resulting temp and evaluate expression
+                VariableSymbol symbol = decl.getSymbolRef();
+                IrValue result = newTemp(symbol);
                 IrValue expr = generateExpr(decl.getValue());
 
                 if (expr.getType() != result.getType()) {
@@ -240,7 +227,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
-            NewSymbol symbol = ass.getSymbolRef();
+            VariableSymbol symbol = ass.getSymbolRef();
             IrValue right = generateExpr(ass.getValue());
 
             try {
@@ -328,15 +315,18 @@ public class IrGenerator {
             if (currentFunction == null) {
                 throw new ScopeException("Return not allowed in setup/main!");
             }
-            IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
 
+            // Generate RET line
+            IrValue returnedExpr = generateExpr(retStmt.getExprReturned());
             createIR(new IrInstruction(IrOperator.RET, null, null, returnedExpr));
+
+            retStmt.getFunctionSymbol().setReturnIrName(returnedExpr.getName());
 
             return;
         }
 
         if (stmt instanceof FuncDecl funcDecl) {
-            IrValue parameter = new IrValue(funcDecl.getParamName(), funcDecl.getParamType());
+            IrValue parameter = newTemp(funcDecl.getParamSymbolRef());
 
             IrFunction function = new IrFunction(funcDecl.getIdentifier(), parameter, funcDecl.getReturnType());
 
@@ -359,9 +349,10 @@ public class IrGenerator {
                     compDecl.getDirection(), port, interval);
 
             for (Decl decl : compDecl.getVariables()) {
+                VariableSymbol symbol = decl.getSymbolRef();
 
                 IrValue expr = generateExpr(decl.getValue());
-                IrValue result = newTemp(expr.getType());
+                IrValue result = newTemp(symbol);
 
                 if (expr.getType() != result.getType()) {
                     throw new NonMatchingTypeException(
@@ -429,30 +420,4 @@ public class IrGenerator {
 
         return temp;
     }
-
-    /**
-     * Generate IR and output to text file?
-     * 
-     * @param ast abstract syntax tree generated by frontend
-     */
-    public void generateIR(Program program) {
-        // maybe just run generateProgram, then after pass it to optimizer class?
-        // generate ir
-        // create basic blocks?
-        // (opt) optimize
-        // output file or pass to backend
-    }
 }
-
-/*
- * TODO:
- * --- Generation ---
- * - Correct recursion??
- * - Component generation
- * 
- * --- After Generation ---
- * - Basic Blocks?
- * - Output strings, obj?
- * - Optimize?
- * - Tests
- */

@@ -1,23 +1,24 @@
-package frontend.symboltable;
+package frontend.symbol_table;
 
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import exception.NameAlreadyBoundException;
 import exception.NameNotFoundException;
 import frontend.abstract_syntax.type.Type;
 
-public class NewSymbolTable {
-    Deque<HashMap<String, NewSymbol>> stack = new LinkedList<>();
+public class SymbolTable {
+    private Deque<HashMap<String, Symbol>> stack = new LinkedList<>();
 
-    public NewSymbolTable() {
+    public SymbolTable() {
         enterScope(); // Creates root scope
     }
 
     // Creates and enter new sub scope
     public void enterScope() {
-        HashMap<String, NewSymbol> newScope = new HashMap<>();
+        HashMap<String, Symbol> newScope = new HashMap<>();
         stack.addFirst(newScope);
     }
 
@@ -34,14 +35,22 @@ public class NewSymbolTable {
     }
 
     // Create new function symbol and add it to current scope
-    public FunctionSymbol newFunctionSymbol(String name, Type type, Type paramType) {
-        FunctionSymbol symbol = new FunctionSymbol(name, type, paramType);
+    public FunctionSymbol newFunctionSymbol(String name, Type type) {
+        FunctionSymbol symbol = new FunctionSymbol(name, type);
         addSymbol(symbol);
         return symbol;
     }
 
-    public NewSymbol lookup(String name) {
-        for (HashMap<String, NewSymbol> scope : stack) {
+    // Create new component symbol and add it to current scope
+    public ComponentSymbol newComponentSymbol(String name, Type type) {
+        ComponentSymbol symbol = new ComponentSymbol(name, type);
+        addSymbol(symbol);
+        return symbol;
+    }
+
+    // lookup symbol
+    public Symbol lookup(String name) {
+        for (HashMap<String, Symbol> scope : stack) {
             if (scope.containsKey(name)) {
                 return scope.get(name);
             }
@@ -50,9 +59,9 @@ public class NewSymbolTable {
         throw new NameNotFoundException("Could not find symbol name '" + name + "'");
     }
 
-    // add to current scope
-    void addSymbol(NewSymbol symbol) {
-        HashMap<String, NewSymbol> scope = stack.getFirst();
+    // Add to current scope
+    private void addSymbol(Symbol symbol) {
+        HashMap<String, Symbol> scope = stack.getFirst();
 
         if (scope.containsKey(symbol.getName())) {
             throw new NameAlreadyBoundException("Symbol " + symbol.getName() + " already exists");
@@ -61,7 +70,11 @@ public class NewSymbolTable {
         scope.put(symbol.getName(), symbol);
     }
 
-    public boolean symbolExistsLocal(NewSymbol symbol) {
+    public boolean symbolExistsLocal(Symbol symbol) {
         return stack.getFirst().containsKey(symbol.getName());
+    }
+
+    public Map<String, Symbol> getCurrentScope() {
+        return stack.getFirst();
     }
 }

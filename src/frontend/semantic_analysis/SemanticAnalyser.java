@@ -1,42 +1,51 @@
 package frontend.semantic_analysis;
 
-import exception.InvalidNodeException;
-import exception.NameAlreadyBoundException;
-import exception.NameNotFoundException;
-import exception.NonMatchingTypeException;
-import exception.UnrecognizedOperatorException;
-import exception.UnrecognizedTypeException;
+import java.util.*;
+
+import exception.*;
 import frontend.abstract_syntax.Node;
-import frontend.abstract_syntax.expression.Cast;
-import frontend.abstract_syntax.expression.Operand;
-import frontend.abstract_syntax.expression.VarExpr;
-import frontend.abstract_syntax.expression.arith_expression.ArithBinaryOpExpr;
-import frontend.abstract_syntax.expression.arith_expression.ArithUnaryOpExpr;
-import frontend.abstract_syntax.expression.bool_expression.BoolBinaryOpExpr;
-import frontend.abstract_syntax.expression.bool_expression.BoolUnaryOpExpr;
-import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
+import frontend.abstract_syntax.component.Component;
+import frontend.abstract_syntax.component.constants.*;
+import frontend.abstract_syntax.component.constants.component_types.*;
+import frontend.abstract_syntax.expression.*;
+import frontend.abstract_syntax.expression.arith_expression.*;
+import frontend.abstract_syntax.expression.bool_expression.*;
+import frontend.abstract_syntax.expression.enums.*;
 import frontend.abstract_syntax.function.FuncDecl;
 import frontend.abstract_syntax.program.Program;
-import frontend.abstract_syntax.statement.BlockStmt;
-import frontend.abstract_syntax.statement.Decl;
-import frontend.abstract_syntax.statement.Stmt;
-import frontend.abstract_syntax.statement.main_statement.AssStmt;
-import frontend.abstract_syntax.statement.main_statement.IfStmt;
-import frontend.abstract_syntax.statement.main_statement.ReturnStmt;
+import frontend.abstract_syntax.statement.*;
+import frontend.abstract_syntax.statement.main_statement.*;
 import frontend.abstract_syntax.type.Type;
-import frontend.abstract_syntax.value.Bool;
-import frontend.abstract_syntax.value.FloatNum;
-import frontend.abstract_syntax.value.IntNum;
-import frontend.abstract_syntax.value.Value;
-import frontend.symboltable.NewSymbol;
-import frontend.symboltable.NewSymbolTable;
+import frontend.abstract_syntax.value.*;
+import frontend.symbol_table.*;
 
 public class SemanticAnalyser {
-    private final NewSymbolTable symbolTable;
-    private Type currentFunctionReturnType = null;
+    private final SymbolTable symbolTable;
+    private HashSet<Integer> usedPorts = new HashSet<>();
+    private HashMap<Integer, EnumSet<DirectionType>> allowedPorts = new HashMap<>();
+    private FunctionSymbol currentFunctionSymbol = null;
 
     public SemanticAnalyser() {
-        this.symbolTable = new NewSymbolTable();
+        this.symbolTable = new SymbolTable();
+
+        allowedPorts.put(2, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+        allowedPorts.put(4, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+        allowedPorts.put(5, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+
+        allowedPorts.put(12, EnumSet.of(DirectionType.OUTPUT));
+
+        for (int i = 13; i <= 33; i++) {
+            Set<Integer> unavailablePorts = Set.of(20, 24, 28, 29, 30, 31);
+            if (unavailablePorts.contains(i)) {
+                continue;
+            }
+            allowedPorts.put(i, EnumSet.of(DirectionType.INPUT, DirectionType.OUTPUT));
+        }
+
+        allowedPorts.put(34, EnumSet.of(DirectionType.INPUT));
+        allowedPorts.put(35, EnumSet.of(DirectionType.INPUT));
+        allowedPorts.put(36, EnumSet.of(DirectionType.INPUT));
+        allowedPorts.put(39, EnumSet.of(DirectionType.INPUT));
     }
 
     public void traverse(Node ast) {
@@ -48,11 +57,13 @@ public class SemanticAnalyser {
         switch (n) {
             case Program p -> visit(p);
             case IfStmt is -> visit(is);
+            case WhileStmt ws -> visit(ws);
             case BlockStmt bs -> visit(bs);
             case ReturnStmt rs -> visit(rs);
             case Decl d -> visit(d);
             case AssStmt as -> visit(as);
             case FuncDecl fd -> visit(fd);
+            case Component c -> visit(c);
             default ->
                 throw new InvalidNodeException(
                         "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
@@ -60,8 +71,8 @@ public class SemanticAnalyser {
     }
 
     void visit(Program program) {
-        visit(program.getFunctions());
         visit(program.getSetup());
+        visit(program.getFunctions());
         visit(program.getMain());
     }
 
@@ -93,37 +104,158 @@ public class SemanticAnalyser {
 
     }
 
-    void visit(FuncDecl fd) {
-        NewSymbol symbol;
+    void visit(WhileStmt ws) {
+        Type conditionType = visitType(ws.getCondition());
 
-        try {
-            symbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType(), fd.getParamType());
-            fd.setSymbolRef(symbol);
-        } catch (NameAlreadyBoundException e) {
-            throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        if (conditionType != Type.BOOL_T) {
+            throw new NonMatchingTypeException(
+                    "[" + ws.getLineNumber() + "] Type mismatch: cannot use " + conditionType
+                            + " in while statement");
         }
 
-        // Set current function return type.
-        currentFunctionReturnType = fd.getReturnType();
+        // Body
+        symbolTable.enterScope();
+        visit(ws.getWhileBody());
+        symbolTable.exitScope();
+    }
 
-        if (currentFunctionReturnType != Type.BOOL_T && currentFunctionReturnType != Type.FLOAT_T
-                && currentFunctionReturnType != Type.INT_T) {
+    void visit(FuncDecl fd) {
+        // Create function symbol and assign it to currentFunctionSymbol
+        try {
+            currentFunctionSymbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType());
+            fd.setSymbolRef(currentFunctionSymbol);
+        } catch (NameAlreadyBoundException e) {
+            throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        }
+
+        // Return type check
+        if (currentFunctionSymbol.getType() != Type.BOOL_T && currentFunctionSymbol.getType() != Type.FLOAT_T
+                && currentFunctionSymbol.getType() != Type.INT_T) {
             throw new NonMatchingTypeException("Invalid return type for function " + fd.getIdentifier());
         }
 
+        // Param type check
         Type paramType = fd.getParamType();
-
         if (paramType != Type.BOOL_T && paramType != Type.FLOAT_T && paramType != Type.INT_T) {
             throw new NonMatchingTypeException("Invalid function parameter type " + paramType);
         }
 
         symbolTable.enterScope();
-        symbolTable.newVariableSymbol(fd.getParamName(), fd.getParamType());
+
+        // Create parameter symbol
+        try {
+            VariableSymbol paramSymbol = symbolTable.newVariableSymbol(fd.getParamName(), fd.getParamType());
+            currentFunctionSymbol.setParameterSymbolRef(paramSymbol);
+        } catch (NameAlreadyBoundException e) {
+            throw new NameAlreadyBoundException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + fd.getLineNumber() + "] " + e.getMessage());
+        }
+
         visit(fd.getStatements());
+
         symbolTable.exitScope();
 
         // Reset current function return type.
-        currentFunctionReturnType = null;
+        currentFunctionSymbol = null;
+    }
+
+    void visit(Component c) {
+        ComponentSymbol symbol;
+        int portNumber = -1;
+
+        // Create component symbol
+        try {
+            symbol = symbolTable.newComponentSymbol(c.getIdentifier(), Type.COMPONENT);
+            c.setSymbolRef(symbol);
+        } catch (NameAlreadyBoundException e) {
+            throw new NameAlreadyBoundException("[" + c.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + c.getLineNumber() + "] " + e.getMessage());
+        }
+
+        Type portType = visitType(c.getPort());
+
+        // port type check
+        if (portType != Type.INT_T) {
+            throw new NonMatchingTypeException(
+                    "[" + c.getLineNumber() + "] Port has to be of type int, got " + portType);
+        }
+
+        // Port availability check
+        if (c.getPort() instanceof Operand o && o.getValue() instanceof IntNum n) {
+            portNumber = n.value();
+
+            if (usedPorts.contains(portNumber)) {
+                throw new PortAlreadyAssignedException("[" + c.getLineNumber() + "] Port " + portNumber
+                        + " has already been assigned to a different component");
+            } else {
+                usedPorts.add(portNumber);
+            }
+        }
+
+        // Get and check protocol
+        ProtocolComp protocolComp = c.getProtocol();
+        ProtocolType protocolType = protocolComp == null ? null : protocolComp.getProtocol();
+
+        if (protocolType == null) {
+            throw new NonMatchingTypeException("[" + c.getLineNumber()
+                    + "] Protocol must be one of the supported protocol values, got " + protocolType);
+        }
+
+        // Get and check interval
+        Type intervalType = visitType(c.getInterval());
+
+        if (intervalType != Type.INT_T) {
+            throw new NonMatchingTypeException(
+                    "[" + c.getLineNumber() + "] Interval has to be of type int, got " + intervalType);
+        }
+
+        if (c.getInterval() instanceof Operand o && o.getValue() instanceof IntNum n && n.value() < 0) {
+            throw new NoValueMatchException(
+                    "[" + c.getLineNumber() + "] Interval must be a positive integer, got " + n.value());
+        }
+
+        // Get and check direction
+        DirectionComp directionComp = c.getDirection();
+        DirectionType directionType = directionComp == null ? null : directionComp.getDirection();
+
+        if (directionType == null) {
+            throw new NonMatchingTypeException("[" + c.getLineNumber()
+                    + "] Direction must be one of the supported direction values, got " + directionType);
+        }
+
+        // Check port and direction match
+        EnumSet<DirectionType> allowedDirections = allowedPorts.get(portNumber);
+
+        String portValue = portNumber == -1 ? "(not set)" : portNumber + "";
+
+        if (allowedDirections == null) {
+            throw new InvalidPortException("[" + c.getLineNumber() + "] Port " + portValue + " cannot be used");
+        }
+
+        if (!allowedDirections.contains(directionType)) {
+            throw new InvalidDirectionException("[" + c.getLineNumber() + "] Port " + portValue + " only supports "
+                    + allowedDirections + ", got " + directionType);
+        }
+
+        symbolTable.enterScope();
+
+        // Attach scope
+        try {
+            c.getSymbolRef().setLocalScope(symbolTable.getCurrentScope());
+        } catch (ScopeException e) {
+            throw new ScopeException("[" + c.getLineNumber() + "] " + e.getMessage());
+        }
+
+        // Visit all variable declarations
+        for (Decl d : c.getVariables()) {
+            visit(d);
+        }
+
+        symbolTable.exitScope();
     }
 
     /* Statement visitors */
@@ -134,7 +266,7 @@ public class SemanticAnalyser {
     }
 
     void visit(Decl decl) {
-        NewSymbol symbol;
+        Symbol symbol;
 
         // Type checking
         Type valueType = visitType(decl.getValue());
@@ -149,11 +281,13 @@ public class SemanticAnalyser {
             decl.setSymbolRef(symbol);
         } catch (NameAlreadyBoundException e) {
             throw new NameAlreadyBoundException("[" + decl.getLineNumber() + "] " + e.getMessage());
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + decl.getLineNumber() + "] " + e.getMessage());
         }
     }
 
     void visit(AssStmt assStmt) {
-        NewSymbol symbol;
+        Symbol symbol;
 
         // Get symbol
         try {
@@ -170,22 +304,28 @@ public class SemanticAnalyser {
         }
 
         // Update ast
-        assStmt.setSymbolRef(symbol);
+        try {
+            assStmt.setSymbolRef(symbol);
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + assStmt.getLineNumber() + "] " + e.getMessage());
+        }
     }
 
     void visit(ReturnStmt rs) {
         Type actualReturnType = visitType(rs.getExprReturned());
 
-        if (currentFunctionReturnType == null) {
+        if (currentFunctionSymbol == null) {
             throw new NonMatchingTypeException(
                     "[" + rs.getLineNumber() + "] Return statement outside function");
         }
 
-        if (actualReturnType != currentFunctionReturnType) {
+        if (actualReturnType != currentFunctionSymbol.getType()) {
             throw new NonMatchingTypeException(
                     "[" + rs.getLineNumber() + "] Return type mismatch: expected "
-                            + currentFunctionReturnType + " but got " + actualReturnType);
+                            + currentFunctionSymbol.getType() + " but got " + actualReturnType);
         }
+
+        rs.setSymbolRef(currentFunctionSymbol);
     }
 
     /* --- Type returning visitors --- */
@@ -205,6 +345,10 @@ public class SemanticAnalyser {
                 return visitType(be);
             case Cast c:
                 return visitType(c);
+            case FuncCall fc:
+                return visitType(fc);
+            case MemberAccess ma:
+                return visitType(ma);
             default:
                 throw new InvalidNodeException(
                         "[" + n.getLineNumber() + "] Could not visit node '" + n.toString() + "'");
@@ -230,7 +374,7 @@ public class SemanticAnalyser {
 
     /* Expr visitors */
     Type visitType(VarExpr varExpr) {
-        NewSymbol symbol;
+        Symbol symbol;
 
         // Get symbol
         try {
@@ -240,7 +384,11 @@ public class SemanticAnalyser {
         }
 
         // Update ast
-        varExpr.setSymbolRef(symbol);
+        try {
+            varExpr.setSymbolRef(symbol);
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + varExpr.getLineNumber() + "] " + e.getMessage());
+        }
 
         return symbol.getType();
     }
@@ -248,19 +396,41 @@ public class SemanticAnalyser {
     Type visitType(ArithBinaryOpExpr binaryExpr) {
         Type leftType = visitType(binaryExpr.getExprLeft());
         Type rightType = visitType(binaryExpr.getExprRight());
+        ArithBinaryOp operator = binaryExpr.getOp();
 
-        // Type checking
-        if (leftType != rightType) {
-            throw new NonMatchingTypeException(
-                    "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
-        }
-        if (leftType != Type.FLOAT_T && leftType != Type.INT_T) {
-            throw new NonMatchingTypeException(
-                    "[" + binaryExpr.getLineNumber() + "] Type mismatch: cannot use " + leftType
-                            + " in arithmetic expressions");
-        }
+        switch (operator) {
+            case DIV:
+                if (binaryExpr.getExprRight() instanceof Operand o) {
+                    Value v = o.getValue();
+                    if (v instanceof IntNum n && n.value() == 0) {
+                        throw new NoValueMatchException(
+                                "[" + binaryExpr.getLineNumber() + "] Illegal division by zero");
+                    }
 
-        return leftType;
+                    if (v instanceof FloatNum n && n.value() == 0) {
+                        throw new NoValueMatchException(
+                                "[" + binaryExpr.getLineNumber() + "] Illegal division by zero");
+                    }
+                }
+
+                // No return, continue to following checks.
+
+            case ADD, SUB, MUL, MOD:
+                if (leftType != rightType) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber() + "] Type mismatch: " + leftType + " and " + rightType);
+                }
+
+                if (leftType != Type.INT_T && leftType != Type.FLOAT_T) {
+                    throw new NonMatchingTypeException(
+                            "[" + binaryExpr.getLineNumber() + "] Arithmetic operation on non-number: " + leftType);
+                }
+                return leftType;
+
+            default:
+                throw new UnrecognizedOperatorException(
+                        "[" + binaryExpr.getLineNumber() + "] Unrecognized operator: " + operator);
+        }
     }
 
     Type visitType(ArithUnaryOpExpr unaryExpr) {
@@ -342,5 +512,54 @@ public class SemanticAnalyser {
         }
 
         return targetType;
+    }
+
+    Type visitType(FuncCall funcCall) {
+        Symbol funcSymbol = symbolTable.lookup(funcCall.getIdentifier());
+
+        try {
+            funcCall.setFunctionSymbolRef(funcSymbol);
+        } catch (NonMatchingSymbolException e) {
+            throw new NonMatchingSymbolException("[" + funcCall.getLineNumber() + "] " + e.getMessage());
+        }
+
+        Type parameterType = visitType(funcCall.getParameter());
+        if (parameterType != funcCall.getParameterSymbolRef().getType()) {
+            throw new NonMatchingTypeException(
+                    "[" + funcCall.getLineNumber() + "] Type mismatch: " + parameterType + " and "
+                            + funcCall.getParameterSymbolRef().getType());
+        }
+
+        return funcSymbol.getType();
+    }
+
+    Type visitType(MemberAccess memberAccess) {
+        Symbol component = null;
+        Symbol variable;
+
+        // Get component
+        try {
+            component = symbolTable.lookup(memberAccess.getComponent());
+
+        } catch (NameNotFoundException e) {
+            throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "]" + e.getMessage());
+        }
+
+        // Get variable
+        if (component instanceof ComponentSymbol cs) {
+            HashMap<String, Symbol> variableScope = cs.getLocalScope();
+
+            if (variableScope.isEmpty()) {
+                throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "] could not find component");
+            }
+
+            variable = variableScope.get(memberAccess.getVariable());
+        } else {
+            throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "] could not find component");
+        }
+
+        memberAccess.setSymbolRef(variable);
+
+        return variable.getType();
     }
 }

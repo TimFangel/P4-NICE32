@@ -1,4 +1,4 @@
-package ir;
+package ir.util;
 
 public enum IrOperator {
     ADD, SUB, MUL, DIV, MOD,

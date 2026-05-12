@@ -1,6 +1,9 @@
 package frontend.abstract_syntax.expression;
 
-import frontend.symboltable.NewSymbol;
+import exception.NonMatchingSymbolException;
+import frontend.symbol_table.FunctionSymbol;
+import frontend.symbol_table.Symbol;
+import frontend.symbol_table.VariableSymbol;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,7 +13,7 @@ import lombok.ToString;
 public final class FuncCall extends Expr {
     private String identifier;
     private Expr parameter;
-    private NewSymbol symbolRef = null;
+    private FunctionSymbol functionSymbolRef = null;
 
     public FuncCall(int lineNumber, String identifier, Expr parameter) {
         super(lineNumber);
@@ -18,7 +21,15 @@ public final class FuncCall extends Expr {
         this.parameter = parameter;
     }
 
-    public void setSymbolRef(NewSymbol symbolRef) {
-        this.symbolRef = symbolRef;
+    public void setFunctionSymbolRef(Symbol symbolRef) {
+        if (symbolRef instanceof FunctionSymbol fs) {
+            this.functionSymbolRef = fs;
+        } else {
+            throw new NonMatchingSymbolException("Symbol must be of type: function");
+        }
+    }
+
+    public VariableSymbol getParameterSymbolRef() {
+        return functionSymbolRef.getParameterSymbolRef();
     }
 }
