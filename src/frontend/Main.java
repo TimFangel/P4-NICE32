@@ -23,10 +23,15 @@ public class Main {
                 return;
             }
 
+            System.out.println("> Successfully parsed input <");
+
             Program ast = parser.mainNode;
 
             SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
             semanticAnalyser.traverse(ast);
+
+            System.out.println(ast);
+            System.out.println("> AST passed type checker <");
 
             IrGenerator irGenerator = new IrGenerator();
             irGenerator.generateProgram(ast);
@@ -34,7 +39,7 @@ public class Main {
             IrPrinter irPrinter = new IrPrinter(irGenerator);
             irPrinter.printIR("TestIr");
 
-            System.out.println(ast);
+            System.out.println("> IR has been successfully generated <");
         } catch (Exception e) {
             e.printStackTrace();
         }
