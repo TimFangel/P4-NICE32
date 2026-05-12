@@ -2,6 +2,7 @@ package ir.cfg;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import ir.IrInstruction;
 import lombok.Getter;
@@ -16,6 +17,16 @@ public class BasicBlock {
     // graph predessecor and successors
     private List<BasicBlock> parents = new ArrayList<>();
     private List<BasicBlock> children = new ArrayList<>();
+
+    /* Liveness Variables */
+    // variables used before def.
+    private Set<String> use;
+    // variables assigned
+    private Set<String> def;
+
+    // in and out from liveness analysis
+    private Set<String> liveIn;
+    private Set<String> liveOut;
 
     public BasicBlock(int id) {
         this.id = id;
