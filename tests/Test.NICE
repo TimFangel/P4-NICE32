@@ -1,13 +1,10 @@
 setup {
-    int a = 2;
 }
 
 functions {
-    int func f(int c) {
-        return c;
-    }
 }
 
 main {
-    int b = f(1) + f(2);
+    int a = 2;
+    int b = a;
 }
