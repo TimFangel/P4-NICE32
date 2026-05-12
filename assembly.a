@@ -1,3 +1,11 @@
+B0
+MOVI t0, 2
+MOVI t1, 2
+ADD t2, t1, t0
+MOV t1, t2
+
+B1
 L0:
-t0 := 2
-t1 := t0
+t4 := true OP false
+MOV t3, t4
+
