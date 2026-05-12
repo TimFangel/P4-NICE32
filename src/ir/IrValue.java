@@ -14,4 +14,8 @@ public class IrValue {
         this.name = name;
         this.type = type;
     }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
 }

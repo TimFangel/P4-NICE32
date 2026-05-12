@@ -12,11 +12,19 @@ public class AssemblyGenerator {
 
     public void run(ControlFlowGraph cfg, String filename) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".a"))) {
-            for (BasicBlock bb : cfg.getBlocks()) {
-                for (IrInstruction ii : bb.getInstructions()) {
-                    writer.write(ii.toString());
+            for (BasicBlock block : cfg.getBlocks()) {
+                // Block name
+                writer.write("B" + block.getId());
+                writer.newLine();
+
+                // Instructions
+                for (IrInstruction instr : block.getInstructions()) {
+                    InstructionWriter iw = new InstructionWriter(instr);
+                    writer.write(iw.write());
                     writer.newLine();
                 }
+
+                writer.newLine();
             }
         }
     }
