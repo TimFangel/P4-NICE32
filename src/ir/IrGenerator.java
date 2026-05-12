@@ -35,6 +35,11 @@ public class IrGenerator {
 
     private OperatorMapper operatorMapper = new OperatorMapper();
 
+    // TODO: temporary
+    public List<IrInstruction> getInstructions() {
+        return code;
+    }
+
     public IrGenerator() {
         // Empty constructor
     }

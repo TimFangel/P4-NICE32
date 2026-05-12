@@ -1,10 +1,13 @@
-package frontend;
+package main;
 
+import backend.AssemblyGenerator;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.SemanticAnalyser;
 import ir.IrGenerator;
+import ir.cfg.ControlFlowGraph;
+import ir.cfg.ControlFlowGraphGenerator;
 import ir.util.IrPrinter;
 
 public class Main {
@@ -15,6 +18,7 @@ public class Main {
         }
 
         try {
+            // --- Parse ---
             Parser parser = new Parser(new Scanner(args[0]));
             parser.Parse();
 
@@ -25,6 +29,7 @@ public class Main {
 
             System.out.println("> Successfully parsed input <");
 
+            // --- Semantic Analysis ---
             Program ast = parser.mainNode;
 
             SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
@@ -33,6 +38,7 @@ public class Main {
             System.out.println(ast);
             System.out.println("> AST passed type checker <");
 
+            // --- IR Generation ---
             IrGenerator irGenerator = new IrGenerator();
             irGenerator.generateProgram(ast);
 
@@ -40,6 +46,15 @@ public class Main {
             irPrinter.printIR("TestIr");
 
             System.out.println("> IR has been successfully generated <");
+
+            // --- ControlFlowGraph ---
+            ControlFlowGraphGenerator cfgg = new ControlFlowGraphGenerator();
+            ControlFlowGraph cfg = cfgg.generateCFG(irGenerator.getInstructions());
+
+            // --- Assembly Generator ---
+            AssemblyGenerator ag = new AssemblyGenerator();
+            ag.run(cfg, "assembly");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
