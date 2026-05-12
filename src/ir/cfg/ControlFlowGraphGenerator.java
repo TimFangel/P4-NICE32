@@ -78,20 +78,23 @@ public class ControlFlowGraphGenerator {
     }
 
     private void generateRelations() {
+        // Map to match labels to blocks.
         Map<String, BasicBlock> labelToBlock = new HashMap<>();
 
         // match labels to their block
         for (BasicBlock block : blocks) {
             if (!block.getInstructions().isEmpty()) {
+                // get the first instruction
                 IrInstruction firstInstr = block.getInstructions().get(0);
+                // ensure it is a leader operation
                 if (firstInstr.getOperator() == IrOperator.LABEL) {
-                    // label always stored in result
+                    // label always stored in result, so put that in map.
                     labelToBlock.put(firstInstr.getResult().getName(), block);
                 }
             }
         }
 
-        // assign children based on last instruction
+        // assign children based on last instruction and map.
         for (int i = 0; i < blocks.size(); i++) {
             BasicBlock block = blocks.get(i);
             IrInstruction lastInstr = block.getLastInstruction();
@@ -103,8 +106,10 @@ public class ControlFlowGraphGenerator {
 
             switch (lastInstr.getOperator()) {
                 case GOTO:
+                    // find target of GOTO
                     BasicBlock target = labelToBlock.get(lastInstr.getResult().getName());
                     if (target != null) {
+                        // connect current block and target.
                         block.addChild(target);
                     } else {
                         throw new MissingLabelException(
@@ -113,11 +118,13 @@ public class ControlFlowGraphGenerator {
                     break;
 
                 case IF_FALSE:
-                    // fallthrough if true
+                    // fallthrough case when condition is true
                     if (i + 1 < blocks.size()) {
                         block.addChild(blocks.get(i + 1));
                     }
-                    // jump to target label
+
+                    // case when condition is false.
+                    // jumpTarget -> thing after if body.
                     BasicBlock jumpTarget = labelToBlock.get(lastInstr.getResult().getName());
                     if (jumpTarget != null) {
                         block.addChild(jumpTarget);
@@ -128,7 +135,7 @@ public class ControlFlowGraphGenerator {
                     break;
 
                 case RET:
-                    // end of function
+                    // end of function, therefore do nothing.
                     break;
 
                 default:
