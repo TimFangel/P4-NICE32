@@ -7,7 +7,7 @@ import frontend.abstract_syntax.type.Type;
 import lombok.Getter;
 
 @Getter
-public class IrFunction {
+public final class IrFunction implements IrInstructionInterface {
     private String funcName;
     private IrValue parameter;
     private Type retType;

@@ -6,6 +6,5 @@ public enum IrOperator {
     NEQ, GOTO, LABEL, IF_FALSE,
     NEG, AND, OR, NOT, RET,
     INT_TO_FLOAT, FLOAT_TO_INT, CALL,
-    ALLOC, SET_FIELD, GET_FIELD,
-    SETUP
+    SETUP, SEPARATOR
 }

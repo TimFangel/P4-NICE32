@@ -1,15 +1,22 @@
 package ir;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import exception.UnrecognizedOperatorException;
 import ir.util.IrOperator;
 import lombok.Getter;
 
 @Getter
-public class IrInstruction {
-    IrOperator operator; // enum specifying the operation
-    IrValue arg1; // first argument of operation (null -> not present)
-    IrValue arg2; // second argument of operation (null -> not present)
-    IrValue result; // where to store result of operation
+public final class IrInstruction implements IrInstructionInterface {
+    private IrOperator operator; // enum specifying the operation
+    private IrValue arg1; // first argument of operation (null -> not present)
+    private IrValue arg2; // second argument of operation (null -> not present)
+    private IrValue result; // where to store result of operation
+
+    // sets used for liveness analysis.
+    private Set<String> gen = new HashSet<>(); // read
+    private Set<String> kill = new HashSet<>(); // write
 
     /**
      * Constructor for an IrInstruction. null -> not present in instruction.

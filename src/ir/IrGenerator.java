@@ -24,21 +24,16 @@ public class IrGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
 
-    // main+setup code
+    // loop to GOTO start of main.
     private IrInstruction mainLoopGoto;
-    private List<IrInstruction> code = new ArrayList<>();
-    private List<IrComponent> components = new ArrayList<>();
 
-    // functions
-    private List<IrFunction> functions = new ArrayList<>();
-    private IrFunction currentFunction = null; // start in global scope
+    // used to scope between function body and not.
+    private IrFunction currentFunction = null; // null -> global scope
+
+    // list of all code in TAC IR form.
+    private List<IrInstructionInterface> code = new ArrayList<>();
 
     private OperatorMapper operatorMapper = new OperatorMapper();
-
-    // TODO: temporary
-    public List<IrInstruction> getInstructions() {
-        return code;
-    }
 
     public IrGenerator() {
         // Empty constructor
@@ -63,9 +58,10 @@ public class IrGenerator {
      * 
      * @param instruction IrInstruction to create.
      */
-    private void createIR(IrInstruction instruction) {
-        if (currentFunction != null) { // null -> global scope
-            currentFunction.getFuncBody().add(instruction);
+    private void createIR(IrInstructionInterface instruction) {
+        // add code to function body or global scope
+        if (currentFunction != null && instruction instanceof IrInstruction instr) { // null -> global scope
+            currentFunction.getFuncBody().add(instr);
         } else {
             code.add(instruction);
         }
@@ -335,7 +331,7 @@ public class IrGenerator {
 
             IrFunction function = new IrFunction(funcDecl.getIdentifier(), parameter, funcDecl.getReturnType());
 
-            functions.add(function);
+            createIR(function);
             currentFunction = function; // change scope
 
             // generate function body
@@ -369,7 +365,7 @@ public class IrGenerator {
                 component.addVariable(variable);
             }
 
-            components.add(component);
+            createIR(component);
 
             return;
         }
@@ -384,10 +380,17 @@ public class IrGenerator {
      * @param program NICE32 AST's root node.
      */
     public void generateProgram(Program program) {
-        generateStmt(program.getSetup());
 
         // Generate functions
         generateStmt(program.getFunctions());
+
+        // SEPARATOR to distinguish between functions and setup
+        createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
+
+        generateStmt(program.getSetup());
+
+        // SEPARATOR to distinguish between main and setup
+        createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
 
         // make label to goto to start of main, instead of going to functions.
         String mainStart = newLabel();

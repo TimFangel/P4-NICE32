@@ -10,7 +10,7 @@ import ir.util.IrOperator;
 import lombok.Getter;
 
 @Getter
-public class IrComponent {
+public final class IrComponent implements IrInstructionInterface {
     private String name;
     private IrValue port;
     private IrInstruction setup;
@@ -32,7 +32,7 @@ public class IrComponent {
             throw new NoSuchElementException("Could not find any variables in '" + name + "'");
         }
 
-        IrValue startVar = variables.get(0).result;
+        IrValue startVar = variables.get(0).getResult();
 
         if (startVar == null) {
             throw new NoSuchElementException("Could not read first variable in '" + name + "'");
