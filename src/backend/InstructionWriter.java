@@ -1,10 +1,15 @@
 package backend;
 
+import exception.InvalidRegisterException;
 import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
 import ir.IrInstruction;
 import ir.IrValue;
 import ir.util.IrOperator;
+
+// TODO: Scratch Register
+// A14, A15
+// B15
 
 public class InstructionWriter {
     private IrOperator operator;
@@ -43,7 +48,7 @@ public class InstructionWriter {
         return name.matches("[a-z]\\d*");
     }
 
-    private int getRegisterIndex(String name) throws RegisterException {
+    private int getRegisterIndex(String name) {
         if (!isRegister(name)) {
             throw new RegisterException("Could not find register index for " + name);
         }
@@ -57,7 +62,7 @@ public class InstructionWriter {
         return index;
     }
 
-    private Type toRegister(Type oldType) throws RegisterException {
+    private Type toRegister(Type oldType) {
         switch (oldType) {
             case BOOL_T, B_REG:
                 return Type.B_REG;
@@ -87,31 +92,49 @@ public class InstructionWriter {
                 return assignment();
 
             case ADD, SUB, MUL, DIV, MOD:
-                return arithExpression();
+                if (result.getType() == Type.A_REG) {
+                    return arithExpression();
+                } else if (result.getType() == Type.F_REG) {
+                    return floatExpression();
+                } else {
+                    throw new RegisterException("Cannot do arithmetic operation on " + result.getType());
+                }
 
             case AND, OR:
                 return logicalComparison();
 
             case LEQ, LT, GT, GEQ, EQ, NEQ:
-                return boolExpression();
+                if (result.getType() == Type.A_REG) {
+                    return boolExpression();
+                } else if (result.getType() == Type.F_REG) {
+                    return floatBoolExpression();
+                } else {
+                    throw new RegisterException("Cannot do comparison operation on " + result.getType());
+                }
 
             case IF_FALSE:
                 return "if_false " + arg1.getName() + " goto " + result.getName();
 
             case GOTO:
-                return "goto " + result.getName();
+                return "J ." + result.getName();
 
             case LABEL:
-                return result.getName() + ":";
+                return "." + result.getName() + ":";
 
             case NOT:
-                notBool();
+                return notBool();
 
             case NEG:
-                negateArith();
+                if (result.getType() == Type.A_REG) {
+                    return negateArith();
+                } else if (result.getType() == Type.F_REG) {
+                    return negateFloat();
+                } else {
+                    throw new RegisterException("Cannot do arithmetic operation on " + result.getType());
+                }
 
             case INT_TO_FLOAT, FLOAT_TO_INT:
-                return result.getName() + " := " + "(" + operator.toString() + ") " + arg1.getName();
+                return typeCast();
 
             case RET:
                 return "RET " + result.getName();
@@ -127,21 +150,83 @@ public class InstructionWriter {
         }
     }
 
-    private String assignment() throws UnknownAssArgTypeException {
+    private String assignment() {
+        if (result.getType() != Type.A_REG && result.getType() != Type.B_REG && result.getType() != Type.F_REG) {
+            throw new RegisterException("Invalid result register type " + result.getType());
+        }
+
         switch (arg1.getType()) {
             case BOOL_T:
                 return boolAssignment();
             case INT_T:
-                return "MOVI " + result.getName() + ", " + arg1.getName();
+                return immediateAssignment();
+            case FLOAT_T:
+                return floatAssignment();
             case A_REG:
+                if (result.getType() != Type.A_REG) {
+                    throw new RegisterException("Cannot use register for arithmetic operations " + result);
+                }
                 return "MOV " + result.getName() + ", " + arg1.getName();
-
+            case B_REG:
+                if (result.getType() != Type.B_REG) {
+                    throw new RegisterException("Cannot use register for bool operations " + result);
+                }
+                return "ORB " + result.getName() + ", " + arg1.getName() + ", " + arg1.getName();
+            case F_REG:
+                if (result.getType() != Type.F_REG) {
+                    throw new RegisterException("Cannot use register for float operations " + result);
+                }
+                return "MOV.S " + result.getName() + ", " + arg1.getName();
             default:
-                throw new UnknownAssArgTypeException("Could not generate assignment");
+                throw new UnknownAssArgTypeException("Could not generate assignment with args type " + arg1.getType());
+        }
+    }
+
+    private String immediateAssignment() {
+        return immediateAssignment(Integer.parseInt(arg1.getName()), result.getName());
+    }
+
+    private String immediateAssignment(int imm, String result) {
+        // TODO: remove t
+        if (!result.startsWith("a") && !result.startsWith("t")) {
+            throw new RegisterException("Cannot use register for arithmetic operations " + result);
+        }
+
+        if (imm >= -2048 && imm <= 2047) {
+            return "MOVI " + result + ", " + (imm & 0xfff);
+        } else if (imm >= -2147483648 && imm <= 2147483647) {
+            if (result.compareTo("a15") == 0) {
+                throw new InvalidRegisterException("Register a15 must be unused for extended immediate assignments");
+            }
+
+            // Split number in 4x8bit
+            int imm0 = imm & 0xff;
+            int imm1 = (imm & 0xff00) >> 8;
+            int imm2 = (imm & 0xff0000) >> 16;
+            int imm3 = (imm & 0xff000000) >> 24;
+
+            // Move parts into result
+            String str = "";
+            str += "MOVI " + "a15" + ", " + imm3 + "\n";
+            str += "MOVI " + result + ", " + imm2 + "\n";
+            str += "ADDMI " + result + ", a15" + "\n"; // result += a15<<8, imm3 imm2
+            str += "MOVI " + result + ", " + imm1 + "\n";
+            str += "ADDMI " + "a15, " + result + "\n"; // a15 += result<<8, imm3 imm2 imm1
+            str += "MOVI " + "a15" + ", " + imm0 + "\n";
+            str += "ADDMI " + result + ", a15" + "\n"; // result += a15<<8, imm3 imm2 imm1 imm0
+
+            return str;
+        } else {
+            throw new IllegalArgumentException(
+                    "Number out of bounds " + imm + ", must be between -2147483648 and 2147483647");
         }
     }
 
     private String boolAssignment() {
+        if (result.getType() != Type.B_REG) {
+            throw new InvalidRegisterException("Register a15 must be unused for extended immediate assignments");
+        }
+
         final String setBit = "ORBC " + result.getName() + ", " + result.getName() + ", " + result.getName();
         final String clearBit = "XORB " + result.getName() + ", " + result.getName() + ", " + result.getName();
 
@@ -158,8 +243,18 @@ public class InstructionWriter {
 
     }
 
-    private String arithExpression()
-            throws NonRegisterResultException, NonRegisterArgsException, InvalidOperatorException {
+    private String floatAssignment() {
+        if (result.getType() != Type.F_REG || arg1.getType() != Type.FLOAT_T) {
+            throw new UnknownAssArgTypeException("Could not generate float assignment for " + arg1.getName());
+        }
+
+        int bits = Float.floatToIntBits(Float.parseFloat(arg1.getName()));
+        String str = immediateAssignment(bits, "a14") + "\n";
+        str += "WFR " + result.getName() + ", a14";
+        return str;
+    }
+
+    private String arithExpression() {
         String str = "";
 
         if (result.getType() != Type.A_REG) {
@@ -195,7 +290,43 @@ public class InstructionWriter {
         return str;
     }
 
-    private String logicalComparison() throws NonRegisterArgsException, InvalidOperatorException {
+    private String floatExpression() {
+        String str = "";
+
+        if (result.getType() != Type.F_REG) {
+            throw new NonRegisterResultException("Cannot generate arithmetic expression for non-register result");
+        }
+
+        if (arg1.getType() != Type.F_REG || arg2.getType() != Type.F_REG) {
+            throw new NonRegisterArgsException("Cannot generate arithmetic expression for non-register args");
+        }
+
+        switch (operator) {
+            case ADD:
+                str += "ADD.S ";
+                break;
+            case SUB:
+                str += "SUB.S ";
+                break;
+            case MUL:
+                str += "MULL.S ";
+                break;
+            case DIV:
+                throw new RuntimeException("Not yet supported");
+            // str += "DIV0.S ";
+            // break;
+            case MOD:
+                throw new InvalidOperatorException("Cannot use MOD in float expressions");
+            default:
+                throw new InvalidOperatorException("Could not generate float expression for " + operator);
+        }
+
+        str += result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+
+        return str;
+    }
+
+    private String logicalComparison() {
         if (result.getType() != Type.B_REG || arg1.getType() != Type.B_REG || arg2.getType() != Type.B_REG) {
             throw new NonRegisterArgsException("Cannot generate logical comparison for non-register args or result");
         }
@@ -210,13 +341,36 @@ public class InstructionWriter {
         }
     }
 
-    private String boolExpression()
-            throws NonRegisterResultException, NonRegisterArgsException, InvalidOperatorException {
+    private String floatBoolExpression() { // SEE TODO BELOW IN SWITCH CASE!!!!!
 
-        final String trueLabel = AssemblyGenerator.newLabel();
-        final String falseLabel = AssemblyGenerator.newLabel();
-        String str;
+        if (result.getType() != Type.B_REG) {
+            throw new NonRegisterResultException("Cannot generate boolean expression for non-register result");
+        }
 
+        if (arg1.getType() != Type.F_REG || arg2.getType() != Type.F_REG) {
+            throw new NonRegisterArgsException("Cannot generate boolean expression for non-register args");
+        }
+
+        switch (operator) {
+            case GEQ:
+                switchArgs();
+            case LT:
+                return "OLT.S " + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+            case LEQ:
+                return "OLE.S " + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+            case GT:
+                switchArgs();
+            case EQ:
+                return "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+            case NEQ:
+                return "NEG.S" + " " + arg1.getName() + "," + result.getName(); // TODO: combine with OEQ.S (MISSING)
+            default:
+                throw new InvalidOperatorException("Could not generate boolean expression for " + operator);
+        }
+
+    }
+
+    private String boolExpression() {
         if (result.getType() != Type.B_REG) {
             throw new NonRegisterResultException("Cannot generate arithmetic expression for non-register result");
         }
@@ -224,6 +378,10 @@ public class InstructionWriter {
         if (arg1.getType() != Type.A_REG || arg2.getType() != Type.A_REG) {
             throw new NonRegisterArgsException("Cannot generate arithmetic expression for non-register args");
         }
+
+        final String trueLabel = AssemblyGenerator.newLabel();
+        final String falseLabel = AssemblyGenerator.newLabel();
+        String str;
 
         switch (operator) {
             case GEQ:
@@ -240,7 +398,7 @@ public class InstructionWriter {
                 str = "BEQ";
                 break;
             case NEQ:
-                str = "NEQ ";
+                str = "BNE ";
                 break;
             default:
                 throw new InvalidOperatorException("Could not generate boolean expression for " + operator);
@@ -261,19 +419,51 @@ public class InstructionWriter {
 
     private String notBool() {
         if (result.getType() != Type.B_REG) {
-            throw new NonRegisterResultException("Cannot generate arithmetic expression for non-register result");
+            throw new NonRegisterResultException("Cannot generate bool expression for non-register result");
         }
 
-        if (arg1.getType() != Type.A_REG || arg2.getType() != Type.A_REG) {
-            throw new NonRegisterArgsException("Cannot generate arithmetic expression for non-register args");
+        if (arg1.getType() != Type.B_REG) {
+            throw new NonRegisterArgsException("Cannot generate bool expression for non-register args");
         }
 
-        String str = "ORBC b0, b0, b0 \n";
-        str += "XORB " + result.getName() + ", b0, " + arg1.getName();
+        String str = "ORBC b15, b15, b15 \n"; // Set bit b15
+        str += "XORB " + result.getName() + ", b15, " + arg1.getName();
         return str;
     }
 
     private String negateArith() {
+        if (result.getType() != Type.A_REG) {
+            throw new NonRegisterResultException("Cannot generate arithmetic negation for non-register result");
+        }
 
+        if (arg1.getType() != Type.A_REG) {
+            throw new NonRegisterArgsException("Cannot generate arithmetic negation for non-register args");
+        }
+
+        return "NEG" + " " + arg1.getName() + "," + result.getName();
+
+    }
+
+    private String negateFloat() {
+        if (result.getType() != Type.F_REG) {
+            throw new NonRegisterResultException("Cannot generate float negation for non-register result");
+        }
+
+        if (arg1.getType() != Type.F_REG) {
+            throw new NonRegisterArgsException("Cannot generate float negation for non-register args");
+        }
+
+        return "NEG.S" + " " + arg1.getName() + "," + result.getName();
+
+    }
+
+    private typeCast() {
+        if (condition) {
+            
+        } else if (condition) {
+            
+        } else {
+            throw new Operator
+        }
     }
 }

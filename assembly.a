@@ -1,11 +1,20 @@
 B0
 MOVI t0, 2
 MOVI t1, 2
-ADD t2, t1, t0
-MOV t1, t2
+MULL t2, t0, t1
+QUOS t3, t2, t0
+ADD t4, t1, t3
+MOV t1, t4
 
 B1
 L0:
-t4 := true OP false
-MOV t3, t4
+XORB t5, t5, t5
+MOVI a15, 64
+MOVI a14, 166
+ADDMI a14, a15
+MOVI a14, 102
+ADDMI a15, a14
+MOVI a15, 102
+ADDMI a14, a15
 
+WFR t6, a14
