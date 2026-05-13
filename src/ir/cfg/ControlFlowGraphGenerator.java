@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import exception.MissingLabelException;
+import exception.UnknownInstructionException;
 import lombok.Getter;
 import ir.IrComponent;
 import ir.IrFunction;
@@ -159,11 +160,13 @@ public class ControlFlowGraphGenerator {
             if (i instanceof IrInstruction instr) {
                 instructions.add(instr);
             } else if (i instanceof IrFunction instr) {
-
+                IrInstruction funcInfo = new IrInstruction(IrOperator.FUNC_INFO, new IrValue(), instr.getParameter(),
+                        null);
+                List<IrInstruction> a;
             } else if (i instanceof IrComponent instr) {
 
             } else {
-                throw new 
+                throw new UnknownInstructionException("Unknown Instruction: " + i);
             }
         }
 
