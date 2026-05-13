@@ -50,7 +50,8 @@ public class Main {
             System.out.println("> IR has been successfully generated <");
 
             // --- ControlFlowGraph ---
-            ControlFlowGraphGenerator controlFlowGraphGenerator = new ControlFlowGraphGenerator();
+            // ControlFlowGraphGenerator controlFlowGraphGenerator = new
+            // ControlFlowGraphGenerator();
             // ControlFlowGraph cfg =
             // controlFlowGraphGenerator.generateCFG(irGenerator.getCode());
 

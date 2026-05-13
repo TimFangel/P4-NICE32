@@ -7,8 +7,10 @@ import java.util.Map;
 
 import exception.MissingLabelException;
 import lombok.Getter;
-
+import ir.IrComponent;
+import ir.IrFunction;
 import ir.IrInstruction;
+import ir.IrInstructionInterface;
 import ir.util.IrOperator;
 
 // Class generating basic blocks, then relations between the blocks, and then returning a cfg.
@@ -47,6 +49,7 @@ public class ControlFlowGraphGenerator {
     private void generateBasicBlocks(List<IrInstruction> instructions) {
         BasicBlock currentBlock = new BasicBlock(blockIdCount++);
 
+        // Iterate through each instruction.
         for (int i = 0; i < instructions.size(); i++) {
             IrInstruction instr = instructions.get(i);
 
@@ -87,7 +90,7 @@ public class ControlFlowGraphGenerator {
         for (BasicBlock block : blocks) {
             if (!block.getInstructions().isEmpty()) {
                 // get the first instruction
-                IrInstruction firstInstr = block.getInstructions().get(0);
+                IrInstructionInterface firstInstr = block.getInstructions().get(0);
                 // ensure it is a leader operation
                 if (firstInstr.getOperator() == IrOperator.LABEL) {
                     // label always stored in result, so put that in map.
@@ -99,7 +102,7 @@ public class ControlFlowGraphGenerator {
         // assign children based on last instruction and map.
         for (int i = 0; i < blocks.size(); i++) {
             BasicBlock block = blocks.get(i);
-            IrInstruction lastInstr = block.getLastInstruction();
+            IrInstructionInterface lastInstr = block.getLastInstruction();
 
             // ignore empty blocks, if they should exist.
             if (lastInstr == null) {
@@ -149,9 +152,27 @@ public class ControlFlowGraphGenerator {
         }
     }
 
-    public ControlFlowGraph generateCFG(List<IrInstruction> instructions) {
+    private List<IrInstruction> convertInterfaceList(List<IrInstructionInterface> list) {
+        List<IrInstruction> instructions = new ArrayList<>();
+
+        for (IrInstructionInterface i : list) {
+            if (i instanceof IrInstruction instr) {
+                instructions.add(instr);
+            } else if (i instanceof IrFunction instr) {
+
+            } else if (i instanceof IrComponent instr) {
+
+            } else {
+                throw new 
+            }
+        }
+
+        return instructions;
+    }
+
+    public ControlFlowGraph generateCFG(List<IrInstructionInterface> instructions) {
         ControlFlowGraph cfg = new ControlFlowGraph();
-        generateBasicBlocks(instructions);
+        generateBasicBlocks(convertInterfaceList(instructions));
         generateRelations();
         cfg.setEntry(blocks.get(0));
         cfg.setBlocks(blocks);

@@ -8,8 +8,10 @@ import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
 import ir.util.IrOperator;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public final class IrInstruction implements IrInstructionInterface {
     private IrOperator operator; // enum specifying the operation
     private IrValue arg1; // first argument of operation (null -> not present)
@@ -71,8 +73,8 @@ public final class IrInstruction implements IrInstructionInterface {
             case CALL:
                 return "CALL " + result.getName() + ", " + arg1.getName();
 
-            case SETUP:
-                return "SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
+            case PORT_SETUP:
+                return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
@@ -117,25 +119,29 @@ public final class IrInstruction implements IrInstructionInterface {
         }
     }
 
-    public void findGen() {
-        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T);
+    private void findGen() {
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.DIRECTION, Type.PROTOCOL);
 
         // add arg1 and arg2 to gen, if valid type.
-        if (set.contains(arg1.getType())) {
+        if (arg1 != null && set.contains(arg1.getType())) {
             gen.add(arg1.getName());
         }
 
-        if (set.contains(arg2.getType())) {
+        if (arg2 != null && set.contains(arg2.getType())) {
             gen.add(arg2.getName());
         }
     }
 
-    public void findKill() {
-        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T);
+    private void findKill() {
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.DIRECTION, Type.PROTOCOL);
 
         // add result to kill, if valid type.
-        if (set.contains(result.getType())) {
+        if (result != null && set.contains(result.getType())) {
             kill.add(result.getName());
         }
+    }
+
+    public void addIn(Set<String> s) {
+        this.in.addAll(s);
     }
 }

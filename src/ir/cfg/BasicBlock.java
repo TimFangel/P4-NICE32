@@ -1,7 +1,6 @@
 package ir.cfg;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -28,10 +27,8 @@ public class BasicBlock {
     private Set<String> kill;
 
     // in and out from liveness analysis
-    private HashMap<String, List<String>> inPrev;
-    private HashMap<String, List<String>> outPrev;
-    private HashMap<String, List<String>> inCurrent;
-    private HashMap<String, List<String>> outCurrent;
+    private Set<String> in;
+    private Set<String> out;
 
     public BasicBlock(int id) {
         this.id = id;
@@ -53,5 +50,21 @@ public class BasicBlock {
         children.add(child);
         // remember to add this as parent to new child.
         child.parents.add(this);
+    }
+
+    public void addIn(Set<String> s) {
+        this.in.addAll(s);
+    }
+
+    public void addOut(Set<String> s) {
+        this.out.addAll(s);
+    }
+
+    public void clearIn() {
+        this.in.clear();
+    }
+
+    public void clearOut() {
+        this.out.clear();
     }
 }

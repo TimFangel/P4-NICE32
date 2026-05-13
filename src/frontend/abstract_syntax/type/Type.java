@@ -8,4 +8,5 @@ public enum Type {
     LABEL,
     FUNCTION,
     COMPONENT,
+    // genbrug ovenfor eller lav ny?
 }

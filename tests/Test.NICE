@@ -1,10 +1,17 @@
 setup {
+    component lamp {
+        port: 2;
+        protocol: digital;
+        interval: 200;
+        direction: input;
+
+        int g = 100;
+        bool t = false;
+    }
 }
 
 functions {
 }
 
 main {
-    int a = 2;
-    int b = a;
 }
