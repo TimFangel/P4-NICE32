@@ -9,6 +9,7 @@ import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
 
 public class AssemblyGenerator {
+    static int nextLabelNumber = 0;
 
     public void run(ControlFlowGraph cfg, String filename) throws IOException {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".a"))) {
@@ -27,5 +28,9 @@ public class AssemblyGenerator {
                 writer.newLine();
             }
         }
+    }
+
+    public static String newLabel() {
+        return "L0" + ++nextLabelNumber;
     }
 }

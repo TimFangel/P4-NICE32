@@ -9,5 +9,6 @@ public enum Type {
     FUNCTION,
     COMPONENT,
     A_REG,
+    B_REG,
     F_REG
 }
