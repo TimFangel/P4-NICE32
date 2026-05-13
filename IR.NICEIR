@@ -1,0 +1,18 @@
+--- FUNCTIONS ---
+
+--- SETUP ---
+t0 := 9
+PORT_SETUP DIGITAL INPUT 2
+
+
+--- MAIN ---
+L0:
+t1 := 5
+t2 := 2
+t3 := 7
+t5 := -t1
+t6 := t2 + t3
+t7 := t5 * t6
+t4 := t7
+goto L0
+COMPR t0 2 1000

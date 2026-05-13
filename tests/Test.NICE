@@ -1,12 +1,11 @@
 setup {
-    component lamp {
+    component bruh { 
         port: 2;
         protocol: digital;
-        interval: 200;
+        interval: 1000;
         direction: input;
 
-        int g = 100;
-        bool t = false;
+        int a = 9;
     }
 }
 
@@ -14,4 +13,8 @@ functions {
 }
 
 main {
+    int a = 5;
+    int b = 2;
+    int c = 7;
+    int d = -a * (b + c);
 }

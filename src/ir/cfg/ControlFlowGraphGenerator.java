@@ -6,11 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 import exception.MissingLabelException;
+import exception.UnknownInstructionException;
 import lombok.Getter;
 import ir.IrComponent;
 import ir.IrFunction;
 import ir.IrInstruction;
 import ir.IrInstructionInterface;
+import ir.IrValue;
 import ir.util.IrOperator;
 
 // Class generating basic blocks, then relations between the blocks, and then returning a cfg.
@@ -90,7 +92,7 @@ public class ControlFlowGraphGenerator {
         for (BasicBlock block : blocks) {
             if (!block.getInstructions().isEmpty()) {
                 // get the first instruction
-                IrInstructionInterface firstInstr = block.getInstructions().get(0);
+                IrInstruction firstInstr = block.getInstructions().get(0);
                 // ensure it is a leader operation
                 if (firstInstr.getOperator() == IrOperator.LABEL) {
                     // label always stored in result, so put that in map.
@@ -102,7 +104,7 @@ public class ControlFlowGraphGenerator {
         // assign children based on last instruction and map.
         for (int i = 0; i < blocks.size(); i++) {
             BasicBlock block = blocks.get(i);
-            IrInstructionInterface lastInstr = block.getLastInstruction();
+            IrInstruction lastInstr = block.getLastInstruction();
 
             // ignore empty blocks, if they should exist.
             if (lastInstr == null) {
@@ -159,11 +161,18 @@ public class ControlFlowGraphGenerator {
             if (i instanceof IrInstruction instr) {
                 instructions.add(instr);
             } else if (i instanceof IrFunction instr) {
+                // transform function identifier, param, and type to IrInstruction.
+                IrValue funcNameType = new IrValue(instr.getFuncName(), instr.getRetType());
+                IrInstruction funcInfo = new IrInstruction(IrOperator.FUNC_INFO, funcNameType, instr.getParameter(),
+                        null);
+                instructions.add(funcInfo);
 
+                // add function body to list of instructions.
+                instructions.addAll(instr.getFuncBody());
             } else if (i instanceof IrComponent instr) {
 
             } else {
-                throw new 
+                throw new UnknownInstructionException("");
             }
         }
 

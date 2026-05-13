@@ -120,7 +120,7 @@ public final class IrInstruction implements IrInstructionInterface {
     }
 
     private void findGen() {
-        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.DIRECTION, Type.PROTOCOL);
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.FUNCTION, Type.COMPONENT);
 
         // add arg1 and arg2 to gen, if valid type.
         if (arg1 != null && set.contains(arg1.getType())) {
@@ -133,7 +133,7 @@ public final class IrInstruction implements IrInstructionInterface {
     }
 
     private void findKill() {
-        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.DIRECTION, Type.PROTOCOL);
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.FUNCTION, Type.COMPONENT);
 
         // add result to kill, if valid type.
         if (result != null && set.contains(result.getType())) {
