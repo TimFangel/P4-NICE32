@@ -50,10 +50,21 @@ public class ControlFlowGraphGenerator {
 
     private void generateBasicBlocks(List<IrInstruction> instructions) {
         BasicBlock currentBlock = new BasicBlock(blockIdCount++);
+        int separatorCount = 0; // 0 == in functions, hence not entry.
 
         // Iterate through each instruction.
         for (int i = 0; i < instructions.size(); i++) {
             IrInstruction instr = instructions.get(i);
+
+            // ignore SEPARATOR used for pretty printing.
+            if (instr.getOperator() == IrOperator.SEPARATOR) {
+                if (separatorCount == 0) {
+                    // add instruction to signify entry TODO: remember to have printCFG ignore this
+                    // instruction.
+                    separatorCount++;
+                }
+                continue;
+            }
 
             // if leader, create new block (except first instruction)
             if (i > 0 && isLeader(instr)) {
@@ -158,21 +169,45 @@ public class ControlFlowGraphGenerator {
         List<IrInstruction> instructions = new ArrayList<>();
 
         for (IrInstructionInterface i : list) {
-            if (i instanceof IrInstruction instr) {
-                instructions.add(instr);
-            } else if (i instanceof IrFunction instr) {
-                // transform function identifier, param, and type to IrInstruction.
-                IrValue funcNameType = new IrValue(instr.getFuncName(), instr.getRetType());
-                IrInstruction funcInfo = new IrInstruction(IrOperator.FUNC_INFO, funcNameType, instr.getParameter(),
-                        null);
-                instructions.add(funcInfo);
+            switch (i) {
+                case IrInstruction instr ->
+                    // add regular instructions
+                    instructions.add(instr);
 
-                // add function body to list of instructions.
-                instructions.addAll(instr.getFuncBody());
-            } else if (i instanceof IrComponent instr) {
+                case IrFunction instr -> {
+                    // transform function identifier, param, and type to IrInstruction.
+                    IrValue funcNameType = new IrValue(instr.getFuncName(), instr.getRetType());
 
-            } else {
-                throw new UnknownInstructionException("");
+                    IrInstruction funcInfo = new IrInstruction(
+                            IrOperator.FUNC_INFO,
+                            funcNameType,
+                            instr.getParameter(),
+                            null);
+
+                    instructions.add(funcInfo);
+
+                    // add function body to list of instructions.
+                    instructions.addAll(instr.getFuncBody());
+                }
+
+                case IrComponent instr -> {
+                    // convert port and interval info to instruction.
+                    IrInstruction portIntervalInfo = new IrInstruction(
+                            IrOperator.COMP_INTS,
+                            instr.getPort(),
+                            instr.getInterval(),
+                            null);
+
+                    instructions.add(portIntervalInfo);
+
+                    // add direction/protocol instruction to list.
+                    instructions.add(instr.getSetup());
+
+                    // add component variables to list.
+                    instructions.addAll(instr.getVariables());
+                }
+
+                default -> throw new UnknownInstructionException("Instruction Unknown: " + i);
             }
         }
 
@@ -183,7 +218,7 @@ public class ControlFlowGraphGenerator {
         ControlFlowGraph cfg = new ControlFlowGraph();
         generateBasicBlocks(convertInterfaceList(instructions));
         generateRelations();
-        cfg.setEntry(blocks.get(0));
+        cfg.setEntry();
         cfg.setBlocks(blocks);
 
         return cfg;

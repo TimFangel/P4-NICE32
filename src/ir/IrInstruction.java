@@ -53,10 +53,10 @@ public final class IrInstruction implements IrInstructionInterface {
                         + arg2.getName();
 
             case IF_FALSE:
-                return "if_false " + arg1.getName() + " goto " + result.getName();
+                return "IF_FALSE " + arg1.getName() + " GOTO " + result.getName();
 
             case GOTO:
-                return "goto " + result.getName();
+                return "GOTO " + result.getName();
 
             case LABEL:
                 return result.getName() + ":";
@@ -75,6 +75,18 @@ public final class IrInstruction implements IrInstructionInterface {
 
             case PORT_SETUP:
                 return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
+
+            case COMPR:
+                return "COMPR " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
+
+            case COMPW:
+                return "COMPW " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
+
+            case COMP_INTS:
+                return "PORT: " + arg1.getName() + "INTERVAL: " + arg2.getName();
+
+            case FUNC_INFO:
+                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + arg2.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
@@ -143,5 +155,17 @@ public final class IrInstruction implements IrInstructionInterface {
 
     public void addIn(Set<String> s) {
         this.in.addAll(s);
+    }
+
+    public void addOut(Set<String> s) {
+        this.out.addAll(s);
+    }
+
+    public void clearIn() {
+        this.in.clear();
+    }
+
+    public void clearOut() {
+        this.out.clear();
     }
 }

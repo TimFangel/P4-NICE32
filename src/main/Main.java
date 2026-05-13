@@ -5,6 +5,8 @@ import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.SemanticAnalyser;
 import ir.IrGenerator;
+import ir.cfg.ControlFlowGraph;
+import ir.cfg.ControlFlowGraphGenerator;
 import ir.util.IrPrinter;
 
 public class Main {
@@ -46,12 +48,10 @@ public class Main {
             System.out.println("> IR has been successfully generated <");
 
             // --- ControlFlowGraph ---
-            // ControlFlowGraphGenerator controlFlowGraphGenerator = new
-            // ControlFlowGraphGenerator();
-            // ControlFlowGraph cfg =
-            // controlFlowGraphGenerator.generateCFG(irGenerator.getCode());
+            ControlFlowGraphGenerator controlFlowGraphGenerator = new ControlFlowGraphGenerator();
+            ControlFlowGraph cfg = controlFlowGraphGenerator.generateCFG(irGenerator.getCode());
 
-            // cfg.printCFG();
+            cfg.printCFG();
 
             // LivenessAnalyzer la = new LivenessAnalyzer();
 
