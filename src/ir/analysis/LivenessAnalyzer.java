@@ -12,16 +12,19 @@ import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
 
 public class LivenessAnalyzer {
+    private HashMap<String, Set<String>> interference = new HashMap<>();
+
     public LivenessAnalyzer(ControlFlowGraph cfg) {
-        // kald gen kill metode
         // Step 1: find gen/kill for instructions
+        // TODO
         // Step 2: find gen/kill for blocks
+        // TODO
         // Step 3: do fixed-point analysis for blocks
         cfg = fixedPointAnalysis(cfg);
         // Step 4: do fixed-point analysis for instructions (?)
         cfg = instructionLevelLiveness(cfg);
         // Step 5: find interference
-
+        computeInterference(cfg);
     }
 
     private void blockGenKill(ControlFlowGraph cfg) {
@@ -69,11 +72,11 @@ public class LivenessAnalyzer {
         List<BasicBlock> blocks = cfg.getBlocks();
 
         for (BasicBlock b : blocks) {
-            INSTRUCTIONS = b.getInstructions();
+            List<IrInstruction> instructions = b.getInstructions();
             Set<String> live = new HashSet<>(b.getOut());
 
-            for (I : INSTRUCTIONS.reversed()) {
-                i.setOut(live);
+            for (IrInstruction i : instructions.reversed()) {
+                i.setOut(new HashSet<>(live));
 
                 i.clearIn();
                 i.addIn(i.getGen());
@@ -81,14 +84,36 @@ public class LivenessAnalyzer {
                 a.removeAll(i.getKill());
                 i.addIn(a);
 
-                live = i.getIn();
+                live = new HashSet<>(i.getIn());
             }
 
-            b.setInstructions(INSTRUCTIONS);
+            b.setInstructions(instructions);
         }
 
         cfg.setBlocks(blocks);
 
         return cfg;
+    }
+
+    private void computeInterference(ControlFlowGraph cfg) {
+        List<BasicBlock> blocks = cfg.getBlocks();
+
+        for (BasicBlock b : blocks) {
+            List<IrInstruction> instructions = b.getInstructions();
+
+            for (IrInstruction i : instructions) {
+                for (String k : i.getKill()) {
+                    for (String o : i.getOut()) {
+                        if (!this.interference.containsKey(k)) {
+                            this.interference.put(k, new HashSet<>(Set.of(o)));
+                        } else {
+                            Set<String> newO = this.interference.get(k);
+                            newO.add(o);
+                            this.interference.put(k, newO);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
