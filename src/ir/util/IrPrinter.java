@@ -93,18 +93,6 @@ public class IrPrinter {
 
                 i++;
             }
-
-            // create polling for components
-            for (IrInstructionInterface c : code) {
-                if (c instanceof IrComponent comp) {
-                    writer.write(comp.toString());
-                    writer.newLine();
-                }
-
-            }
-
-            // add GOTO main start
-            writer.write(ir.getMainLoopGoto().toString());
         }
     }
 }

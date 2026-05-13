@@ -1,14 +1,10 @@
 package main;
 
-import backend.AssemblyGenerator;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.SemanticAnalyser;
 import ir.IrGenerator;
-import ir.analysis.LivenessAnalyzer;
-import ir.cfg.ControlFlowGraph;
-import ir.cfg.ControlFlowGraphGenerator;
 import ir.util.IrPrinter;
 
 public class Main {
@@ -44,7 +40,7 @@ public class Main {
             irGenerator.generateProgram(ast);
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
-            irPrinter.printIR("NewTestIr");
+            irPrinter.printIR("IR");
 
             // System.out.println(ast);
             System.out.println("> IR has been successfully generated <");

@@ -1,10 +1,8 @@
 package ir;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import frontend.abstract_syntax.component.constants.DirectionComp;
 import frontend.abstract_syntax.component.constants.ProtocolComp;
@@ -54,11 +52,11 @@ public final class IrComponent implements IrInstructionInterface {
     }
 
     IrValue toIrValue(ProtocolComp pc) {
-        return new IrValue(pc.getProtocol().toString(), Type.PROTOCOL);
+        return new IrValue(pc.getProtocol().toString(), Type.COMPONENT);
     }
 
     IrValue toIrValue(DirectionComp dc) {
-        return new IrValue(dc.getDirection().toString(), Type.DIRECTION);
+        return new IrValue(dc.getDirection().toString(), Type.COMPONENT);
     }
 
     void addVariable(IrInstruction ii) {

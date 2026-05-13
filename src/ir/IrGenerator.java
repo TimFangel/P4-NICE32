@@ -2,6 +2,7 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import exception.*;
 import frontend.abstract_syntax.component.Component;
@@ -23,9 +24,6 @@ import lombok.Getter;
 public class IrGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
-
-    // loop to GOTO start of main.
-    private IrInstruction mainLoopGoto;
 
     // used to scope between function body and not.
     private IrFunction currentFunction = null; // null -> global scope
@@ -399,8 +397,36 @@ public class IrGenerator {
 
         generateStmt(program.getMain());
 
+        // create polling for components
+        List<IrInstructionInterface> temp = new ArrayList<>();
+        for (IrInstructionInterface c : code) {
+            if (c instanceof IrComponent comp && !comp.getVariables().isEmpty()) {
+                // first variable in comp is always the one written/read to.
+                IrValue startVar = comp.getVariables().get(0).getResult();
+                if (startVar == null) {
+                    throw new NoSuchElementException("Could not read first variable in '" + comp.getName() + "'");
+                }
+                switch (comp.getDirection().getDirection()) {
+                    case INPUT:
+                        temp.add(new IrInstruction(IrOperator.COMPR, comp.getPort(), comp.getInterval(), startVar));
+                        break;
+
+                    case OUTPUT:
+                        temp.add(new IrInstruction(IrOperator.COMPW, comp.getPort(), comp.getInterval(), startVar));
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException(
+                                "Could not create component polling for '" + comp.getName() + "'");
+                }
+
+            }
+        }
+        // add the temp list to code list.
+        code.addAll(temp);
+
         // make last instruction of main return to start of main.
-        mainLoopGoto = new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL));
+        createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
     }
 
     /**
