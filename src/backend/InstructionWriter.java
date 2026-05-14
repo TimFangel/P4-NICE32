@@ -1,5 +1,8 @@
 package backend;
 
+import java.util.Arrays;
+import java.util.List;
+
 import exception.InvalidRegisterException;
 import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
@@ -10,6 +13,7 @@ import ir.util.IrOperator;
 // TODO: Scratch Register
 // A14, A15
 // B15
+// F9-15
 
 public class InstructionWriter {
     private IrOperator operator;
@@ -227,7 +231,11 @@ public class InstructionWriter {
 
     private String floatAssignment() {
         if (result.getType() != Type.F_REG || arg1.getType() != Type.FLOAT_T) {
-            throw new UnknownAssArgTypeException("Could not generate float assignment for " + arg1.getName());
+            throw new NonRegisterArgsException("Could not generate float assignment for " + arg1.getName());
+        }
+
+        if (result.getName().compareTo("a14") == 0) {
+            throw new InvalidRegisterException("Register a14 must be unused for float assignments");
         }
 
         // Insert float as bits in A_REG (extended immediate assignment) before
@@ -309,6 +317,12 @@ public class InstructionWriter {
     }
 
     private String divideFloat() {
+        List<String> invalidRegisters = Arrays.asList("f9", "f10", "f11", "f12", "f13", "f14", "f15");
+        if (invalidRegisters.contains(result.getName()) || invalidRegisters.contains(arg1.getName())
+                || invalidRegisters.contains(arg2.getName())) {
+            throw new InvalidRegisterException("Register f9-15 must be unused for float division");
+        }
+
         return "DIV0.S f9, " + arg2.getName() + "\n" // .............. Divide: q = a/b with recip approximation
                 + "NEXP01.S f10, " + arg2.getName() + "\n" // ........ Negative and Narrow fully accurate divisor
                 + "CONST.S f11, 1\n" // .............................. Prepare for next instruction
@@ -373,6 +387,11 @@ public class InstructionWriter {
             case EQ:
                 return "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
             case NEQ:
+                if (result.getName().compareTo("b15") == 0) {
+                    throw new InvalidRegisterException(
+                            "Register a15 must be unused for extended immediate assignments");
+                }
+
                 // Calculate Equal and negate result
                 String str = "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
                 str += "ORBC b15, b15, b15";
@@ -439,6 +458,10 @@ public class InstructionWriter {
 
         if (arg1.getType() != Type.B_REG) {
             throw new NonRegisterArgsException("Cannot generate bool expression for non-register args");
+        }
+
+        if (result.getName().compareTo("b15") == 0) {
+            throw new InvalidRegisterException("Register a15 must be unused for extended immediate assignments");
         }
 
         String str = "ORBC b15, b15, b15 \n"; // Set bit b15
