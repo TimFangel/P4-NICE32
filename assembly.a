@@ -7,7 +7,7 @@ ADD t4, t1, t3
 MOV t1, t4
 
 B1
-L0:
+.L0:
 XORB t5, t5, t5
 MOVI a15, 64
 MOVI a14, 166
@@ -18,3 +18,7 @@ MOVI a15, 102
 ADDMI a14, a15
 
 WFR t6, a14
+ORB t7, t5, t5
+ORB t9, t5, t7
+ORB t8, t9, t9
+

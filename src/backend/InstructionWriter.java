@@ -48,20 +48,6 @@ public class InstructionWriter {
         return name.matches("[a-z]\\d*");
     }
 
-    private int getRegisterIndex(String name) {
-        if (!isRegister(name)) {
-            throw new RegisterException("Could not find register index for " + name);
-        }
-
-        int index = Integer.parseInt(name.substring(1));
-
-        if (index > 15 || index < 0) {
-            throw new RegisterException("Register out of bounds " + name);
-        }
-
-        return index;
-    }
-
     private Type toRegister(Type oldType) {
         switch (oldType) {
             case BOOL_T, B_REG:
@@ -74,10 +60,6 @@ public class InstructionWriter {
             default:
                 throw new RegisterException("Could not find register for " + oldType);
         }
-    }
-
-    private int setBit(int index) {
-        return 1 << index;
     }
 
     private void switchArgs() {
@@ -146,7 +128,7 @@ public class InstructionWriter {
                 return "SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
 
             default:
-                throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
+                throw new UnrecognizedOperatorException("Unrecognized Operator: " + operator);
         }
     }
 
@@ -205,7 +187,7 @@ public class InstructionWriter {
             int imm2 = (imm & 0xff0000) >> 16;
             int imm3 = (imm & 0xff000000) >> 24;
 
-            // Move parts into result
+            // Move parts into result and shift it continuously
             String str = "";
             str += "MOVI " + "a15" + ", " + imm3 + "\n";
             str += "MOVI " + result + ", " + imm2 + "\n";
@@ -248,6 +230,8 @@ public class InstructionWriter {
             throw new UnknownAssArgTypeException("Could not generate float assignment for " + arg1.getName());
         }
 
+        // Insert float as bits in A_REG (extended immediate assignment) before
+        // transferring it into F_REG
         int bits = Float.floatToIntBits(Float.parseFloat(arg1.getName()));
         String str = immediateAssignment(bits, "a14") + "\n";
         str += "WFR " + result.getName() + ", a14";
@@ -312,9 +296,7 @@ public class InstructionWriter {
                 str += "MULL.S ";
                 break;
             case DIV:
-                throw new RuntimeException("Not yet supported");
-            // str += "DIV0.S ";
-            // break;
+                return divideFloat();
             case MOD:
                 throw new InvalidOperatorException("Cannot use MOD in float expressions");
             default:
@@ -324,6 +306,10 @@ public class InstructionWriter {
         str += result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
 
         return str;
+    }
+
+    private String divideFloat() {
+        throw new RuntimeException("Not yet supported");
     }
 
     private String logicalComparison() {
@@ -341,7 +327,7 @@ public class InstructionWriter {
         }
     }
 
-    private String floatBoolExpression() { // SEE TODO BELOW IN SWITCH CASE!!!!!
+    private String floatBoolExpression() {
 
         if (result.getType() != Type.B_REG) {
             throw new NonRegisterResultException("Cannot generate boolean expression for non-register result");
@@ -363,7 +349,11 @@ public class InstructionWriter {
             case EQ:
                 return "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
             case NEQ:
-                return "NEG.S" + " " + arg1.getName() + "," + result.getName(); // TODO: combine with OEQ.S (MISSING)
+                // Calculate Equal and negate result
+                String str = "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+                str += "ORBC b15, b15, b15";
+                str += "XORB " + result.getName() + ", " + result.getName() + ", b15";
+                return str;
             default:
                 throw new InvalidOperatorException("Could not generate boolean expression for " + operator);
         }
@@ -407,6 +397,7 @@ public class InstructionWriter {
         final String setBit = "ORBC " + result.getName() + ", " + result.getName() + ", " + result.getName();
         final String clearBit = "XORB " + result.getName() + ", " + result.getName() + ", " + result.getName();
 
+        // Generate if else branch which sets or clears bit
         str += arg1.getName() + "," + arg2.getName() + "," + trueLabel + "\n";
         str += clearBit + "\n";
         str += "J " + falseLabel + "\n";
@@ -427,7 +418,7 @@ public class InstructionWriter {
         }
 
         String str = "ORBC b15, b15, b15 \n"; // Set bit b15
-        str += "XORB " + result.getName() + ", b15, " + arg1.getName();
+        str += "XORB " + result.getName() + ", b15, " + arg1.getName(); // Negate with XOR
         return str;
     }
 
@@ -457,13 +448,25 @@ public class InstructionWriter {
 
     }
 
-    private typeCast() {
-        if (condition) {
-            
-        } else if (condition) {
-            
+    private String typeCast() {
+        if (operator == IrOperator.INT_TO_FLOAT) {
+            if (result.getType() != Type.F_REG || arg1.getType() != Type.A_REG) {
+                throw new InvalidRegisterException(
+                        "Cannot do int to float cast for registers " + arg1 + " to " + result);
+            }
+
+            return "FLOAT.S " + result.getName() + ", " + arg1.getName() + ", 0";
+
+        } else if (operator == IrOperator.FLOAT_TO_INT) {
+            if (result.getType() != Type.A_REG || arg1.getType() != Type.F_REG) {
+                throw new InvalidRegisterException(
+                        "Cannot do float to int cast for registers " + arg1 + " to " + result);
+            }
+
+            return "TRUNC.S " + result.getName() + ", " + arg1.getName() + ", 0"; // Round towards 0
+
         } else {
-            throw new Operator
+            throw new UnrecognizedOperatorException("Cannot typecast to " + operator);
         }
     }
 }
