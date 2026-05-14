@@ -309,7 +309,31 @@ public class InstructionWriter {
     }
 
     private String divideFloat() {
-        throw new RuntimeException("Not yet supported");
+        return "DIV0.S f9, " + arg2.getName() + "\n"
+                + "NEXP01.S f10, " + arg2.getName() + "\n"
+                + "CONST.S f11, 1\n"
+                + "MADDN.S f11, f10, f9\n"
+                + "MOV.S f12, f9\n"
+                + "MOV.S f13, " + arg2.getName() + "\n"
+                + "NEXP01.S f14, " + arg1.getName() + "\n"
+                + "MADDN.S f12, f11, f9\n"
+                + "CONST.S f11, 1\n"
+                + "CONST.S " + result.getName() + ", 0\n"
+                + "NEG.S f15, f14\n"
+                + "MADDN.S f11, f10, f12\n"
+                + "MADDN.S " + result.getName() + ", f15, f9\n"
+                + "MKDADJ.S f13, " + arg1.getName() + "\n"
+                + "MADDN.S f12, f11, f12\n"
+                + "MADDN.S f15, f10, " + result.getName() + "\n"
+                + "CONST.S f11, 1\n"
+                + "MADDN.S f11, f10, f12\n"
+                + "MADDN.S " + result.getName() + ", f15, f12\n"
+                + "NEG.S f15, f14\n"
+                + "MADDN.S f12, f11, f12\n"
+                + "MADDN.S f15, f10, " + result.getName() + "\n"
+                + "ADDEXPM.S " + result.getName() + ", f13\n"
+                + "ADDEXP.S f12, f13\n"
+                + "DIVN.S " + result.getName() + ", f15, f12\n";
     }
 
     private String logicalComparison() {
