@@ -11,7 +11,7 @@ import ir.IrValue;
 import ir.util.IrOperator;
 
 // TODO: Scratch Register
-// A14, A15
+// A15
 // B15
 // F9-15
 
@@ -181,25 +181,15 @@ public class InstructionWriter {
         if (imm >= -2048 && imm <= 2047) {
             return "MOVI " + result + ", " + (imm & 0xfff);
         } else if (imm >= -2147483648 && imm <= 2147483647) {
-            if (result.compareTo("a15") == 0) {
-                throw new InvalidRegisterException("Register a15 must be unused for extended immediate assignments");
-            }
-
-            // Split number in 4x8bit
-            int imm0 = imm & 0xff;
-            int imm1 = (imm & 0xff00) >> 8;
-            int imm2 = (imm & 0xff0000) >> 16;
-            int imm3 = (imm & 0xff000000) >> 24;
-
-            // Move parts into result and shift it continuously
             String str = "";
-            str += "MOVI " + "a15" + ", " + imm3 + "\n";
-            str += "MOVI " + result + ", " + imm2 + "\n";
-            str += "ADDMI " + result + ", a15" + "\n"; // result += a15<<8, imm3 imm2
-            str += "MOVI " + result + ", " + imm1 + "\n";
-            str += "ADDMI " + "a15, " + result + "\n"; // a15 += result<<8, imm3 imm2 imm1
-            str += "MOVI " + "a15" + ", " + imm0 + "\n";
-            str += "ADDMI " + result + ", a15" + "\n"; // result += a15<<8, imm3 imm2 imm1 imm0
+
+            // Split number in MSB and LSB by masking
+            int immLSB = imm & 0xffff;
+            int immMSB = (imm & 0xffff0000) >> 16;
+
+            // Move parts into result implicitly shifted
+            str += "CONST16 " + result + ", " + immMSB + "\n";
+            str += "CONST16 " + result + ", " + immLSB;
 
             return str;
         } else {
@@ -234,15 +224,15 @@ public class InstructionWriter {
             throw new NonRegisterArgsException("Could not generate float assignment for " + arg1.getName());
         }
 
-        if (result.getName().compareTo("a14") == 0) {
-            throw new InvalidRegisterException("Register a14 must be unused for float assignments");
+        if (result.getName().compareTo("a15") == 0) {
+            throw new InvalidRegisterException("Register a15 must be unused for float assignments");
         }
 
         // Insert float as bits in A_REG (extended immediate assignment) before
         // transferring it into F_REG
         int bits = Float.floatToIntBits(Float.parseFloat(arg1.getName()));
-        String str = immediateAssignment(bits, "a14") + "\n";
-        str += "WFR " + result.getName() + ", a14";
+        String str = immediateAssignment(bits, "a15") + "\n";
+        str += "WFR " + result.getName() + ", a15";
         return str;
     }
 
