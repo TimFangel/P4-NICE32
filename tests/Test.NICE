@@ -1,3 +1,10 @@
+functions {
+    int func x(int n) {
+        int g = 20 +n;
+        return g;
+    }
+}
+
 setup {
     component bruh { 
         port: 2;
@@ -9,33 +16,12 @@ setup {
     }
 }
 
-functions {
-    int func x(int n) {
-    if (n < 0) {
-        n = n + 200;
-    }
-        return 5 * n + 2;
-    }
-}
-
 main {
-    int a = 5;
-    int b = 2;
-    int c = 7;
-    int d = -a * (b + c);
-
-    if (a > b) {
-        a = a + 10;
+    int gg = x(10);
+    bool h = true;
+    if (h && gg > 20) {
     }
 
-    bool bob = true;
-
-    while (bob != false) {
-        b = b - 1;
-        if (b < 1) {
-            bob = !bob;
-        }
-    }
-
-    bob = true;
+    int hh = -10;
+    int c = hh * 10 + gg - 5;
 }

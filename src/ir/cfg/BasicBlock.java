@@ -1,6 +1,7 @@
 package ir.cfg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -22,13 +23,13 @@ public class BasicBlock {
 
     /* Liveness Variables */
     // variables used before def.
-    private Set<String> gen;
+    private Set<String> gen = new HashSet<>();
     // variables assigned
-    private Set<String> kill;
+    private Set<String> kill = new HashSet<>();
 
     // in and out from liveness analysis
-    private Set<String> in;
-    private Set<String> out;
+    private Set<String> in = new HashSet<>();
+    private Set<String> out = new HashSet<>();
 
     public BasicBlock(int id) {
         this.id = id;
@@ -66,5 +67,21 @@ public class BasicBlock {
 
     public void clearOut() {
         this.out.clear();
+    }
+
+    public void addGen(Set<String> s) {
+        this.gen.addAll(s);
+    }
+
+    public void addKill(Set<String> s) {
+        this.kill.addAll(s);
+    }
+
+    public void clearGen() {
+        this.gen.clear();
+    }
+
+    public void clearKill() {
+        this.kill.clear();
     }
 }

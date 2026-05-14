@@ -5,6 +5,8 @@ import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.SemanticAnalyser;
 import ir.IrGenerator;
+import ir.analysis.LivenessAnalyzer;
+import ir.analysis.RegisterAllocator;
 import ir.cfg.ControlFlowGraph;
 import ir.cfg.ControlFlowGraphGenerator;
 import ir.util.IrPrinter;
@@ -53,11 +55,14 @@ public class Main {
 
             cfg.printCFG();
 
-            // LivenessAnalyzer la = new LivenessAnalyzer();
+            // --- Register Allocation ---
+            LivenessAnalyzer la = new LivenessAnalyzer(cfg);
+
+            RegisterAllocator ra = new RegisterAllocator(la.getInterference(), la.getCfg());
 
             // --- Assembly Generator ---
             // AssemblyGenerator ag = new AssemblyGenerator();
-            // ag.run(cfg, "assembly");
+            // ag.run(ra.getCfg(), "assembly");
 
         } catch (Exception e) {
             e.printStackTrace();

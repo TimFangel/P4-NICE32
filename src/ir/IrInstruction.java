@@ -18,6 +18,8 @@ public final class IrInstruction implements IrInstructionInterface {
     private IrValue arg2; // second argument of operation (null -> not present)
     private IrValue result; // where to store result of operation
 
+    private int instrNum; // instruction number used in liveness/register alloc
+
     // sets used for liveness analysis.
     private Set<String> gen = new HashSet<>(); // read
     private Set<String> kill = new HashSet<>(); // write
@@ -71,7 +73,7 @@ public final class IrInstruction implements IrInstructionInterface {
                 return "RET " + result.getName();
 
             case CALL:
-                return "CALL " + result.getName() + ", " + arg1.getName();
+                return result.getName() + " := " + "CALL " + arg2.getName() + ", " + arg1.getName();
 
             case PORT_SETUP:
                 return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
@@ -136,11 +138,21 @@ public final class IrInstruction implements IrInstructionInterface {
 
         // add arg1 and arg2 to gen, if valid type.
         if (arg1 != null && set.contains(arg1.getType())) {
-            gen.add(arg1.getName());
+            String name = arg1.getName();
+            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                gen.add(name);
+            }
         }
 
         if (arg2 != null && set.contains(arg2.getType())) {
-            gen.add(arg2.getName());
+            String name = arg2.getName();
+            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                if (operator == IrOperator.FUNC_INFO) {
+                    kill.add(name);
+                } else {
+                    gen.add(name);
+                }
+            }
         }
     }
 
@@ -149,7 +161,16 @@ public final class IrInstruction implements IrInstructionInterface {
 
         // add result to kill, if valid type.
         if (result != null && set.contains(result.getType())) {
-            kill.add(result.getName());
+            String name = result.getName();
+            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+
+                if (operator == IrOperator.RET || operator == IrOperator.COMPW) {
+                    gen.add(name);
+
+                } else {
+                    kill.add(name);
+                }
+            }
         }
     }
 

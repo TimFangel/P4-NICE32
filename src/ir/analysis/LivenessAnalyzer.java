@@ -10,30 +10,60 @@ import ir.IrInstruction;
 import ir.IrInstructionInterface;
 import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
+import lombok.Getter;
 
+@Getter
 public class LivenessAnalyzer {
     private HashMap<String, Set<String>> interference = new HashMap<>();
+    private ControlFlowGraph cfg;
 
     public LivenessAnalyzer(ControlFlowGraph cfg) {
         // Step 1: find gen/kill for instructions
-        // TODO
+        // Already on instruction when created using constructor.
         // Step 2: find gen/kill for blocks
-        // TODO
+        this.cfg = blockGenKill(cfg);
         // Step 3: do fixed-point analysis for blocks
-        cfg = fixedPointAnalysis(cfg);
+        this.cfg = fixedPointAnalysis(this.cfg);
         // Step 4: do fixed-point analysis for instructions (?)
-        cfg = instructionLevelLiveness(cfg);
+        this.cfg = instructionLevelLiveness(this.cfg);
         // Step 5: find interference
         computeInterference(cfg);
+        System.out.println(interference);
     }
 
-    private void blockGenKill(ControlFlowGraph cfg) {
+    private ControlFlowGraph blockGenKill(ControlFlowGraph cfg) {
         List<BasicBlock> blocks = cfg.getBlocks();
+
+        for (BasicBlock block : blocks) {
+            // ensure each block is clear
+            block.clearGen();
+            block.clearKill();
+
+            for (IrInstruction instr : block.getInstructions()) {
+                // find gen for Block
+                // block.gen = (instr.gen \ block.kill)
+                Set<String> instrGen = new HashSet<>(instr.getGen());
+                instrGen.removeAll(block.getKill());
+                block.addGen(instrGen);
+
+                // block.kill = instr.kill
+                block.addKill(instr.getKill());
+            }
+        }
+
+        cfg.setBlocks(blocks);
+
+        return cfg;
     }
 
     private ControlFlowGraph fixedPointAnalysis(ControlFlowGraph cfg) {
+        // reversed since we go bottom up.
         List<BasicBlock> blocks = cfg.getBlocks().reversed();
 
+        // out = union of successor.in
+        // in = gen[b] U (out[b] \ kill[b])
+
+        // if current iteration has changed from last iteration. (SPO 12)
         boolean pointsHaveChanged = true;
 
         while (pointsHaveChanged) {
@@ -45,7 +75,7 @@ public class LivenessAnalyzer {
 
                 // Find live_out.
                 b.clearOut();
-                for (BasicBlock s : b.getChildren()) { // successor kan vel godt være i samme blok?
+                for (BasicBlock s : b.getChildren()) {
                     b.addOut(s.getIn());
                 }
 
@@ -63,6 +93,7 @@ public class LivenessAnalyzer {
             }
         }
 
+        // update cfg with blocks in normal order.
         cfg.setBlocks(blocks.reversed());
 
         return cfg;
@@ -75,6 +106,7 @@ public class LivenessAnalyzer {
             List<IrInstruction> instructions = b.getInstructions();
             Set<String> live = new HashSet<>(b.getOut());
 
+            // find in and out for each instruction.
             for (IrInstruction i : instructions.reversed()) {
                 i.setOut(new HashSet<>(live));
 
@@ -104,13 +136,12 @@ public class LivenessAnalyzer {
             for (IrInstruction i : instructions) {
                 for (String k : i.getKill()) {
                     for (String o : i.getOut()) {
-                        if (!this.interference.containsKey(k)) {
-                            this.interference.put(k, new HashSet<>(Set.of(o)));
-                        } else {
-                            Set<String> newO = this.interference.get(k);
-                            newO.add(o);
-                            this.interference.put(k, newO);
+                        if (k.equals(o)) {
+                            continue;
                         }
+
+                        interference.computeIfAbsent(k, x -> new HashSet<>()).add(o);
+                        interference.computeIfAbsent(o, x -> new HashSet<>()).add(k);
                     }
                 }
             }

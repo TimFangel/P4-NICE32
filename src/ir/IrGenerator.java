@@ -173,13 +173,13 @@ public class IrGenerator {
             FunctionSymbol funcSymbol = func.getFunctionSymbolRef();
             Type returnType = funcSymbol.getType();
 
-            IrValue result = new IrValue(funcSymbol.getName(), returnType);
+            IrValue result = newTemp(returnType);
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
 
             // Create and return new symbol
-            IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
+            // IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
             IrValue temp = newTemp(returnType);
-            createIR(new IrInstruction(IrOperator.ASS, returnValue, null, temp));
+            createIR(new IrInstruction(IrOperator.ASS, result, null, temp));
 
             return temp;
         }

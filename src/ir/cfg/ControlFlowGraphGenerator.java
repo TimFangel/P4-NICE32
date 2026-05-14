@@ -56,13 +56,16 @@ public class ControlFlowGraphGenerator {
         for (int i = 0; i < instructions.size(); i++) {
             IrInstruction instr = instructions.get(i);
 
-            // ignore SEPARATOR used for pretty printing.
+            /*
+             * ignore SEPARATOR used for pretty printing, but use first one to mark entry of
+             * graph (setup)
+             */
             if (instr.getOperator() == IrOperator.SEPARATOR) {
                 if (separatorCount == 0) {
-                    // add instruction to signify entry TODO: remember to have printCFG ignore this
-                    // instruction.
+                    currentBlock.addInstruction(instr);
                     separatorCount++;
                 }
+
                 continue;
             }
 
@@ -167,12 +170,15 @@ public class ControlFlowGraphGenerator {
 
     private List<IrInstruction> convertInterfaceList(List<IrInstructionInterface> list) {
         List<IrInstruction> instructions = new ArrayList<>();
+        int instructionCounter = 0;
 
         for (IrInstructionInterface i : list) {
             switch (i) {
-                case IrInstruction instr ->
+                case IrInstruction instr -> {
                     // add regular instructions
+                    instr.setInstrNum(instructionCounter++);
                     instructions.add(instr);
+                }
 
                 case IrFunction instr -> {
                     // transform function identifier, param, and type to IrInstruction.
@@ -184,10 +190,14 @@ public class ControlFlowGraphGenerator {
                             instr.getParameter(),
                             null);
 
+                    funcInfo.setInstrNum(instructionCounter++);
                     instructions.add(funcInfo);
 
                     // add function body to list of instructions.
-                    instructions.addAll(instr.getFuncBody());
+                    for (IrInstruction ii : instr.getFuncBody()) {
+                        ii.setInstrNum(instructionCounter++);
+                        instructions.add(ii);
+                    }
                 }
 
                 case IrComponent instr -> {
@@ -198,13 +208,19 @@ public class ControlFlowGraphGenerator {
                             instr.getInterval(),
                             null);
 
+                    portIntervalInfo.setInstrNum(instructionCounter++);
                     instructions.add(portIntervalInfo);
 
                     // add direction/protocol instruction to list.
-                    instructions.add(instr.getSetup());
+                    IrInstruction setup = instr.getSetup();
+                    setup.setInstrNum(instructionCounter++);
+                    instructions.add(setup);
 
                     // add component variables to list.
-                    instructions.addAll(instr.getVariables());
+                    for (IrInstruction ii : instr.getVariables()) {
+                        ii.setInstrNum(instructionCounter++);
+                        instructions.add(ii);
+                    }
                 }
 
                 default -> throw new UnknownInstructionException("Instruction Unknown: " + i);
@@ -214,12 +230,41 @@ public class ControlFlowGraphGenerator {
         return instructions;
     }
 
+    /**
+     * Entry of CFG is the one containing a SEPARATOR instruction.
+     */
+    private ControlFlowGraph findEntry(ControlFlowGraph cfg) {
+        boolean separatorFound = false;
+
+        // check each list of instructions of each block until separator is found.
+        List<BasicBlock> cfgBlocks = cfg.getBlocks();
+        for (BasicBlock block : cfgBlocks) {
+            List<IrInstruction> instructions = block.getInstructions();
+            for (IrInstruction instr : block.getInstructions()) {
+                if (instr.getOperator() == IrOperator.SEPARATOR) {
+                    // update entry, remove instruction, then return.
+                    cfg.setEntry(block);
+                    instructions.remove(instr);
+                    block.setInstructions(instructions);
+                    separatorFound = true;
+                    break;
+                }
+            }
+
+            if (separatorFound) {
+                break;
+            }
+        }
+
+        return cfg;
+    }
+
     public ControlFlowGraph generateCFG(List<IrInstructionInterface> instructions) {
         ControlFlowGraph cfg = new ControlFlowGraph();
         generateBasicBlocks(convertInterfaceList(instructions));
         generateRelations();
-        cfg.setEntry();
         cfg.setBlocks(blocks);
+        cfg = findEntry(cfg);
 
         return cfg;
     }
