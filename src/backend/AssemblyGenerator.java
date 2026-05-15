@@ -34,7 +34,7 @@ public class AssemblyGenerator {
     }
 
     private String formatInstruction(String str, String comment) {
-        String[] commentArr = new String[] { comment };
+        String[] commentArr = comment.split("\n");
         return formatInstruction(str, commentArr);
     }
 
@@ -43,15 +43,17 @@ public class AssemblyGenerator {
         final int argLen = 4;
 
         // format: ins arg, arg, arg ; com
-        String format = "%-" + insLen + "s %" + argLen + "s %" + argLen + "s %" + argLen + "s %s\n";
+        String format = "%-" + insLen + "s %" + argLen + "s %" + argLen + "s %" + argLen + "s %s";
         StringBuilder result = new StringBuilder();
 
         String[] lines = str.split("\n");
 
         // Write each line based on arg count
-        for (int i = 0; i < lines.length; i++) {
+        int i = 0;
+        for (; i < lines.length; i++) {
             String[] tokens = lines[i].split(" ");
             String com = "";
+            StringBuilder line = new StringBuilder();
 
             // Get comment if exists
             if (comments.length > i) {
@@ -60,24 +62,31 @@ public class AssemblyGenerator {
 
             switch (tokens.length) {
                 case 2:
-                    result.append(String.format(format, tokens[0], tokens[1] + " ", "", "", com));
+                    line.append(String.format(format, tokens[0], tokens[1] + " ", "", "", com));
                     break;
                 case 3:
-                    result.append(String.format(format, tokens[0], tokens[1], tokens[2] + " ", "", com));
+                    line.append(String.format(format, tokens[0], tokens[1], tokens[2] + " ", "", com));
                     break;
                 case 4:
-                    result.append(String.format(format, tokens[0], tokens[1], tokens[2], tokens[3], com));
+                    line.append(String.format(format, tokens[0], tokens[1], tokens[2], tokens[3], com));
                     break;
 
                 default:
-                    result.append(String.format(format, tokens[0] + " ", "", "", "", com));
+                    line.append(String.format(format, tokens[0] + " ", "", "", "", com));
                     break;
             }
 
             int commentStartIndex = insLen + argLen * 3 + 4;
-            while (result.charAt(commentStartIndex) == ' ') {
-                result.deleteCharAt(commentStartIndex);
+            while (line.charAt(commentStartIndex) == ' ') {
+                line.deleteCharAt(commentStartIndex);
             }
+
+            line.append("\n");
+            result.append(line);
+        }
+
+        for (; i < comments.length; i++) {
+            result.append(", ").append(comments[i]);
         }
 
         return result.toString();

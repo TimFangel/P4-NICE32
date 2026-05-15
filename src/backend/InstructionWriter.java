@@ -137,7 +137,7 @@ public class InstructionWriter {
                 return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
 
             case FUNC_INFO:
-                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + arg2.getName();
+                return "FUNC " + arg1.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator: " + operator);
