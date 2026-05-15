@@ -43,7 +43,7 @@ public class AssemblyGenerator {
         final int argLen = 4;
 
         // format: ins arg, arg, arg ; com
-        String format = "%-" + insLen + "s %" + argLen + "s %" + argLen + "S %" + argLen + "S %s\n";
+        String format = "%-" + insLen + "s %" + argLen + "s %" + argLen + "s %" + argLen + "s %s\n";
         StringBuilder result = new StringBuilder();
 
         String[] lines = str.split("\n");
