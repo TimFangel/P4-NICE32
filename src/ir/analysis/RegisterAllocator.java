@@ -12,8 +12,8 @@ import ir.IrInstruction;
 import ir.IrValue;
 import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
+import ir.util.IrOperator;
 import lombok.Getter;
-import lombok.experimental.var;
 import frontend.abstract_syntax.type.Type;
 
 public class RegisterAllocator {
@@ -41,12 +41,13 @@ public class RegisterAllocator {
         this.interference = interference;
 
         getTemporaries();
+        System.out.println("All temporary variables:\n" + temps);
 
-        Map<String, String> allocatedRegisters = allocateRegisters();
+        this.allocatedRegisters = allocateRegisters();
         System.out.println("\n" + allocatedRegisters);
 
         // Update CFG with newly allocated registers.
-        updateCfg(allocatedRegisters);
+        updateCfg(this.allocatedRegisters);
     }
 
     private Map<String, String> allocateRegisters() {
@@ -94,7 +95,7 @@ public class RegisterAllocator {
             // If no register could be allocated, throw exception.
             if (chosenRegister == null) {
                 throw new RegisterSpillException(
-                        "Program requires more registers than available. Could not allocate variable " + t
+                        "ID-10T: Program requires more registers than available. Could not allocate variable " + t
                                 + " of type " + type + " to a register");
             } else {
                 allocate.put(t, chosenRegister);

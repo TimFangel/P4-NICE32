@@ -19,11 +19,13 @@ import frontend.symbol_table.*;
 import ir.util.*;
 import lombok.Getter;
 
-/* Three Access Code Generator */
+/**
+ * Generates IR in TAC form from a NICE32 AST.
+ */
 @Getter
 public class IrGenerator {
     private int tempCounter = 0;
-    private int labelCount = 0;
+    private int labelCounter = 0;
 
     // used to scope between function body and not.
     private IrFunction currentFunction = null; // null -> global scope
@@ -37,14 +39,29 @@ public class IrGenerator {
         // Empty constructor
     }
 
+    /**
+     * Creates a new label
+     */
     private String newLabel() {
-        return "L" + labelCount++;
+        return "L" + labelCounter++;
     }
 
+    /**
+     * Creates a new temporary with the given type.
+     * 
+     * @param type to give new temporary variable.
+     * @return Temporary variable with the input type.
+     */
     private IrValue newTemp(Type type) {
         return new IrValue("t" + tempCounter++, type);
     }
 
+    /**
+     * Creates a new temporary based on given symbol.
+     * 
+     * @param symbol to get the type of.
+     * @return Temporary variable with the symbols type.
+     */
     private IrValue newTemp(VariableSymbol symbol) {
         String name = "t" + tempCounter++;
         symbol.setIrName(name);
@@ -95,6 +112,7 @@ public class IrGenerator {
      */
     public IrValue generateExpr(Expr expr) {
         if (expr instanceof ArithBinaryOpExpr binOp) {
+            // generate left and right argument of expression.
             IrValue left = generateExpr(binOp.getExprLeft());
             IrValue right = generateExpr(binOp.getExprRight());
 
@@ -107,7 +125,7 @@ public class IrGenerator {
             // Create temporary value to hold result
             IrValue temp = newTemp(left.getType());
 
-            // add instruction for temp var
+            // add instruction with temp var as result
             createIR(new IrInstruction(operatorMapper.mapArithBin(binOp.getOp()), left, right, temp));
 
             // return temp to be used in parent expr
@@ -115,17 +133,19 @@ public class IrGenerator {
         }
 
         if (expr instanceof ArithUnaryOpExpr unOp) {
+            // generate child expression.
             IrValue left = generateExpr(unOp.getExpr());
 
             IrValue temp = newTemp(left.getType());
 
-            // add code for temp var
+            // add instruction with temp var as result, and left as first argument.
             createIR(new IrInstruction(operatorMapper.mapArithUna(unOp.getOp()), left, null, temp));
 
             return temp;
         }
 
         if (expr instanceof BoolBinaryOpExpr binOp) {
+            // generate left and right subexpressions.
             IrValue left = generateExpr(binOp.getExprLeft());
             IrValue right = generateExpr(binOp.getExprRight());
 
@@ -136,28 +156,34 @@ public class IrGenerator {
 
             IrValue temp = newTemp(Type.BOOL_T);
 
-            // add code for temp var
+            /*
+             * add instruction with temp var as result, and left(1) and right(2) as
+             * arguments.
+             */
             createIR(new IrInstruction(operatorMapper.mapBoolBin(binOp.getOp()), left, right, temp));
 
             return temp;
         }
 
         if (expr instanceof BoolUnaryOpExpr unOp) {
+            // generate subexpression.
             IrValue left = generateExpr(unOp.getExpr());
 
             if (left.getType() != Type.BOOL_T) {
                 throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType());
             }
 
+            // new temporary variable to hold result.
             IrValue temp = newTemp(left.getType());
 
-            // add code for temp var
+            // add instruction with temp var as result, and left as first argument.
             createIR(new IrInstruction(operatorMapper.mapBoolUna(unOp.getOp()), left, null, temp));
 
             return temp;
         }
 
         if (expr instanceof Operand operand) {
+            // operands only contain a value.
             return generateValue(operand.getValue());
         }
 
@@ -168,29 +194,28 @@ public class IrGenerator {
         }
 
         if (expr instanceof FuncCall func) {
+            // generate parameter, get name, symbol and return type.
             IrValue parameter = generateExpr(func.getParameter());
             String ident = func.getIdentifier();
             FunctionSymbol funcSymbol = func.getFunctionSymbolRef();
             Type returnType = funcSymbol.getType();
 
-            IrValue result = newTemp(returnType);
-            createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
-
-            // Create and return new symbol
-            // IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
+            // make new temp of function return type.
             IrValue temp = newTemp(returnType);
-            createIR(new IrInstruction(IrOperator.ASS, result, null, temp));
+            createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), temp));
 
             return temp;
         }
 
         if (expr instanceof VarExpr varExpr) {
+            // find symbolRef of variable containing needed information.
             VariableSymbol symbol = varExpr.getSymbolRef();
 
             return new IrValue(symbol.getIrName(), symbol.getType());
         }
 
         if (expr instanceof MemberAccess memberAccess) {
+            // find needed information of variable.
             VariableSymbol symbol = memberAccess.getSymbolRef();
 
             return new IrValue(symbol.getIrName(), symbol.getType());
@@ -209,15 +234,15 @@ public class IrGenerator {
             try {
                 // Create resulting temp and evaluate expression
                 VariableSymbol symbol = decl.getSymbolRef();
-                IrValue result = newTemp(symbol);
+                IrValue temp = newTemp(symbol);
                 IrValue expr = generateExpr(decl.getValue());
 
-                if (expr.getType() != result.getType()) {
+                if (expr.getType() != temp.getType()) {
                     throw new NonMatchingTypeException(
-                            "Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
+                            "Type mismatch! Expr: " + expr.getType() + " Result: " + temp.getType());
                 }
 
-                createIR(new IrInstruction(IrOperator.ASS, expr, null, result));
+                createIR(new IrInstruction(IrOperator.ASS, expr, null, temp));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -226,17 +251,19 @@ public class IrGenerator {
         }
 
         if (stmt instanceof AssStmt ass) {
+            // get symbol with relevant info and create subexpression.
             VariableSymbol symbol = ass.getSymbolRef();
-            IrValue right = generateExpr(ass.getValue());
+            IrValue expr = generateExpr(ass.getValue());
 
             try {
-                IrValue left = new IrValue(symbol.getIrName(), symbol.getType());
+                // create an IrValue for the result.
+                IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
 
-                if (left.getType() != right.getType()) {
+                if (result.getType() != expr.getType()) {
                     throw new NonMatchingTypeException(
-                            "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
+                            "Type mismatch! Result: " + result.getType() + " Expr: " + expr.getType());
                 }
-                createIR(new IrInstruction(IrOperator.ASS, right, null, left));
+                createIR(new IrInstruction(IrOperator.ASS, expr, null, result));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -245,6 +272,7 @@ public class IrGenerator {
         }
 
         if (stmt instanceof IfStmt ifStmt) {
+            // generate the condition of the if stmt.
             IrValue condition = generateExpr(ifStmt.getCondition());
 
             if (condition.getType() != Type.BOOL_T) {
@@ -341,12 +369,14 @@ public class IrGenerator {
         }
 
         if (stmt instanceof Component compDecl) {
+            // generate IrValues for the integer constants.
             IrValue port = generateExpr(compDecl.getPort());
             IrValue interval = generateExpr(compDecl.getInterval());
 
             IrComponent component = new IrComponent(compDecl.getIdentifier(), compDecl.getProtocol(),
                     compDecl.getDirection(), port, interval);
 
+            // create IrInstructions for all comp variables and add it to the comp.
             for (Decl decl : compDecl.getVariables()) {
                 VariableSymbol symbol = decl.getSymbolRef();
 
@@ -363,6 +393,7 @@ public class IrGenerator {
                 component.addVariable(variable);
             }
 
+            // Add the component to the list of IR.
             createIR(component);
 
             return;
@@ -385,27 +416,29 @@ public class IrGenerator {
         // SEPARATOR to distinguish between functions and setup
         createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
 
+        // Generate setup
         generateStmt(program.getSetup());
 
         // SEPARATOR to distinguish between main and setup
         createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
 
-        // make label to goto to start of main, instead of going to functions.
+        // make label at start of main.
         String mainStart = newLabel();
-
         createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
 
+        // Generate main
         generateStmt(program.getMain());
 
         // create polling for components
         List<IrInstructionInterface> temp = new ArrayList<>();
         for (IrInstructionInterface c : code) {
             if (c instanceof IrComponent comp && !comp.getVariables().isEmpty()) {
-                // first variable in comp is always the one written/read to.
+                // first variable in comp is always the one written/read to/from.
                 IrValue startVar = comp.getVariables().get(0).getResult();
                 if (startVar == null) {
                     throw new NoSuchElementException("Could not read first variable in '" + comp.getName() + "'");
                 }
+                // create IR depending on component direction
                 switch (comp.getDirection().getDirection()) {
                     case INPUT:
                         temp.add(new IrInstruction(IrOperator.COMPR, comp.getPort(), comp.getInterval(), startVar));
@@ -425,7 +458,7 @@ public class IrGenerator {
         // add the temp list to code list.
         code.addAll(temp);
 
-        // make last instruction of main return to start of main.
+        // make last instruction of main return to start of main for infinite loop.
         createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
     }
 
@@ -442,8 +475,10 @@ public class IrGenerator {
             return value;
         }
 
+        // create temp of desired type.
         IrValue temp = newTemp(targetType);
 
+        // create IR depending on type cast to.
         if (valueType == Type.INT_T && targetType == Type.FLOAT_T) {
             createIR(new IrInstruction(IrOperator.INT_TO_FLOAT, value, null, temp));
         } else if (valueType == Type.FLOAT_T && targetType == Type.INT_T) {

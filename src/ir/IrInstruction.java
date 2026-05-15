@@ -85,10 +85,10 @@ public final class IrInstruction implements IrInstructionInterface {
                 return "COMPW " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
 
             case COMP_INTS:
-                return "PORT: " + arg1.getName() + "INTERVAL: " + arg2.getName();
+                return "PORT: " + arg1.getName() + " " + "INTERVAL: " + arg2.getName();
 
             case FUNC_INFO:
-                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + arg2.getName();
+                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + result.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
