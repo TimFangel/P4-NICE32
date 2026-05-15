@@ -3,7 +3,7 @@ package main;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
-import frontend.semantic_analysis.SemanticAnalyser;
+import frontend.semantic_analysis.SemanticAnalyzer;
 import ir.IrGenerator;
 import ir.analysis.LivenessAnalyzer;
 import ir.analysis.RegisterAllocator;
@@ -33,8 +33,8 @@ public class Main {
             // --- Semantic Analysis ---
             Program ast = parser.mainNode;
 
-            SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
-            semanticAnalyser.traverse(ast);
+            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+            semanticAnalyzer.traverse(ast);
 
             System.out.println(ast);
             System.out.println("> AST passed type checker <");

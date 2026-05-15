@@ -21,7 +21,7 @@ import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
 import frontend.abstract_syntax.Node;
 import frontend.abstract_syntax.expression.Expr;
-import frontend.semantic_analysis.SemanticAnalyser;
+import frontend.semantic_analysis.SemanticAnalyzer;
 import frontend.symbol_table.Symbol;
 import frontend.symbol_table.SymbolTable;
 
@@ -32,16 +32,16 @@ import java.lang.reflect.*;
 /* The concept of reflection */
 /* Change element of class at runtime */
 
-public class SemanticAnalyserTest {
+class SemanticAnalyserTest {
 
     @Test
     public void testArithBinaryOpExprReturnsCorrectType()
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
 
         // Use reflection on method
-        Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
+        Method method = semanticAnalyzer.getClass().getDeclaredMethod("visitType", Node.class);
         method.setAccessible(true);
 
         IntNum leftNum = new IntNum(5);
@@ -51,36 +51,37 @@ public class SemanticAnalyserTest {
         Expr exprRight = new Operand(0, rightNum);
 
         ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
-        
-        // Invoking 
-        Type type = (Type)method.invoke(semanticAnalyser, arithBinOpexpr);
+
+        // Invoking
+        Type type = (Type) method.invoke(semanticAnalyzer, arithBinOpexpr);
 
         Assertions.assertEquals(Type.INT_T, type);
 
     }
 
     @Test // Test to ensure that incorrect operands throws correct exception.
-    public void testArithBinaryOpExprThrowsExceptionOnIncorrectOperands() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testArithBinaryOpExprThrowsExceptionOnIncorrectOperands()
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
 
         Assertions.assertThrows(NonMatchingTypeException.class, () -> {
             try {
-            // Use reflection on method 
-            Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
-            method.setAccessible(true);
+                // Use reflection on method
+                Method method = semanticAnalyzer.getClass().getDeclaredMethod("visitType", Node.class);
+                method.setAccessible(true);
 
-            IntNum leftNum = new IntNum(5);
-            FloatNum rightNum = new FloatNum(4.2f);
+                IntNum leftNum = new IntNum(5);
+                FloatNum rightNum = new FloatNum(4.2f);
 
-            Expr exprLeft = new Operand(0, leftNum);
-            Expr exprRight = new Operand(0, rightNum);
+                Expr exprLeft = new Operand(0, leftNum);
+                Expr exprRight = new Operand(0, rightNum);
 
-            ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
-        
-            // Invoking 
-            method.invoke(semanticAnalyser, arithBinOpexpr);
-            
+                ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
+
+                // Invoking
+                method.invoke(semanticAnalyzer, arithBinOpexpr);
+
             } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof NonMatchingTypeException) {
@@ -88,20 +89,21 @@ public class SemanticAnalyserTest {
                 }
                 throw e;
             }
-            
-        }, "this exception was expected");  
-    }   
-    
 
-    @Test // Test to ensure that division by zero throws exception Not yet implemented in SemanticAnalyser
-    public void testArithBinaryOpExprThrowsExceptionOnZeroDiv() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+        }, "this exception was expected");
+    }
 
-        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+    @Test // Test to ensure that division by zero throws exception Not yet implemented in
+          // SemanticAnalyser
+    public void testArithBinaryOpExprThrowsExceptionOnZeroDiv()
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
 
         Assertions.assertThrows(InvocationTargetException.class, () -> {
 
             // Use reflection on method
-            Method method = semanticAnalyser.getClass().getDeclaredMethod("visitType", Node.class);
+            Method method = semanticAnalyzer.getClass().getDeclaredMethod("visitType", Node.class);
             method.setAccessible(true);
 
             IntNum leftNum = new IntNum(5);
@@ -111,32 +113,32 @@ public class SemanticAnalyserTest {
             Expr exprRight = new Operand(0, rightNum);
 
             ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.DIV, exprLeft, exprRight);
-        
+
             // Invoking
-            method.invoke(semanticAnalyser, arithBinOpexpr);
+            method.invoke(semanticAnalyzer, arithBinOpexpr);
 
         }, "this exception was expected");
     }
-    
-    
-    @Test
-    public void testIfStatementOnLiteralCondition() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+    @Test
+    public void testIfStatementOnLiteralCondition()
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
 
         Assertions.assertDoesNotThrow(() -> {
-        
-        // Use reflection on method 
-        Method method = semanticAnalyser.getClass().getDeclaredMethod("visit", IfStmt.class);
-        method.setAccessible(true);
+
+            // Use reflection on method
+            Method method = semanticAnalyzer.getClass().getDeclaredMethod("visit", IfStmt.class);
+            method.setAccessible(true);
 
             IntNum leftNum = new IntNum(5);
             IntNum rightNum = new IntNum(4);
 
-        Operand operandLeft = new Operand(0, leftNum);
-        Operand operandRight = new Operand(0, rightNum);
-        
-        BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0,BoolBinaryOp.GT,operandLeft,operandRight);
+            Operand operandLeft = new Operand(0, leftNum);
+            Operand operandRight = new Operand(0, rightNum);
+
+            BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, operandLeft, operandRight);
 
             Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
             BlockStmt blockStmt = new BlockStmt(0, declOne);
@@ -146,87 +148,120 @@ public class SemanticAnalyserTest {
 
             IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
 
-        // Invoking 
-        method.invoke(semanticAnalyser, ifStmt);
+            // Invoking
+            method.invoke(semanticAnalyzer, ifStmt);
 
         });
     }
 
     @Test
-    public void testIfStatementOnVarCondition() throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
+    public void testIfStatementOnVarCondition()
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
 
         Assertions.assertDoesNotThrow(() -> {
 
-        /* BUILD first declaration ----------------------------------------------------------------------------------- */
-        // Use reflection on method 
-        Method methodDeclLeft = semanticAnalyser.getClass().getDeclaredMethod("visit", Decl.class);
-        methodDeclLeft.setAccessible(true);
-        
-        IntNum leftNum = new IntNum(5);
+            /*
+             * BUILD first declaration
+             * -----------------------------------------------------------------------------
+             * ------
+             */
+            // Use reflection on method
+            Method methodDeclLeft = semanticAnalyzer.getClass().getDeclaredMethod("visit", Decl.class);
+            methodDeclLeft.setAccessible(true);
 
-        Operand operandLeft = new Operand(0, leftNum);
+            IntNum leftNum = new IntNum(5);
 
-        Decl leftDec = new Decl(0,Type.INT_T,"l",operandLeft);
+            Operand operandLeft = new Operand(0, leftNum);
 
-        // Invoking 
-        methodDeclLeft.invoke(semanticAnalyser, leftDec);
-        /* END first declaration ----------------------------------------------------------------------------------- */
+            Decl leftDec = new Decl(0, Type.INT_T, "l", operandLeft);
 
-        /* BUILD second declaration ----------------------------------------------------------------------------------- */
-        // Use reflection on method 
-        Method methodDeclRight = semanticAnalyser.getClass().getDeclaredMethod("visit", Decl.class);
-        methodDeclRight.setAccessible(true);
+            // Invoking
+            methodDeclLeft.invoke(semanticAnalyzer, leftDec);
+            /*
+             * END first declaration
+             * -----------------------------------------------------------------------------
+             * ------
+             */
 
-        IntNum rightNum = new IntNum(4);
+            /*
+             * BUILD second declaration
+             * -----------------------------------------------------------------------------
+             * ------
+             */
+            // Use reflection on method
+            Method methodDeclRight = semanticAnalyzer.getClass().getDeclaredMethod("visit", Decl.class);
+            methodDeclRight.setAccessible(true);
 
-        Operand operandRight = new Operand(0, rightNum);
+            IntNum rightNum = new IntNum(4);
 
-        Decl rightDec = new Decl(0,Type.INT_T,"r",operandRight);
+            Operand operandRight = new Operand(0, rightNum);
 
-        // Invoking 
-        methodDeclRight.invoke(semanticAnalyser, rightDec);
-        /* END second declaration ----------------------------------------------------------------------------------- */
-        
-        /* BUILD first variable expression ----------------------------------------------------------------------------------- */
-        Method methodDeclVarLeft = semanticAnalyser.getClass().getDeclaredMethod("visitType", VarExpr.class);
-        methodDeclVarLeft.setAccessible(true);
+            Decl rightDec = new Decl(0, Type.INT_T, "r", operandRight);
 
-        VarExpr leftVar = new VarExpr(0, "l");
-        
-        // Invoking
-        methodDeclVarLeft.invoke(semanticAnalyser, leftVar);
-        /* END first variable expression ----------------------------------------------------------------------------------- */
+            // Invoking
+            methodDeclRight.invoke(semanticAnalyzer, rightDec);
+            /*
+             * END second declaration
+             * -----------------------------------------------------------------------------
+             * ------
+             */
 
-        /* BUILD second variable expression ----------------------------------------------------------------------------------- */
-        Method methodDeclVarRight = semanticAnalyser.getClass().getDeclaredMethod("visitType", VarExpr.class);
-        methodDeclVarRight.setAccessible(true);
+            /*
+             * BUILD first variable expression
+             * -----------------------------------------------------------------------------
+             * ------
+             */
+            Method methodDeclVarLeft = semanticAnalyzer.getClass().getDeclaredMethod("visitType", VarExpr.class);
+            methodDeclVarLeft.setAccessible(true);
 
-        VarExpr rightVar = new VarExpr(0, "r");
-        
-        // Invoking 
-        methodDeclVarRight.invoke(semanticAnalyser, rightVar);
-        /* END second variable expression ----------------------------------------------------------------------------------- */
-        
-        /* BUILD the if statement */
+            VarExpr leftVar = new VarExpr(0, "l");
 
-        // Use reflection on method 
-        Method method = semanticAnalyser.getClass().getDeclaredMethod("visit", IfStmt.class);
-        method.setAccessible(true);
+            // Invoking
+            methodDeclVarLeft.invoke(semanticAnalyzer, leftVar);
+            /*
+             * END first variable expression
+             * -----------------------------------------------------------------------------
+             * ------
+             */
 
-        BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0,BoolBinaryOp.GT,leftVar,rightVar);
+            /*
+             * BUILD second variable expression
+             * -----------------------------------------------------------------------------
+             * ------
+             */
+            Method methodDeclVarRight = semanticAnalyzer.getClass().getDeclaredMethod("visitType", VarExpr.class);
+            methodDeclVarRight.setAccessible(true);
 
-        Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
-        BlockStmt blockStmt = new BlockStmt(0, declOne);
+            VarExpr rightVar = new VarExpr(0, "r");
 
-        Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
-        BlockStmt thenStmt = new BlockStmt(0, declTwo);
+            // Invoking
+            methodDeclVarRight.invoke(semanticAnalyzer, rightVar);
+            /*
+             * END second variable expression
+             * -----------------------------------------------------------------------------
+             * ------
+             */
 
-        IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
+            /* BUILD the if statement */
 
-        // Invoking 
-        method.invoke(semanticAnalyser, ifStmt);
+            // Use reflection on method
+            Method method = semanticAnalyzer.getClass().getDeclaredMethod("visit", IfStmt.class);
+            method.setAccessible(true);
+
+            BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, leftVar, rightVar);
+
+            Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
+            BlockStmt blockStmt = new BlockStmt(0, declOne);
+
+            Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
+            BlockStmt thenStmt = new BlockStmt(0, declTwo);
+
+            IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
+
+            // Invoking
+            method.invoke(semanticAnalyzer, ifStmt);
 
         });
     }
@@ -235,31 +270,31 @@ public class SemanticAnalyserTest {
     public void testIfStatementThrowsExceptionOnInvalidCondition()
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
-        SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
+        SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
 
         Assertions.assertThrows(NonMatchingTypeException.class, () -> {
-        try {
-        // Use reflection on method 
-        Method method = semanticAnalyser.getClass().getDeclaredMethod("visit", Node.class);
-        method.setAccessible(true);
+            try {
+                // Use reflection on method
+                Method method = semanticAnalyzer.getClass().getDeclaredMethod("visit", Node.class);
+                method.setAccessible(true);
 
-            IntNum leftNum = new IntNum(5);
-            IntNum rightNum = new IntNum(4);
+                IntNum leftNum = new IntNum(5);
+                IntNum rightNum = new IntNum(4);
 
-        Operand exprLeft = new Operand(0, leftNum);
-        Operand exprRight = new Operand(0, rightNum);
+                Operand exprLeft = new Operand(0, leftNum);
+                Operand exprRight = new Operand(0, rightNum);
 
-            ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
+                ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
 
-            Decl decl = new Decl(0, Type.INT_T, "y", arithBinOpexpr);
-            BlockStmt blockStmt = new BlockStmt(0, decl);
+                Decl decl = new Decl(0, Type.INT_T, "y", arithBinOpexpr);
+                BlockStmt blockStmt = new BlockStmt(0, decl);
 
-            IfStmt ifStmt = new IfStmt(0, arithBinOpexpr, null, blockStmt);
+                IfStmt ifStmt = new IfStmt(0, arithBinOpexpr, null, blockStmt);
 
-        // Invoking
-        method.invoke(semanticAnalyser, ifStmt);
+                // Invoking
+                method.invoke(semanticAnalyzer, ifStmt);
 
-        } catch (InvocationTargetException e) {
+            } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof NonMatchingTypeException) {
                     throw cause;
