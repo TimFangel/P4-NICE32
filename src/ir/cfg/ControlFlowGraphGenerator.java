@@ -200,16 +200,6 @@ public class ControlFlowGraphGenerator {
                 }
 
                 case IrComponent instr -> {
-                    // convert port and interval info to instruction.
-                    IrInstruction portIntervalInfo = new IrInstruction(
-                            IrOperator.COMP_INTS,
-                            instr.getPort(),
-                            instr.getInterval(),
-                            null);
-
-                    portIntervalInfo.setInstrNum(instructionCounter++);
-                    instructions.add(portIntervalInfo);
-
                     // add direction/protocol instruction to list.
                     IrInstruction setup = instr.getSetup();
                     setup.setInstrNum(instructionCounter++);

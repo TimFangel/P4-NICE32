@@ -1,0 +1,20 @@
+; B0
+PORT_SETUP DIGITAL INPUT 2 ; PORT_SETUP DIGITAL INPUT 2
+MOVI       a2,   9       ; a2 := 9
+CONST16   a15, 16656     ; f0 := 9.0
+CONST16   a15,   0       
+WFR        f0, a15       
+
+; B1
+.L0:                     ; L0:
+ORBC       b0,  b0,   b0 ; b0 := true
+BF         b0, .L1       ; IF_FALSE b0 GOTO L1
+
+; B2
+XORB       b0,  b0,   b0 ; b0 := false
+
+; B3
+.L1:                     ; L1:
+COMPR/W     a2    2 1000 ; COMPR a2 2 1000
+J         .L0            ; GOTO L0
+

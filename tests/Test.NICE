@@ -1,26 +1,16 @@
-setup {
+functions {
     
 }
 
 setup {
     component a { 
-        port: 2;
+        port: 3;
         protocol: digital;
         interval: 1000;
         direction: input;
 
         int a = 9;
         float b = 9.0;
-        float c = 9.0;
-        float d = 9.0;
-        float e = 9.0;
-        float f = 9.0;
-        float g = 9.0;
-        float h = 9.0;
-        float i = 9.0;
-        float j = 9.0;
-        float k = 9.0;
-        float l = 9.0;
     }
 }
 

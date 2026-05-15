@@ -1,0 +1,16 @@
+--- FUNCTIONS ---
+
+--- SETUP ---
+t0 := 9
+t1 := 9.0
+PORT_SETUP DIGITAL INPUT 2
+
+
+--- MAIN ---
+L0:
+t2 := true
+IF_FALSE t2 GOTO L1
+t2 := false
+L1:
+COMPR t0 2 1000
+GOTO L0

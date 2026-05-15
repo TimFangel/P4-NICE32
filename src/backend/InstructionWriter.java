@@ -30,22 +30,18 @@ public class InstructionWriter {
     }
 
     private void updateTypes() {
-        if (isRegister(result.getName()))
+        if (result != null && isRegister(result.getName())) {
             result.setType(toRegister(result.getType()));
-
-        if (arg1 == null) {
-            return;
         }
 
-        if (isRegister(arg1.getName()))
+        if (arg1 != null && isRegister(arg1.getName())) {
             arg1.setType(toRegister(arg1.getType()));
-
-        if (arg2 == null) {
-            return;
         }
 
-        if (isRegister(arg2.getName()))
+        if (arg2 != null && isRegister(arg2.getName())) {
             arg2.setType(toRegister(arg2.getType()));
+        }
+
     }
 
     private boolean isRegister(String name) {
@@ -129,16 +125,19 @@ public class InstructionWriter {
                 return typeCast();
 
             case RET:
-                // TODO
                 return "RET " + result.getName();
 
             case CALL:
-                // TODO
-                return "CALL " + result.getName() + ", " + arg1.getName();
+                return result.getName() + " := " + "CALL " + arg2.getName() + ", " + arg1.getName();
 
-            case SETUP:
-                // TODO
-                return "SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
+            case PORT_SETUP:
+                return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
+
+            case COMPR, COMPW:
+                return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
+
+            case FUNC_INFO:
+                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + arg2.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator: " + operator);
@@ -232,6 +231,8 @@ public class InstructionWriter {
         if (result.getType() != Type.F_REG || arg1.getType() != Type.FLOAT_T) {
             throw new NonRegisterArgsException("Could not generate float assignment for " + arg1.getName());
         }
+
+        // TODO: add simple insertions.
 
         if (result.getName().compareTo("a15") == 0) {
             throw new InvalidRegisterException("Register a15 must be unused for float assignments");

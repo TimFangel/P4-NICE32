@@ -1,23 +1,26 @@
 --- FUNCTIONS ---
 
 --- SETUP ---
-t0 := 100.5
+t0 := 9
+t1 := 9.0
+t2 := 9.0
+t3 := 9.0
+t4 := 9.0
+t5 := 9.0
+t6 := 9.0
+t7 := 9.0
+t8 := 9.0
+t9 := 9.0
+t10 := 9.0
+t11 := 9.0
+PORT_SETUP DIGITAL INPUT 2
+
 
 --- MAIN ---
 L0:
-t1 := 10
-t2 := 5
-t3 := t1 > t2
-IF_FALSE t3 GOTO L1
-t4 := t1 + t2
-t1 := t4
-GOTO L2
+t12 := true
+IF_FALSE t12 GOTO L1
+t12 := false
 L1:
-t5 := -t2
-t1 := t5
-L2:
-t7 := (FLOAT_TO_INT) t0
-t8 := t7 + t1
-t9 := t8 - t2
-t6 := t9
+COMPR t0 2 1000
 GOTO L0
