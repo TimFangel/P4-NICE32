@@ -1,4 +1,4 @@
-package frontend.semantic_analyser;
+package frontend.semantic_analyzer;
 
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ import java.lang.reflect.*;
 /* The concept of reflection */
 /* Change element of class at runtime */
 
-class SemanticAnalyserTest {
+class SemanticAnalyzerTest {
 
     @Test
     public void testArithBinaryOpExprReturnsCorrectType()
@@ -94,7 +94,7 @@ class SemanticAnalyserTest {
     }
 
     @Test // Test to ensure that division by zero throws exception Not yet implemented in
-          // SemanticAnalyser
+          // SemanticAnalyzer
     public void testArithBinaryOpExprThrowsExceptionOnZeroDiv()
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException, SecurityException {
 
