@@ -62,7 +62,7 @@ public class ControlFlowGraphGenerator {
              */
             if (instr.getOperator() == IrOperator.SEPARATOR) {
                 if (separatorCount == 0) {
-                    currentBlock.addInstruction(instr);
+                    currentBlock.setEntry(true);
                     separatorCount++;
                 }
 
@@ -70,13 +70,10 @@ public class ControlFlowGraphGenerator {
             }
 
             // if leader, create new block (except first instruction)
-            if (i > 0 && isLeader(instr)) {
-                if (!currentBlock.getInstructions().isEmpty()) {
-                    blocks.add(currentBlock);
-                } else {
-                    blockIdCount--;
-                }
+            if (i > 0 && isLeader(instr) && !currentBlock.getInstructions().isEmpty()) {
+                blocks.add(currentBlock);
                 currentBlock = new BasicBlock(blockIdCount++);
+
             }
 
             currentBlock.addInstruction(instr);
@@ -176,7 +173,9 @@ public class ControlFlowGraphGenerator {
             switch (i) {
                 case IrInstruction instr -> {
                     // add regular instructions
-                    instr.setInstrNum(instructionCounter++);
+                    if (instr.getOperator() != IrOperator.SEPARATOR) {
+                        instr.setInstrNum(instructionCounter++);
+                    }
                     instructions.add(instr);
                 }
 
@@ -234,24 +233,12 @@ public class ControlFlowGraphGenerator {
      * Entry of CFG is the one containing a SEPARATOR instruction.
      */
     private ControlFlowGraph findEntry(ControlFlowGraph cfg) {
-        boolean separatorFound = false;
 
         // check each list of instructions of each block until separator is found.
         List<BasicBlock> cfgBlocks = cfg.getBlocks();
         for (BasicBlock block : cfgBlocks) {
-            List<IrInstruction> instructions = block.getInstructions();
-            for (IrInstruction instr : block.getInstructions()) {
-                if (instr.getOperator() == IrOperator.SEPARATOR) {
-                    // update entry, remove instruction, then return.
-                    cfg.setEntry(block);
-                    instructions.remove(instr);
-                    block.setInstructions(instructions);
-                    separatorFound = true;
-                    break;
-                }
-            }
-
-            if (separatorFound) {
+            if (block.getIsEntry()) {
+                cfg.setEntry(block);
                 break;
             }
         }

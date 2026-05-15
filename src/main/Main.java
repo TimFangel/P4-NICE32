@@ -46,7 +46,6 @@ public class Main {
             IrPrinter irPrinter = new IrPrinter(irGenerator);
             irPrinter.printIR("IR");
 
-            // System.out.println(ast);
             System.out.println("> IR has been successfully generated <");
 
             // --- ControlFlowGraph ---
@@ -59,6 +58,8 @@ public class Main {
             LivenessAnalyzer la = new LivenessAnalyzer(cfg);
 
             RegisterAllocator ra = new RegisterAllocator(la.getInterference(), la.getCfg());
+
+            ra.getCfg().printCFG();
 
             // --- Assembly Generator ---
             // AssemblyGenerator ag = new AssemblyGenerator();

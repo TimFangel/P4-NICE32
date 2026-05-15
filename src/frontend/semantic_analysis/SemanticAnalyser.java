@@ -331,7 +331,7 @@ public class SemanticAnalyser {
 
     void visit(MemberAssStmt mas) {
         Type expressionType = visitType(mas.getValue());
-
+        // TODO
         // findes component?
         // findes memberen?
         // member field type

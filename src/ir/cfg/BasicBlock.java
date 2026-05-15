@@ -13,11 +13,11 @@ import lombok.Setter;
 @Setter
 public class BasicBlock {
     private final int id;
+    private boolean isEntry = false;
 
     // code within block
     private List<IrInstruction> instructions = new ArrayList<>();
 
-    // graph predessecor and successors
     private List<BasicBlock> parents = new ArrayList<>();
     private List<BasicBlock> children = new ArrayList<>();
 
@@ -83,5 +83,9 @@ public class BasicBlock {
 
     public void clearKill() {
         this.kill.clear();
+    }
+
+    public boolean getIsEntry() {
+        return this.isEntry;
     }
 }
