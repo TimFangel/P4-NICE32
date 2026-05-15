@@ -3,6 +3,7 @@ package ir.cfg;
 import java.util.ArrayList;
 import java.util.List;
 
+import ir.IrInstruction;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,6 +18,8 @@ public class ControlFlowGraph {
     }
 
     public void printCFG() {
+        System.out.println("Graph entry: B" + entry.getId());
+
         for (BasicBlock block : blocks) {
             System.out.println("B" + block.getId());
 
@@ -30,6 +33,14 @@ public class ControlFlowGraph {
             System.out.print(" Children: ");
             for (BasicBlock child : block.getChildren()) {
                 System.out.print(child.getId() + " ");
+            }
+
+            System.out.println();
+            System.out.println();
+
+            System.out.println(" Instructions: ");
+            for (IrInstruction instr : block.getInstructions()) {
+                System.out.println("  " + instr.getInstrNum() + ": " + instr.toString());
             }
 
             System.out.println();

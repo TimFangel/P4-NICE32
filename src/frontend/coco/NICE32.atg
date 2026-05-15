@@ -41,50 +41,17 @@ PRODUCTIONS
 
 // The program consists of 3 code blocks: setup, functions, and main.
 NICE32
-  = (. BlockStmt setupBlock;
-       BlockStmt functionBlock;
+  = (. BlockStmt functionBlock;
+       BlockStmt setupBlock;
        BlockStmt mainBlock; .)
+    "functions"
+    FunctionsBlock<out functionBlock>
     "setup"
     (. int line = t.line; .)
     SetupBlock<out setupBlock>
-    "functions"
-    FunctionsBlock<out functionBlock>
     "main"
     MainBlock<out mainBlock>
     (. mainNode = new Program(line, setupBlock, functionBlock, mainBlock); .)
-  .
-
-// The setup code block can only contain setup statements.
-SetupBlock<out BlockStmt block>
-  = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
-    "{" (. int line = t.line; .)
-      { SetupStmt<out s> (. stmts.add(s); .) }
-    "}"
-    (. block = new BlockStmt(line, stmts); .)
-  .
-
-// Setup statements can only be variable- and component declarations, control structures, and assignments.
-SetupStmt<out Stmt stmt>
-  = (.
-       stmt = null;
-       String identifier;
-    .)
-    (
-      IDENT (. identifier = t.val; .)
-      (. int line = t.line; .)
-      "="
-      Expr<out Expr value>
-      ";"
-      (. stmt = new AssStmt(line, identifier, value); .)
-    |
-      VarDeclStmt<out stmt>
-    |
-      IfStmt<out stmt>
-    |
-      WhileStmt<out stmt>
-    |
-      ComponentDecl<out stmt>
-    )
   .
 
 // The functions block can only contain function statements.
@@ -103,6 +70,33 @@ FunctionStmt<out Stmt stmt>
     FuncDecl<out stmt, type>
   .
 
+// The setup code block can only contain setup statements.
+SetupBlock<out BlockStmt block>
+  = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
+    "{" (. int line = t.line; .)
+      { SetupStmt<out s> (. stmts.add(s); .) }
+    "}"
+    (. block = new BlockStmt(line, stmts); .)
+  .
+
+// Setup statements can only be variable- and component declarations, control structures, and assignments.
+SetupStmt<out Stmt stmt>
+  = (.
+       stmt = null;
+    .)
+    (
+      AssignStatement<out stmt>
+    |
+      VarDeclStmt<out stmt>
+    |
+      IfStmt<out stmt>
+    |
+      WhileStmt<out stmt>
+    |
+      ComponentDecl<out stmt>
+    )
+  .
+
 // The main block can only contain main statements.
 MainBlock<out BlockStmt block>
   = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
@@ -116,15 +110,9 @@ MainBlock<out BlockStmt block>
 MainStmt<out Stmt stmt>
   = (.
        stmt = null;
-       String identifier;
     .)
     (
-      IDENT (. identifier = t.val; .)
-      (. int line = t.line; .)
-      "="
-      Expr<out Expr value>
-      ";"
-      (. stmt = new AssStmt(line, identifier, value); .)
+      AssignStatement<out stmt>
     |
       IfStmt<out stmt>
     |
@@ -167,6 +155,35 @@ RetStmt<out Stmt stmt>
    Expr<out expr>
    ";"
    (. stmt = new ReturnStmt(line, expr); .)
+  .
+
+AssignStatement<out Stmt stmt>
+  = (.
+      int line;
+      String identifier;
+      String field = null;
+      Expr value;
+    .)
+    IDENT
+    (.
+      line = t.line;
+      identifier = t.val;
+    .)
+    [
+      "."
+      IDENT
+      (. field = t.val; .)
+    ]
+    "="
+    Expr<out value>
+    ";"
+    (.
+      if (field == null) {
+        stmt = new AssStmt(line, identifier, value);
+      }  else {
+        stmt = new MemberAssStmt(line, identifier, field, value);
+      }
+    .)
   .
 
 // Wraps variable declarations so it can be used as a statement.

@@ -60,6 +60,7 @@ public class SemanticAnalyser {
             case WhileStmt ws -> visit(ws);
             case BlockStmt bs -> visit(bs);
             case ReturnStmt rs -> visit(rs);
+            case MemberAssStmt mas -> visit(mas);
             case Decl d -> visit(d);
             case AssStmt as -> visit(as);
             case FuncDecl fd -> visit(fd);
@@ -326,6 +327,15 @@ public class SemanticAnalyser {
         }
 
         rs.setSymbolRef(currentFunctionSymbol);
+    }
+
+    void visit(MemberAssStmt mas) {
+        Type expressionType = visitType(mas.getValue());
+        // TODO
+        // findes component?
+        // findes memberen?
+        // member field type
+        // expression type
     }
 
     /* --- Type returning visitors --- */

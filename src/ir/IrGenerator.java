@@ -2,6 +2,7 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import exception.*;
 import frontend.abstract_syntax.component.Component;
@@ -24,14 +25,11 @@ public class IrGenerator {
     private int tempCounter = 0;
     private int labelCount = 0;
 
-    // main+setup code
-    private IrInstruction mainLoopGoto;
-    private List<IrInstruction> code = new ArrayList<>();
-    private List<IrComponent> components = new ArrayList<>();
+    // used to scope between function body and not.
+    private IrFunction currentFunction = null; // null -> global scope
 
-    // functions
-    private List<IrFunction> functions = new ArrayList<>();
-    private IrFunction currentFunction = null; // start in global scope
+    // list of all code in TAC IR form.
+    private List<IrInstructionInterface> code = new ArrayList<>();
 
     private OperatorMapper operatorMapper = new OperatorMapper();
 
@@ -58,9 +56,10 @@ public class IrGenerator {
      * 
      * @param instruction IrInstruction to create.
      */
-    private void createIR(IrInstruction instruction) {
-        if (currentFunction != null) { // null -> global scope
-            currentFunction.getFuncBody().add(instruction);
+    private void createIR(IrInstructionInterface instruction) {
+        // add code to function body or global scope
+        if (currentFunction != null && instruction instanceof IrInstruction instr) { // null -> global scope
+            currentFunction.getFuncBody().add(instr);
         } else {
             code.add(instruction);
         }
@@ -174,13 +173,13 @@ public class IrGenerator {
             FunctionSymbol funcSymbol = func.getFunctionSymbolRef();
             Type returnType = funcSymbol.getType();
 
-            IrValue result = new IrValue(funcSymbol.getName(), returnType);
+            IrValue result = newTemp(returnType);
             createIR(new IrInstruction(IrOperator.CALL, parameter, new IrValue(ident, Type.FUNCTION), result));
 
             // Create and return new symbol
-            IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
+            // IrValue returnValue = new IrValue(funcSymbol.getReturnIrName(), returnType);
             IrValue temp = newTemp(returnType);
-            createIR(new IrInstruction(IrOperator.ASS, returnValue, null, temp));
+            createIR(new IrInstruction(IrOperator.ASS, result, null, temp));
 
             return temp;
         }
@@ -330,7 +329,7 @@ public class IrGenerator {
 
             IrFunction function = new IrFunction(funcDecl.getIdentifier(), parameter, funcDecl.getReturnType());
 
-            functions.add(function);
+            createIR(function);
             currentFunction = function; // change scope
 
             // generate function body
@@ -364,7 +363,7 @@ public class IrGenerator {
                 component.addVariable(variable);
             }
 
-            components.add(component);
+            createIR(component);
 
             return;
         }
@@ -379,10 +378,17 @@ public class IrGenerator {
      * @param program NICE32 AST's root node.
      */
     public void generateProgram(Program program) {
-        generateStmt(program.getSetup());
 
         // Generate functions
         generateStmt(program.getFunctions());
+
+        // SEPARATOR to distinguish between functions and setup
+        createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
+
+        generateStmt(program.getSetup());
+
+        // SEPARATOR to distinguish between main and setup
+        createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
 
         // make label to goto to start of main, instead of going to functions.
         String mainStart = newLabel();
@@ -391,8 +397,36 @@ public class IrGenerator {
 
         generateStmt(program.getMain());
 
+        // create polling for components
+        List<IrInstructionInterface> temp = new ArrayList<>();
+        for (IrInstructionInterface c : code) {
+            if (c instanceof IrComponent comp && !comp.getVariables().isEmpty()) {
+                // first variable in comp is always the one written/read to.
+                IrValue startVar = comp.getVariables().get(0).getResult();
+                if (startVar == null) {
+                    throw new NoSuchElementException("Could not read first variable in '" + comp.getName() + "'");
+                }
+                switch (comp.getDirection().getDirection()) {
+                    case INPUT:
+                        temp.add(new IrInstruction(IrOperator.COMPR, comp.getPort(), comp.getInterval(), startVar));
+                        break;
+
+                    case OUTPUT:
+                        temp.add(new IrInstruction(IrOperator.COMPW, comp.getPort(), comp.getInterval(), startVar));
+                        break;
+
+                    default:
+                        throw new IllegalArgumentException(
+                                "Could not create component polling for '" + comp.getName() + "'");
+                }
+
+            }
+        }
+        // add the temp list to code list.
+        code.addAll(temp);
+
         // make last instruction of main return to start of main.
-        mainLoopGoto = new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL));
+        createIR(new IrInstruction(IrOperator.GOTO, null, null, new IrValue(mainStart, Type.LABEL)));
     }
 
     /**
