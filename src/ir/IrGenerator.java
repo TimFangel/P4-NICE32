@@ -117,9 +117,9 @@ public class IrGenerator {
         if (expr instanceof ArithUnaryOpExpr unOp) {
             if (unOp.getExpr() instanceof Operand o) {
                 if (o.getValue() instanceof IntNum in) {
-                    return new IrValue(in.value(), Type.INT_T);.toString()
+                    return new IrValue(String.valueOf(in.value()), Type.INT_T);
                 } else if (o.getValue() instanceof FloatNum fn) {
-                    return new IrValue(fn.value(), Type.FLOAT_T);
+                    return new IrValue(String.valueOf(fn.value()), Type.FLOAT_T);
                 }
             }
 
