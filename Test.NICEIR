@@ -1,0 +1,17 @@
+--- FUNCTIONS ---
+func a:
+param t0
+t1 := t0
+RET true
+end func
+
+
+--- SETUP ---
+
+--- MAIN ---
+L0:
+t2 := true
+IF_FALSE t2 GOTO L1
+t2 := false
+L1:
+GOTO L0

@@ -1,5 +1,6 @@
 package main;
 
+import backend.AssemblyGenerator;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
@@ -17,6 +18,8 @@ public class Main {
             System.out.println("Usage: java frontend.Main <file>");
             return;
         }
+
+        String fileName = args[0].replaceAll(".*/|\\.[^.]+$", "");
 
         try {
             // --- Parse ---
@@ -44,7 +47,7 @@ public class Main {
             irGenerator.generateProgram(ast);
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
-            irPrinter.printIR("IR");
+            irPrinter.printIR(fileName);
 
             System.out.println("> IR has been successfully generated <");
 
@@ -62,8 +65,8 @@ public class Main {
             ra.getCfg().printCFG();
 
             // --- Assembly Generator ---
-            // AssemblyGenerator ag = new AssemblyGenerator();
-            // ag.run(ra.getCfg(), "assembly");
+            AssemblyGenerator ag = new AssemblyGenerator();
+            ag.run(ra.getCfg(), fileName);
 
         } catch (Exception e) {
             e.printStackTrace();

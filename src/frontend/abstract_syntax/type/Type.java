@@ -8,4 +8,7 @@ public enum Type {
     LABEL,
     FUNCTION,
     COMPONENT,
+    A_REG,
+    B_REG,
+    F_REG
 }

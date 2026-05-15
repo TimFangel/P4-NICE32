@@ -133,7 +133,14 @@ public class IrGenerator {
         }
 
         if (expr instanceof ArithUnaryOpExpr unOp) {
-            // generate child expression.
+            if (unOp.getExpr() instanceof Operand o) {
+                if (o.getValue() instanceof IntNum in) {
+                    return new IrValue(String.valueOf(in.value()), Type.INT_T);
+                } else if (o.getValue() instanceof FloatNum fn) {
+                    return new IrValue(String.valueOf(fn.value()), Type.FLOAT_T);
+                }
+            }
+
             IrValue left = generateExpr(unOp.getExpr());
 
             IrValue temp = newTemp(left.getType());
