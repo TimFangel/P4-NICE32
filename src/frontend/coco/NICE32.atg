@@ -18,6 +18,7 @@ import frontend.abstract_syntax.value.*;
 
 COMPILER NICE32
 
+// The main node/root of the AST.
 public Program mainNode = null;
 
 public boolean hasErrors() {
@@ -79,7 +80,7 @@ SetupBlock<out BlockStmt block>
     (. block = new BlockStmt(line, stmts); .)
   .
 
-// Setup statements can only be variable- and component declarations, control structures, and assignments.
+// Setup statements can only be variable and component declarations, control structures, and assignments.
 SetupStmt<out Stmt stmt>
   = (.
        stmt = null;
@@ -122,7 +123,7 @@ MainStmt<out Stmt stmt>
     )
   .
 
-// Standard code block used in if-statements.
+// Standard code block used in if-statements and while-statement.
 Block<out BlockStmt block>
   = (. List<Stmt> stmts = new ArrayList<>(); Stmt s; .)
     "{" (. int line = t.line; .)
@@ -146,6 +147,7 @@ FuncBlock<out BlockStmt block>
     (. block = new BlockStmt(line, stmts); .)
   .
 
+// The return statement used in functions must return an expression.
 RetStmt<out Stmt stmt>
   = (.
       Expr expr;
@@ -157,6 +159,7 @@ RetStmt<out Stmt stmt>
    (. stmt = new ReturnStmt(line, expr); .)
   .
 
+// The assign statement production rule requires assignments to be to variable identifiers or to component fields.
 AssignStatement<out Stmt stmt>
   = (.
       int line;
@@ -299,6 +302,7 @@ IfStmt<out Stmt stmt>
     (. stmt = new IfStmt(line, cond, thenBlock, elseBlock); .)
   .
 
+// While statements require an expression as condition and makes use of the standard code block as body.
 WhileStmt<out Stmt stmt>
   = (.
       Expr cond;
