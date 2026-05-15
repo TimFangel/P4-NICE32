@@ -18,6 +18,7 @@ public final class IrComponent implements IrInstructionInterface {
     private IrValue interval;
     private DirectionComp direction;
     private List<IrInstruction> variables = new ArrayList<>(); // local variables
+    private IrInstruction portInterval; // used in liveness.
 
     public IrComponent(String name, ProtocolComp protocol, DirectionComp direction, IrValue port, IrValue interval) {
         this.name = name;
