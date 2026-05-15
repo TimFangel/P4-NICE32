@@ -1,17 +1,12 @@
 functions {
-    
+    bool func a(int b) {
+        int c = b;
+        return true;
+    }
 }
 
 setup {
-    component a { 
-        port: 3;
-        protocol: digital;
-        interval: 1000;
-        direction: input;
-
-        int a = 9;
-        float b = 9.0;
-    }
+    
 }
 
 main {
