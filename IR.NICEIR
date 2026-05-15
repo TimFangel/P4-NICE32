@@ -1,32 +1,23 @@
 --- FUNCTIONS ---
-func x:
-param t0
-t2 := 20 + t0
-t1 := t2
-RET t1
-end func
-
 
 --- SETUP ---
-t3 := 9
-PORT_SETUP DIGITAL INPUT 2
-
+t0 := 100.5
 
 --- MAIN ---
 L0:
-t5 := CALL x, 10
-t6 := t5
-t4 := t6
-t7 := true
-t8 := t4 > 20
-t9 := t7 && t8
-IF_FALSE t9 GOTO L1
+t1 := 10
+t2 := 5
+t3 := t1 > t2
+IF_FALSE t3 GOTO L1
+t4 := t1 + t2
+t1 := t4
+GOTO L2
 L1:
-t11 := -10
-t10 := t11
-t13 := t10 * 10
-t14 := t13 + t4
-t15 := t14 - 5
-t12 := t15
-COMPR t3 2 1000
+t5 := -t2
+t1 := t5
+L2:
+t7 := (FLOAT_TO_INT) t0
+t8 := t7 + t1
+t9 := t8 - t2
+t6 := t9
 GOTO L0

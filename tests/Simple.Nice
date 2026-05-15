@@ -1,0 +1,19 @@
+functions {
+}
+
+setup {
+    float a = 100.5;
+}
+
+main {
+    int x = 10;
+    int y = 5;
+
+    if (x > y) {
+        x = x + y;
+    } else {
+        x = -y;
+    }
+
+    int b = (int) a + x - y;
+}
