@@ -186,8 +186,8 @@ public class ControlFlowGraphGenerator {
                     IrInstruction funcInfo = new IrInstruction(
                             IrOperator.FUNC_INFO,
                             funcNameType,
-                            instr.getParameter(),
-                            null);
+                            null,
+                            instr.getParameter());
 
                     funcInfo.setInstrNum(instructionCounter++);
                     instructions.add(funcInfo);
