@@ -99,12 +99,18 @@ public class InstructionWriter {
                 }
 
             case IF_FALSE:
-                return "if_false " + arg1.getName() + " goto " + result.getName();
+                return ifStatement();
 
             case GOTO:
+                if (result.getType() != Type.LABEL) {
+                    throw new RegisterException("Cannot do jump for non-label:" + result.getType());
+                }
                 return "J ." + result.getName();
 
             case LABEL:
+                if (result.getType() != Type.LABEL) {
+                    throw new RegisterException("Expected a label but got: " + result.getType());
+                }
                 return "." + result.getName() + ":";
 
             case NOT:
@@ -123,12 +129,15 @@ public class InstructionWriter {
                 return typeCast();
 
             case RET:
+                // TODO
                 return "RET " + result.getName();
 
             case CALL:
+                // TODO
                 return "CALL " + result.getName() + ", " + arg1.getName();
 
             case SETUP:
+                // TODO
                 return "SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
 
             default:
@@ -505,5 +514,13 @@ public class InstructionWriter {
         } else {
             throw new UnrecognizedOperatorException("Cannot typecast to " + operator);
         }
+    }
+
+    private String ifStatement() {
+        if (arg1.getType() != Type.B_REG) {
+            throw new NonRegisterArgsException("Cannot generate if statement with non boolean register argument");
+        }
+
+        return "BF " + arg1.getName() + ", ." + result.getName();
     }
 }

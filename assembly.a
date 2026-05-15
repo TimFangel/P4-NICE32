@@ -1,47 +1,11 @@
 ; B0
-MOVI       t0,   2       ; t0 := 2
-MOVI       t1,   2       ; t1 := 2
-MULL       t2,  T0,   T1 ; t2 := t0 * t1
-QUOS       t3,  T2,   T0 ; t3 := t2 / t0
-ADD        t4,  T1,   T3 ; t4 := t1 + t3
-MOV        t1,  T4       ; t1 := t4
+.L0:                     ; L0:
+ORBC       t0,  t0,   t0 ; t0 := true
+BF         t0, .L1       ; if_false t0 goto L1
 
 ; B1
-.L0:                     ; L0:
-XORB       t5,  T5,   T5 ; t5 := false
-CONST16   a15, 16550     ; t6 := 5.2
-CONST16   a15, 26214       
-WFR        t6, A15       
-CONST16   a15, 16256     ; t7 := 1.0
-CONST16   a15,   0       
-WFR        t7, A15       
-DIV0.S     f9,  T7       ; t8 := t6 / t7
-NEXP01.S  f10,  T7       
-CONST.S   f11,   1       
-MADDN.S   f11, F10,   F9 
-MOV.S     f12,  F9       
-MOV.S     f13,  T7       
-NEXP01.S  f14,  T6       
-MADDN.S   f12, F11,   F9 
-CONST.S   f11,   1       
-CONST.S    t8,   0       
-NEG.S     f15, F14       
-MADDN.S   f11, F10,  F12 
-MADDN.S    t8, F15,   F9 
-MKDADJ.S  f13,  T6       
-MADDN.S   f12, F11,  F12 
-MADDN.S   f15, F10,   T8 
-CONST.S   f11,   1       
-MADDN.S   f11, F10,  F12 
-MADDN.S    t8, F15,  F12 
-NEG.S     f15, F14       
-MADDN.S   f12, F11,  F12 
-MADDN.S   f15, F10,   T8 
-ADDEXPM.S  t8, F13       
-ADDEXP.S  f12, F13       
-DIVN.S     t8, F15,  F12 
-MOV.S      t7,  T8       ; t7 := t8
-ORB        t9,  T5,   T5 ; t9 := t5
-ORB       t11,  T5,   T9 ; t11 := t5 || t9
-ORB       t10, T11,  T11 ; t10 := t11
+XORB       t0,  t0,   t0 ; t0 := false
+
+; B2
+.L1:                     ; L1:
 

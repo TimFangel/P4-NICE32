@@ -1,8 +1,5 @@
-functions {
-    int func x(int n) {
-        int g = 20 +n;
-        return g;
-    }
+setup {
+    
 }
 
 setup {
@@ -28,15 +25,8 @@ setup {
 }
 
 main {
-    int gg = x(10);
-    bool h = true;
-    if (h && gg > 20) {
+    bool p = true;
+    if (p) {
+        p = false;
     }
-
-    float fih = 2.2;
-    float guh = -200.0;
-
-    int hh = -10 + (int) (fih + guh) + a.a;
-    int c = hh * 10 + gg - 5;
-    float shu = a.b + a.c + a.d + a.e + a.f+ a.g + a.h + a.i + a.j + a.k + a.l;
 }
