@@ -5,7 +5,9 @@ import frontend.abstract_syntax.expression.enums.ArithUnaryOp;
 import frontend.abstract_syntax.expression.enums.BoolBinaryOp;
 import frontend.abstract_syntax.expression.enums.BoolUnaryOp;
 
-/* Map from frontend operand to IR operands */
+/**
+ * Mapper from frontend operators to backend operators.
+ */
 public class OperatorMapper {
 
     public IrOperator mapArithBin(ArithBinaryOp op) {

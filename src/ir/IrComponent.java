@@ -12,9 +12,9 @@ import lombok.Getter;
 
 @Getter
 public final class IrComponent implements IrInstructionInterface {
-    private String name;
+    private String name; // identifier of component
     private IrValue port;
-    private IrInstruction setup;
+    private IrInstruction setup; // IrInstruction containing protocol and direction.
     private IrValue interval;
     private DirectionComp direction;
     private List<IrInstruction> variables = new ArrayList<>(); // local variables
@@ -34,6 +34,7 @@ public final class IrComponent implements IrInstructionInterface {
             throw new NoSuchElementException("Could not find any variables in '" + name + "'");
         }
 
+        // first variable of component, which is written/read to/from.
         IrValue startVar = variables.get(0).getResult();
 
         if (startVar == null) {
@@ -51,10 +52,22 @@ public final class IrComponent implements IrInstructionInterface {
         }
     }
 
+    /**
+     * Converts the protocol to an IrValue.
+     * 
+     * @param pc protocol of component.
+     * @return IrValue of the protocol.
+     */
     IrValue toIrValue(ProtocolComp pc) {
         return new IrValue(pc.getProtocol().toString(), Type.COMPONENT);
     }
 
+    /**
+     * Converts the direction to an IrValue.
+     * 
+     * @param dc direction of component.
+     * @return IrValue of the direction.
+     */
     IrValue toIrValue(DirectionComp dc) {
         return new IrValue(dc.getDirection().toString(), Type.COMPONENT);
     }

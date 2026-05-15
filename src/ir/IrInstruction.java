@@ -10,6 +10,10 @@ import ir.util.IrOperator;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * General representation of a single IR instruction.
+ * In CFG generation components and functions will be made into this.
+ */
 @Getter
 @Setter
 public final class IrInstruction implements IrInstructionInterface {
@@ -44,6 +48,9 @@ public final class IrInstruction implements IrInstructionInterface {
         findKill();
     }
 
+    /**
+     * Outputs the IrInstruction as it is expected to look based on operator.
+     */
     @Override
     public String toString() {
         switch (operator) {
@@ -95,6 +102,9 @@ public final class IrInstruction implements IrInstructionInterface {
         }
     }
 
+    /**
+     * Replaces the operator with its symbol.
+     */
     public String operandToSymbol(IrOperator operator) {
         switch (operator) {
             case ADD:
@@ -174,18 +184,30 @@ public final class IrInstruction implements IrInstructionInterface {
         }
     }
 
+    /**
+     * Setter for the 'in' set.
+     */
     public void addIn(Set<String> s) {
         this.in.addAll(s);
     }
 
+    /**
+     * Setter for the 'out' set.
+     */
     public void addOut(Set<String> s) {
         this.out.addAll(s);
     }
 
+    /**
+     * Clear the 'in' set
+     */
     public void clearIn() {
         this.in.clear();
     }
 
+    /**
+     * Clear the 'out' set
+     */
     public void clearOut() {
         this.out.clear();
     }
