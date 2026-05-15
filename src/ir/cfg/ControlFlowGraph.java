@@ -47,4 +47,8 @@ public class ControlFlowGraph {
             System.out.println();
         }
     }
+
+    public List<BasicBlock> getBlocks() {
+        return blocks;
+    }
 }

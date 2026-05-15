@@ -84,9 +84,6 @@ public final class IrInstruction implements IrInstructionInterface {
             case COMPW:
                 return "COMPW " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
 
-            case COMP_INTS:
-                return "PORT: " + arg1.getName() + " " + "INTERVAL: " + arg2.getName();
-
             case FUNC_INFO:
                 return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + result.getName();
 
