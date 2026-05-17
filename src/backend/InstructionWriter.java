@@ -50,7 +50,7 @@ public class InstructionWriter {
     }
 
     private boolean isRegister(String name) {
-        return name.matches("[a-z]\\d*");
+        return name.matches("^[abf]\\d+$");
     }
 
     private Type toRegister(Type oldType) {
@@ -130,18 +130,23 @@ public class InstructionWriter {
                 return typeCast();
 
             case RET:
+                // TODO:
                 return "RET " + result.getName();
 
             case CALL:
+                // TODO:
                 return result.getName() + " := " + "CALL " + arg2.getName() + ", " + arg1.getName();
 
             case PORT_SETUP:
+                // TODO:
                 return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
 
             case COMPR, COMPW:
+                // TODO:
                 return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
 
             case FUNC_INFO:
+                // TODO:
                 return "FUNC " + arg1.getName();
 
             default:
@@ -186,8 +191,7 @@ public class InstructionWriter {
     }
 
     private String immediateAssignment(int imm, String result) {
-        // TODO: remove t
-        if (!result.startsWith("a") && !result.startsWith("t")) {
+        if (!result.startsWith("a")) {
             throw new RegisterException("Cannot use register for arithmetic operations " + result);
         }
 

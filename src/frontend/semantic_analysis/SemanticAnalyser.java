@@ -121,6 +121,10 @@ public class SemanticAnalyser {
     }
 
     void visit(FuncDecl fd) {
+        if (fd.getIdentifier().matches("^[abf]\\d+$")) {
+            throw new IllegalArgumentException("Function identifiers matching the register pattern cannot be used e.g. a0, b2 or f9");
+        }
+
         // Create function symbol and assign it to currentFunctionSymbol
         try {
             currentFunctionSymbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType());

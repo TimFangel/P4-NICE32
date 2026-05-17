@@ -1,7 +1,7 @@
 functions {
-    bool func a(int b) {
+    int func a(int b) {
         int c = b;
-        return true;
+        return c;
     }
 }
 
@@ -10,8 +10,6 @@ setup {
 }
 
 main {
-    bool p = true;
-    if (p) {
-        p = false;
-    }
+    int e = 2;
+    int d = a(e);
 }

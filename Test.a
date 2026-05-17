@@ -1,17 +1,12 @@
 ; B0
-FUNC        a            ; FUNC a:
-,   PARAM a2MOV        a2,  a2       ; a2 := a2
-RET       true           ; RET true
+FUNC        a            ; FUNC a:; PARAM a2
+MOV        a2,  a2       ; a2 := a2
+RET        a2            ; RET a2
 
 ; B1
 .L0:                     ; L0:
-ORBC       b0,  b0,   b0 ; b0 := true
-BF         b0, .L1       ; IF_FALSE b0 GOTO L1
-
-; B2
-XORB       b0,  b0,   b0 ; b0 := false
-
-; B3
-.L1:                     ; L1:
+MOVI       a2,   2       ; a2 := 2
+a2                       ; a2 := CALL a, a2
+MOV        a2,  a2       ; a2 := a2
 J         .L0            ; GOTO L0
 
