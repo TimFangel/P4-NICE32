@@ -77,7 +77,7 @@ public class AssemblyGenerator {
             }
 
             int commentStartIndex = insLen + argLen * 3 + 4;
-            while (line.charAt(commentStartIndex) == ' ') {
+            while (line.length() > commentStartIndex && line.charAt(commentStartIndex) == ' ') {
                 line.deleteCharAt(commentStartIndex);
             }
 

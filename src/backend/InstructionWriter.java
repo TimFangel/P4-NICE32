@@ -5,10 +5,12 @@ import java.util.List;
 
 import exception.InvalidOperatorException;
 import exception.InvalidRegisterException;
+import exception.NonMatchingTypeException;
 import exception.NonRegisterArgsException;
 import exception.NonRegisterResultException;
 import exception.RegisterException;
 import exception.UnknownAssArgTypeException;
+import exception.UnknownInstructionException;
 import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
 import ir.IrInstruction;
@@ -103,16 +105,10 @@ public class InstructionWriter {
                 return ifStatement();
 
             case GOTO:
-                if (result.getType() != Type.LABEL) {
-                    throw new RegisterException("Cannot do jump for non-label:" + result.getType());
-                }
-                return "J ." + result.getName();
+                return jump();
 
             case LABEL:
-                if (result.getType() != Type.LABEL) {
-                    throw new RegisterException("Expected a label but got: " + result.getType());
-                }
-                return "." + result.getName() + ":";
+                return label();
 
             case NOT:
                 return notBool();
@@ -130,12 +126,10 @@ public class InstructionWriter {
                 return typeCast();
 
             case RET:
-                // TODO:
-                return "RET " + result.getName();
+                return "RET";
 
             case CALL:
-                // TODO:
-                return result.getName() + " := " + "CALL " + arg2.getName() + ", " + arg1.getName();
+                return callFunction();
 
             case PORT_SETUP:
                 // TODO:
@@ -146,8 +140,7 @@ public class InstructionWriter {
                 return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
 
             case FUNC_INFO:
-                // TODO:
-                return "FUNC " + arg1.getName();
+                return defineFunction();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator: " + operator);
@@ -217,7 +210,7 @@ public class InstructionWriter {
 
     private String boolAssignment() {
         if (result.getType() != Type.B_REG) {
-            throw new InvalidRegisterException("Register a15 must be unused for extended immediate assignments");
+            throw new NonRegisterArgsException("Could not generate bool assignment for " + result.getName());
         }
 
         final String setBit = "ORBC " + result.getName() + ", " + result.getName() + ", " + result.getName();
@@ -237,8 +230,8 @@ public class InstructionWriter {
     }
 
     private String floatAssignment() {
-        if (result.getType() != Type.F_REG || arg1.getType() != Type.FLOAT_T) {
-            throw new NonRegisterArgsException("Could not generate float assignment for " + arg1.getName());
+        if (result.getType() != Type.F_REG) {
+            throw new NonRegisterArgsException("Could not generate float assignment for " + result.getName());
         }
 
         // TODO: add simple insertions.
@@ -460,6 +453,28 @@ public class InstructionWriter {
         return str;
     }
 
+    private String ifStatement() {
+        if (arg1.getType() != Type.B_REG) {
+            throw new NonRegisterArgsException("Cannot generate if statement with non boolean register argument");
+        }
+
+        return "BF " + arg1.getName() + ", ." + result.getName();
+    }
+
+    private String jump() {
+        if (result.getType() != Type.LABEL) {
+            throw new RegisterException("Cannot do jump for non-label:" + result.getType());
+        }
+        return "J ." + result.getName();
+    }
+
+    private String label() {
+        if (result.getType() != Type.LABEL) {
+            throw new UnknownInstructionException("Expected a label but got: " + result.getType());
+        }
+        return "." + result.getName() + ":";
+    }
+
     private String notBool() {
         if (result.getType() != Type.B_REG) {
             throw new NonRegisterResultException("Cannot generate bool expression for non-register result");
@@ -526,11 +541,19 @@ public class InstructionWriter {
         }
     }
 
-    private String ifStatement() {
-        if (arg1.getType() != Type.B_REG) {
-            throw new NonRegisterArgsException("Cannot generate if statement with non boolean register argument");
+    private String callFunction() {
+        if (arg2.getType() != Type.FUNCTION) {
+            throw new RegisterException("Expected a function but got: " + arg2.getName());
         }
 
-        return "BF " + arg1.getName() + ", ." + result.getName();
+        return "CALL0 .L" + arg2.getName() + "\n" + assignment();
+    }
+
+    private String defineFunction() {
+        if (arg1.getType() != Type.INT_T && arg1.getType() != Type.BOOL_T && arg1.getType() != Type.FLOAT_T) {
+            throw new RegisterException("Expected a function but got: " + arg1.getName());
+        }
+        
+        return ".L" + arg1.getName() + ":";
     }
 }

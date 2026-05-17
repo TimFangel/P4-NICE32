@@ -11,5 +11,5 @@ setup {
 
 main {
     int e = 2;
-    int d = a(e);
+    int d = a(e+e);
 }
