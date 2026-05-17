@@ -39,11 +39,6 @@ public class AssemblyGenerator {
     }
 
     private String formatInstruction(String str, String[] comments) {
-        final int insLen = 9;
-        final int argLen = 4;
-
-        // format: ins arg, arg, arg ; com
-        String format = "%-" + insLen + "s %" + argLen + "s %" + argLen + "s %" + argLen + "s %s";
         StringBuilder result = new StringBuilder();
 
         String[] lines = str.split("\n");
@@ -51,45 +46,62 @@ public class AssemblyGenerator {
         // Write each line based on arg count
         int i = 0;
         for (; i < lines.length; i++) {
-            String[] tokens = lines[i].split(" ");
-            String com = "";
-            StringBuilder line = new StringBuilder();
-
-            // Get comment if exists
-            if (comments.length > i) {
-                com = "; " + comments[i];
+            if (comments[i].isBlank()) {
+                result.append(formatString(lines[i], ""));
+            } else {
+                result.append(formatString(lines[i], comments[i]));
             }
-
-            switch (tokens.length) {
-                case 2:
-                    line.append(String.format(format, tokens[0], tokens[1] + " ", "", "", com));
-                    break;
-                case 3:
-                    line.append(String.format(format, tokens[0], tokens[1], tokens[2] + " ", "", com));
-                    break;
-                case 4:
-                    line.append(String.format(format, tokens[0], tokens[1], tokens[2], tokens[3], com));
-                    break;
-
-                default:
-                    line.append(String.format(format, tokens[0] + " ", "", "", "", com));
-                    break;
-            }
-
-            int commentStartIndex = insLen + argLen * 3 + 4;
-            while (line.length() > commentStartIndex && line.charAt(commentStartIndex) == ' ') {
-                line.deleteCharAt(commentStartIndex);
-            }
-
-            line.append("\n");
-            result.append(line);
         }
 
+        // Add extra comments
         for (; i < comments.length; i++) {
             result.deleteCharAt(result.length()-1);
             result.append("; ").append(comments[i].strip()).append("\n");
         }
 
         return result.toString();
+    }
+
+    String formatString(String line, String comment) {
+        final int insLen = 9;
+        final int argLen = 4;
+
+        // format: ins arg, arg, arg ; com
+        String format = "%-" + insLen + "s %" + argLen + "s %" + argLen + "s %" + argLen + "s %s";
+
+        String com = "";
+        StringBuilder newLine = new StringBuilder();
+
+        String[] tokens = line.split(" ");
+
+        // Get comment if exists
+        if (!comment.isBlank()) {
+            com = "; " + comment;
+        }
+
+        // Format based on amount of arguments
+        switch (tokens.length) {
+            case 2:
+                newLine.append(String.format(format, tokens[0], tokens[1] + " ", "", "", com));
+                break;
+            case 3:
+                newLine.append(String.format(format, tokens[0], tokens[1], tokens[2] + " ", "", com));
+                break;
+            case 4:
+                newLine.append(String.format(format, tokens[0], tokens[1], tokens[2], tokens[3], com));
+                break;
+
+            default:
+                newLine.append(String.format(format, tokens[0] + " ", "", "", "", com));
+                break;
+        }
+
+        // Remove excess whitespaces
+        int commentStartIndex = insLen + argLen * 3 + 4;
+        while (newLine.length() > commentStartIndex && newLine.charAt(commentStartIndex) == ' ') {
+            newLine.deleteCharAt(commentStartIndex);
+        }
+
+        return newLine.toString() + "\n";
     }
 }
