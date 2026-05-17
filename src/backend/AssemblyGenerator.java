@@ -86,7 +86,8 @@ public class AssemblyGenerator {
         }
 
         for (; i < comments.length; i++) {
-            result.append(", ").append(comments[i]);
+            result.deleteCharAt(result.length()-1);
+            result.append("; ").append(comments[i].strip()).append("\n");
         }
 
         return result.toString();
