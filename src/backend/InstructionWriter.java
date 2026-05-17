@@ -5,6 +5,7 @@ import java.util.List;
 
 import exception.InvalidOperatorException;
 import exception.InvalidRegisterException;
+import exception.NoValueMatchException;
 import exception.NonRegisterArgsException;
 import exception.NonRegisterResultException;
 import exception.RegisterException;
@@ -229,11 +230,40 @@ public class InstructionWriter {
     }
 
     private String floatAssignment() {
+        List<Float> defaultValues = Arrays.asList(0.0f, 1.0f, 2.0f, 0.5f, -1.0f, -2.0f, -0.5f);
+
         if (result.getType() != Type.F_REG) {
             throw new NonRegisterArgsException("Could not generate float assignment for " + result.getName());
         }
 
-        // TODO: add simple insertions.
+        if (defaultValues.contains(Float.parseFloat(arg1.getName()))) {
+            float f = Float.parseFloat(arg1.getName());
+            String returnStr = "CONST.S " + result.getName() + ", ";
+
+            switch (Float.toString(f)) {
+                case "0.0":
+                    returnStr += "0";
+                    break;
+                case "1.0", "-1.0":
+                    returnStr += "1";
+                    break;
+                case "2.0", "-2.0":
+                    returnStr += "2";
+                    break;
+                case "0.5", "-0.5":
+                    returnStr += "3";
+                    break;
+            
+                default:
+                    throw new NoValueMatchException("Could not convert value to float, got: " + arg1.getName());
+            }
+
+            if (f < 0f) {
+                returnStr += "\nNEG.S " + result.getName() + ", " + result.getName();
+            }
+
+            return returnStr;
+        }
 
         if (result.getName().compareTo("a15") == 0) {
             throw new InvalidRegisterException("Register a15 must be unused for float assignments");
