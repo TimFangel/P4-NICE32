@@ -18,11 +18,16 @@ import ir.IrValue;
 import ir.util.IrOperator;
 
 // TODO: Scratch Register
-// A15
-// B15
 // F9-15
+// TODO REMOVE MAGIC NUMBERS
+
 
 public class InstructionWriter {
+    // Registers for temporary values
+    static final String arithScratchReg = "a15";
+    static final String boolScratchReg = "b15";
+    List<String> floatScratchReg = Arrays.asList("f9", "f10", "f11", "f12", "f13", "f14", "f15");
+
     private IrOperator operator;
     private IrValue arg1;
     private IrValue arg2;
@@ -265,15 +270,15 @@ public class InstructionWriter {
             return returnStr;
         }
 
-        if (result.getName().compareTo("a15") == 0) {
-            throw new InvalidRegisterException("Register a15 must be unused for float assignments");
+        if (result.getName().compareTo(arithScratchReg) == 0) {
+            throw new InvalidRegisterException("Register " + arithScratchReg + " must be unused for float assignments");
         }
 
         // Insert float as bits in A_REG (extended immediate assignment) before
         // transferring it into F_REG
         int bits = Float.floatToIntBits(Float.parseFloat(arg1.getName()));
-        String str = immediateAssignment(bits, "a15") + "\n";
-        str += "WFR " + result.getName() + ", a15";
+        String str = immediateAssignment(bits, arithScratchReg) + "\n";
+        str += "WFR " + result.getName() + ", " + arithScratchReg;
         return str;
     }
 
@@ -348,9 +353,8 @@ public class InstructionWriter {
     }
 
     private String divideFloat() {
-        List<String> invalidRegisters = Arrays.asList("f9", "f10", "f11", "f12", "f13", "f14", "f15");
-        if (invalidRegisters.contains(result.getName()) || invalidRegisters.contains(arg1.getName())
-                || invalidRegisters.contains(arg2.getName())) {
+        if (floatScratchReg.contains(result.getName()) || floatScratchReg.contains(arg1.getName())
+                || floatScratchReg.contains(arg2.getName())) {
             throw new InvalidRegisterException("Register f9-15 must be unused for float division");
         }
 
@@ -418,16 +422,17 @@ public class InstructionWriter {
             case EQ:
                 return "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
             case NEQ:
-                if (result.getName().compareTo("b15") == 0) {
+                if (result.getName().compareTo(boolScratchReg) == 0) {
                     throw new InvalidRegisterException(
-                            "Register a15 must be unused for extended immediate assignments");
+                            "Register " + boolScratchReg + " must be unused for extended immediate assignments");
                 }
 
                 // Calculate Equal and negate result
-                String str = "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
-                str += "ORBC b15, b15, b15";
-                str += "XORB " + result.getName() + ", " + result.getName() + ", b15";
-                return str;
+                StringBuilder str = new StringBuilder();
+                str.append("OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName());
+                str.append("ORBC " + boolScratchReg + ", " + boolScratchReg + ", " + boolScratchReg + "");
+                str.append("XORB " + result.getName() + ", " + result.getName() + ", " + boolScratchReg);
+                return str.toString();
             default:
                 throw new InvalidOperatorException("Could not generate boolean expression for " + operator);
         }
@@ -445,24 +450,24 @@ public class InstructionWriter {
 
         final String trueLabel = AssemblyGenerator.newLabel();
         final String falseLabel = AssemblyGenerator.newLabel();
-        String str;
+        StringBuilder str = new StringBuilder();
 
         switch (operator) {
             case GEQ:
                 switchArgs();
             case LT:
-                str = "BLT ";
+                str.append("BLT ");
                 break;
             case LEQ:
                 switchArgs();
             case GT:
-                str = "BGE ";
+                str.append("BGE ");
                 break;
             case EQ:
-                str = "BEQ";
+                str.append("BEQ");
                 break;
             case NEQ:
-                str = "BNE ";
+                str.append("BNE ");
                 break;
             default:
                 throw new InvalidOperatorException("Could not generate boolean expression for " + operator);
@@ -472,14 +477,14 @@ public class InstructionWriter {
         final String clearBit = "XORB " + result.getName() + ", " + result.getName() + ", " + result.getName();
 
         // Generate if else branch which sets or clears bit
-        str += arg1.getName() + "," + arg2.getName() + "," + trueLabel + "\n";
-        str += clearBit + "\n";
-        str += "J " + falseLabel + "\n";
-        str += trueLabel + "\n";
-        str += setBit + "\n";
-        str += falseLabel + "\n";
+        str.append(arg1.getName() + "," + arg2.getName() + "," + trueLabel + "\n");
+        str.append(clearBit + "\n");
+        str.append("J " + falseLabel + "\n");
+        str.append(trueLabel + "\n");
+        str.append(setBit + "\n");
+        str.append(falseLabel + "\n");
 
-        return str;
+        return str.toString();
     }
 
     private String ifStatement() {
@@ -513,12 +518,12 @@ public class InstructionWriter {
             throw new NonRegisterArgsException("Cannot generate bool expression for non-register args");
         }
 
-        if (result.getName().compareTo("b15") == 0) {
-            throw new InvalidRegisterException("Register a15 must be unused for extended immediate assignments");
+        if (result.getName().compareTo(boolScratchReg) == 0) {
+            throw new InvalidRegisterException("Register " + boolScratchReg + " must be unused for extended immediate assignments");
         }
 
-        String str = "ORBC b15, b15, b15 \n"; // Set bit b15
-        str += "XORB " + result.getName() + ", b15, " + arg1.getName(); // Negate with XOR
+        String str = "ORBC " + boolScratchReg + ", " + boolScratchReg + ", " + boolScratchReg + " \n"; // Set bit
+        str += "XORB " + result.getName() + ", " + boolScratchReg + ", " + arg1.getName(); // Negate with XOR
         return str;
     }
 
