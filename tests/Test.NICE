@@ -10,6 +10,8 @@ setup {
 }
 
 main {
+    int q = -2;
     int e = 2;
-    int d = a(e+e);
+    int f = e + 2;
+    int d = a(e + 2);
 }

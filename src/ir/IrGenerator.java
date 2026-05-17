@@ -57,6 +57,41 @@ public class IrGenerator {
     }
 
     /**
+     * Creates a new temporary with the given operand's type.
+     * 
+     * @param op to get the type of.
+     * @return Temporary variable with the input operand's type.
+     */
+    private IrValue generateImmutableAssignment(Operand op) {
+        IrValue result;
+        IrValue operandValue;
+
+        switch (op.getValue()) {
+            case IntNum in: 
+                operandValue = new IrValue(String.valueOf(in.value()), Type.INT_T);
+                result = newTemp(Type.INT_T);
+                break;
+            case FloatNum ft:
+                operandValue = new IrValue(String.valueOf(ft.value()), Type.FLOAT_T);
+                result = newTemp(Type.FLOAT_T);
+                break;
+            case Bool b:
+                operandValue = new IrValue(b.value() ? "true" : "false", Type.BOOL_T);
+                result = newTemp(Type.BOOL_T);
+                break;
+
+            default: 
+                throw new NoValueMatchException("No matching value found! Value: " + op.toString());
+        }
+
+        // Create assignment
+        createIR(new IrInstruction(IrOperator.ASS, operandValue, null, result));
+
+
+        return result;
+    }
+
+    /**
      * Creates a new temporary based on given symbol.
      * 
      * @param symbol to get the type of.
@@ -112,9 +147,20 @@ public class IrGenerator {
      */
     public IrValue generateExpr(Expr expr) {
         if (expr instanceof ArithBinaryOpExpr binOp) {
-            // generate left and right argument of expression.
-            IrValue left = generateExpr(binOp.getExprLeft());
-            IrValue right = generateExpr(binOp.getExprRight());
+            IrValue left;
+            IrValue right;
+
+            // generate left and right subexpressions or immutable assignment.
+            if (binOp.getExprLeft() instanceof Operand o) {
+                left = generateImmutableAssignment(o);
+            } else {
+                left = generateExpr(binOp.getExprLeft());
+            }
+            if (binOp.getExprRight() instanceof Operand o) {
+                right = generateImmutableAssignment(o);
+            } else {
+                right = generateExpr(binOp.getExprRight());
+            }
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
@@ -133,28 +179,49 @@ public class IrGenerator {
         }
 
         if (expr instanceof ArithUnaryOpExpr unOp) {
+            // Generate assignment for immutables
             if (unOp.getExpr() instanceof Operand o) {
                 if (o.getValue() instanceof IntNum in) {
-                    return new IrValue(String.valueOf(in.value()), Type.INT_T);
-                } else if (o.getValue() instanceof FloatNum fn) {
-                    return new IrValue(String.valueOf(fn.value()), Type.FLOAT_T);
+                    return new IrValue("-" + String.valueOf(in.value()), Type.INT_T);
+                }
+                
+                if (o.getValue() instanceof FloatNum fn) {
+                    return new IrValue("-" + String.valueOf(fn.value()), Type.FLOAT_T);
                 }
             }
 
-            IrValue left = generateExpr(unOp.getExpr());
+            // generate subexpression.
+            IrValue arg = generateExpr(unOp.getExpr());
 
-            IrValue temp = newTemp(left.getType());
+            if (arg.getType() != Type.INT_T && arg.getType() != Type.FLOAT_T) {
+                throw new NonMatchingTypeException("Type mismatch! argument: " + arg.getType());
+            }
 
-            // add instruction with temp var as result, and left as first argument.
-            createIR(new IrInstruction(operatorMapper.mapArithUna(unOp.getOp()), left, null, temp));
+            IrValue temp = newTemp(arg.getType());
+
+            // add instruction with temp var as result, and arg as first argument.
+            createIR(new IrInstruction(operatorMapper.mapArithUna(unOp.getOp()), arg, null, temp));
 
             return temp;
         }
 
         if (expr instanceof BoolBinaryOpExpr binOp) {
-            // generate left and right subexpressions.
-            IrValue left = generateExpr(binOp.getExprLeft());
-            IrValue right = generateExpr(binOp.getExprRight());
+            IrValue left;
+            IrValue right;
+
+            // generate left and right subexpressions or immutable assignment.
+            if (binOp.getExprLeft() instanceof Operand o) {
+                left = generateImmutableAssignment(o);
+                generateStmt(new AssStmt(o.getLineNumber(), left.getName(), o));
+            } else {
+                left = generateExpr(binOp.getExprLeft());
+            }
+            if (binOp.getExprRight() instanceof Operand o) {
+                right = generateImmutableAssignment(o);
+                generateStmt(new AssStmt(o.getLineNumber(), right.getName(), o));
+            } else {
+                right = generateExpr(binOp.getExprRight());
+            }
 
             if (left.getType() != right.getType()) {
                 throw new NonMatchingTypeException(
@@ -173,18 +240,27 @@ public class IrGenerator {
         }
 
         if (expr instanceof BoolUnaryOpExpr unOp) {
-            // generate subexpression.
-            IrValue left = generateExpr(unOp.getExpr());
+            // Catch invalid immutables expression and just return flipped value
+            if (unOp.getExpr() instanceof Operand o && o.getValue() instanceof Bool b) {
+                String value = String.valueOf(b.value());
+                // Negate value
+                value = value.compareTo("true") == 0 ? "false" : "true";
 
-            if (left.getType() != Type.BOOL_T) {
-                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType());
+                return new IrValue(value, Type.BOOL_T);
+            }
+
+            // generate subexpression.
+            IrValue arg = generateExpr(unOp.getExpr());
+
+            if (arg.getType() != Type.BOOL_T) {
+                throw new NonMatchingTypeException("Type mismatch! argument: " + arg.getType());
             }
 
             // new temporary variable to hold result.
-            IrValue temp = newTemp(left.getType());
+            IrValue temp = newTemp(arg.getType());
 
-            // add instruction with temp var as result, and left as first argument.
-            createIR(new IrInstruction(operatorMapper.mapBoolUna(unOp.getOp()), left, null, temp));
+            // add instruction with temp var as result, and arg as first argument.
+            createIR(new IrInstruction(operatorMapper.mapBoolUna(unOp.getOp()), arg, null, temp));
 
             return temp;
         }

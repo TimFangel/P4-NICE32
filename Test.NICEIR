@@ -10,8 +10,13 @@ end func
 
 --- MAIN ---
 L0:
-t2 := 2
-t4 := t2 + t2
-t5 := CALL a, t4
-t3 := t5
+t2 := -2
+t3 := 2
+t5 := 2
+t6 := t3 + t5
+t4 := t6
+t8 := 2
+t9 := t3 + t8
+t10 := CALL a, t9
+t7 := t10
 GOTO L0

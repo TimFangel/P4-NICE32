@@ -5,7 +5,6 @@ import java.util.List;
 
 import exception.InvalidOperatorException;
 import exception.InvalidRegisterException;
-import exception.NonMatchingTypeException;
 import exception.NonRegisterArgsException;
 import exception.NonRegisterResultException;
 import exception.RegisterException;
@@ -553,7 +552,7 @@ public class InstructionWriter {
         if (arg1.getType() != Type.INT_T && arg1.getType() != Type.BOOL_T && arg1.getType() != Type.FLOAT_T) {
             throw new RegisterException("Expected a function but got: " + arg1.getName());
         }
-        
+
         return ".L" + arg1.getName() + ":";
     }
 }
