@@ -3,7 +3,12 @@ package backend;
 import java.util.Arrays;
 import java.util.List;
 
+import exception.InvalidOperatorException;
 import exception.InvalidRegisterException;
+import exception.NonRegisterArgsException;
+import exception.NonRegisterResultException;
+import exception.RegisterException;
+import exception.UnknownAssArgTypeException;
 import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
 import ir.IrInstruction;
