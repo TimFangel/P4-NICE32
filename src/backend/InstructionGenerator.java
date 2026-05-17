@@ -7,17 +7,13 @@ import backend.processors.ArithmeticProcessor;
 import backend.processors.AssignmentProcessor;
 import backend.processors.BooleanProcessor;
 import backend.processors.ComparisonProcessor;
+import backend.processors.ComponentProcessor;
 import backend.processors.FloatProcessor;
 import backend.processors.FunctionProcessor;
 import backend.processors.IfStatementProcessor;
 import backend.processors.JumpProcessor;
 import backend.processors.TypeCastProcessor;
-import exception.InvalidOperatorException;
-import exception.InvalidRegisterException;
-import exception.NonRegisterArgsException;
-import exception.NonRegisterResultException;
 import exception.RegisterException;
-import exception.UnknownInstructionException;
 import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
 import ir.IrInstruction;
@@ -40,6 +36,7 @@ public class InstructionGenerator {
     IfStatementProcessor ifStatementProcessor;
     TypeCastProcessor typeCastProcessor;
     FunctionProcessor functionProcessor;
+    ComponentProcessor componentProcessor;
 
     // Values
     private IrOperator operator;
@@ -64,6 +61,7 @@ public class InstructionGenerator {
         ifStatementProcessor = new IfStatementProcessor(result, arg1);
         typeCastProcessor = new TypeCastProcessor(result, arg1, operator);
         functionProcessor = new FunctionProcessor(ARITH_SCRATCH_REG, result, arg1, arg2);
+        componentProcessor = new ComponentProcessor(result, arg1, arg2, operator);
     }
 
     private void updateTypes() {
@@ -156,12 +154,10 @@ public class InstructionGenerator {
                 return functionProcessor.handleCall();
 
             case PORT_SETUP:
-                // TODO:
-                return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
+                return componentProcessor.handlePortSetup();
 
             case COMPR, COMPW:
-                // TODO:
-                return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
+                return componentProcessor.handlePolling();
 
             case FUNC_INFO:
                 return functionProcessor.handleDefinition();
