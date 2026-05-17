@@ -3,16 +3,7 @@ package backend;
 import java.util.Arrays;
 import java.util.List;
 
-import backend.processors.ArithmeticProcessor;
-import backend.processors.AssignmentProcessor;
-import backend.processors.BooleanProcessor;
-import backend.processors.ComparisonProcessor;
-import backend.processors.ComponentProcessor;
-import backend.processors.FloatProcessor;
-import backend.processors.FunctionProcessor;
-import backend.processors.IfStatementProcessor;
-import backend.processors.JumpProcessor;
-import backend.processors.TypeCastProcessor;
+import backend.processors.*;
 import exception.RegisterException;
 import exception.UnrecognizedOperatorException;
 import frontend.abstract_syntax.type.Type;
