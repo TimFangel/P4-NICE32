@@ -57,7 +57,7 @@ public class IrGenerator {
     }
 
     /**
-     * Creates a new temporary with the given operand's type.
+     * Creates a new temporary with the given operand's type and an immutable assignment.
      * 
      * @param op to get the type of.
      * @return Temporary variable with the input operand's type.
