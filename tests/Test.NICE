@@ -6,20 +6,21 @@ functions {
 }
 
 setup {
-    
+    component c {
+        port: 2;
+        protocol: digital;
+        interval: 1000;
+        direction: input;
+
+        int a = 67;
+    }
 }
 
 main {
-    bool p = true;
-    if (p) {
-        p = false;
+    bool e = true;
+    if(x(2) > 10) {
+        e = false;
     }
 
-    float fih = 2.2;
-    float guh = -200.0;
-
-    int hh = -10 + (int) (fih + guh) + a.a;
-    int c = hh * 10 + gg - 5;
-
-    int gug = x(23) + x(2);
+    float q = 2.76 + 99.99;
 }

@@ -65,8 +65,8 @@ public class Main {
             ra.getCfg().printCFG();
 
             // --- Assembly Generator ---
-            AssemblyGenerator ag = new AssemblyGenerator();
-            ag.run(ra.getCfg(), fileName);
+            // AssemblyGenerator ag = new AssemblyGenerator();
+            // ag.run(ra.getCfg(), fileName);
 
         } catch (Exception e) {
             e.printStackTrace();
