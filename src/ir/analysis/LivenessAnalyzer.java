@@ -157,10 +157,15 @@ public class LivenessAnalyzer {
             for (IrInstruction i : instructions) {
                 for (String k : i.getKill()) {
                     for (String o : i.getOut()) {
+                        // skip when same temporary
                         if (k.equals(o)) {
                             continue;
                         }
 
+                        /*
+                         * create interference if not found already, else add the new interference to
+                         * existing map.
+                         */
                         interference.computeIfAbsent(k, x -> new HashSet<>()).add(o);
                         interference.computeIfAbsent(o, x -> new HashSet<>()).add(k);
                     }
