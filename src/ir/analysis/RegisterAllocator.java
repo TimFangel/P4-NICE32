@@ -50,11 +50,14 @@ public class RegisterAllocator {
         updateCfg(this.allocatedRegisters);
     }
 
+    /**
+     * Allocates ESP32 registers based on type and interference
+     * 
+     * @return a map mapping temporaries to registers
+     */
     private Map<String, String> allocateRegisters() {
         // Map for containing temporaries and their allocated register.
         Map<String, String> allocate = new HashMap<>();
-
-        // Get a list of all temporary variables and a map pf their types.
 
         // Sort based on most interference first.
         temps.sort((a, b) -> Integer.compare(
@@ -83,8 +86,10 @@ public class RegisterAllocator {
 
             String chosenRegister = null;
 
-            // Iterate through the registers and check if they have been used by an
-            // interfering temporary.
+            /*
+             * Iterate through the registers and check if they have been used by an
+             * interfering temporary.
+             */
             for (String r : regs) {
                 if (!unavailable.contains(r)) {
                     chosenRegister = r;
@@ -92,7 +97,10 @@ public class RegisterAllocator {
                 }
             }
 
-            // If no register could be allocated, throw exception.
+            /*
+             * If no register could be allocated, throw exception, else allocate the
+             * register.
+             */
             if (chosenRegister == null) {
                 throw new RegisterSpillException(
                         "ID-10T: Program requires more registers than available. Could not allocate variable " + t
@@ -105,6 +113,9 @@ public class RegisterAllocator {
         return allocate;
     }
 
+    /**
+     * Finds all temporary variables.
+     */
     private void getTemporaries() {
         for (BasicBlock b : cfg.getBlocks()) {
             for (IrInstruction i : b.getInstructions()) {
@@ -116,6 +127,7 @@ public class RegisterAllocator {
 
                 Type type = temp.getType();
 
+                // labels not included
                 if (type != Type.LABEL) {
                     String name = temp.getName();
                     if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
@@ -127,6 +139,12 @@ public class RegisterAllocator {
         }
     }
 
+    /**
+     * Updates the CFG with register names instead of temporary variables.
+     * 
+     * @param allocatedRegisters map containing which register each temporary should
+     *                           be set to.
+     */
     private void updateCfg(Map<String, String> allocatedRegisters) {
         List<BasicBlock> blocks = cfg.getBlocks();
 
@@ -159,6 +177,7 @@ public class RegisterAllocator {
                 if (arg1 != null) {
                     String name = arg1.getName();
 
+                    // Replace temporary with allocated register
                     if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
                         arg1.setName(allocatedRegisters.get(name));
                     }
@@ -169,6 +188,7 @@ public class RegisterAllocator {
                 if (arg2 != null) {
                     String name = arg2.getName();
 
+                    // Replace temporary with allocated register
                     if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
                         arg2.setName(allocatedRegisters.get(name));
                     }
@@ -177,9 +197,11 @@ public class RegisterAllocator {
                 }
             }
 
+            // update block with updated instructions
             b.setInstructions(instructions);
         }
 
+        // update CFG with updated blocks.
         cfg.setBlocks(blocks);
     }
 }

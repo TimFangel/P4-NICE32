@@ -459,7 +459,6 @@ public class IrGenerator {
                         throw new IllegalArgumentException(
                                 "Could not create component polling for '" + comp.getName() + "'");
                 }
-
             }
         }
         // add the temp list to code list.

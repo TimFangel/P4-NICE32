@@ -1,13 +1,11 @@
 package ir.analysis;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import ir.IrInstruction;
-import ir.IrInstructionInterface;
 import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
 import lombok.Getter;

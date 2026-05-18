@@ -10,13 +10,16 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ControlFlowGraph {
-    private BasicBlock entry;
+    private BasicBlock entry; // entry of CFG
     private List<BasicBlock> blocks = new ArrayList<>();
 
     public ControlFlowGraph() {
         // empty since data is unknown on creation
     }
 
+    /**
+     * Prints the CFG to the terminal in a readable form.
+     */
     public void printCFG() {
         System.out.println("Graph entry: B" + entry.getId());
 
