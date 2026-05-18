@@ -22,13 +22,19 @@ public class LivenessAnalyzer {
         this.cfg = blockGenKill(cfg);
         // Step 3: do fixed-point analysis for blocks
         this.cfg = fixedPointAnalysis(this.cfg);
-        // Step 4: do fixed-point analysis for instructions (?)
+        // Step 4: do fixed-point analysis for instructions
         this.cfg = instructionLevelLiveness(this.cfg);
         // Step 5: find interference
         computeInterference(cfg);
         System.out.println(interference);
     }
 
+    /**
+     * Find gen and kill for each basic block.
+     * 
+     * @param cfg containing basic blocks to update.
+     * @return an updated cfg.
+     */
     private ControlFlowGraph blockGenKill(ControlFlowGraph cfg) {
         List<BasicBlock> blocks = cfg.getBlocks();
 
@@ -54,6 +60,12 @@ public class LivenessAnalyzer {
         return cfg;
     }
 
+    /**
+     * Computes in/out of basic blocks until it stops changing -> fixed point.
+     * 
+     * @param cfg containing basic blocks to update.
+     * @return an updated cfg.
+     */
     private ControlFlowGraph fixedPointAnalysis(ControlFlowGraph cfg) {
         // reversed since we go bottom up.
         List<BasicBlock> blocks = cfg.getBlocks().reversed();
@@ -97,6 +109,12 @@ public class LivenessAnalyzer {
         return cfg;
     }
 
+    /**
+     * Does fixed point analysis of in/out on instruction level.
+     * 
+     * @param cfg containing basic blocks to update.
+     * @return an updated cfg.
+     */
     private ControlFlowGraph instructionLevelLiveness(ControlFlowGraph cfg) {
         List<BasicBlock> blocks = cfg.getBlocks();
 
@@ -125,6 +143,11 @@ public class LivenessAnalyzer {
         return cfg;
     }
 
+    /**
+     * Computes the interference between temporaries.
+     * 
+     * @param cfg to compute interference on.
+     */
     private void computeInterference(ControlFlowGraph cfg) {
         List<BasicBlock> blocks = cfg.getBlocks();
 
