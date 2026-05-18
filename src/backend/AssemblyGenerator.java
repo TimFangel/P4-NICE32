@@ -15,14 +15,13 @@ public class AssemblyGenerator {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".a"))) {
             for (BasicBlock block : cfg.getBlocks()) {
                 // Block name
-                writer.write("B" + block.getId());
+                writer.write("; B" + block.getId());
                 writer.newLine();
 
-                // Instructions
+                // Write instructions
                 for (IrInstruction instr : block.getInstructions()) {
-                    InstructionWriter iw = new InstructionWriter(instr);
-                    writer.write(iw.write());
-                    writer.newLine();
+                    InstructionGenerator iw = new InstructionGenerator(instr);
+                    writer.write(InstructionFormatter.format(iw.write(), instr.toString()));
                 }
 
                 writer.newLine();

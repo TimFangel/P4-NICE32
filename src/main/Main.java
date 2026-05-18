@@ -6,6 +6,8 @@ import frontend.coco.Parser;
 import frontend.coco.Scanner;
 import frontend.semantic_analysis.SemanticAnalyser;
 import ir.IrGenerator;
+import ir.analysis.LivenessAnalyzer;
+import ir.analysis.RegisterAllocator;
 import ir.cfg.ControlFlowGraph;
 import ir.cfg.ControlFlowGraphGenerator;
 import ir.util.IrPrinter;
@@ -16,6 +18,8 @@ public class Main {
             System.out.println("Usage: java frontend.Main <file>");
             return;
         }
+
+        String fileName = args[0].replaceAll(".*/|\\.[^.]+$", "");
 
         try {
             // --- Parse ---
@@ -43,9 +47,8 @@ public class Main {
             irGenerator.generateProgram(ast);
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
-            irPrinter.printIR("TestIr");
+            irPrinter.printIR(fileName);
 
-            // System.out.println(ast);
             System.out.println("> IR has been successfully generated <");
 
             // --- ControlFlowGraph ---
@@ -54,9 +57,16 @@ public class Main {
 
             cfg.printCFG();
 
+            // --- Register Allocation ---
+            LivenessAnalyzer la = new LivenessAnalyzer(cfg);
+
+            RegisterAllocator ra = new RegisterAllocator(la.getInterference(), la.getCfg());
+
+            ra.getCfg().printCFG();
+
             // --- Assembly Generator ---
             AssemblyGenerator ag = new AssemblyGenerator();
-            ag.run(cfg, "assembly");
+            ag.run(ra.getCfg(), fileName);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -60,6 +60,7 @@ public class SemanticAnalyser {
             case WhileStmt ws -> visit(ws);
             case BlockStmt bs -> visit(bs);
             case ReturnStmt rs -> visit(rs);
+            case MemberAssStmt mas -> visit(mas);
             case Decl d -> visit(d);
             case AssStmt as -> visit(as);
             case FuncDecl fd -> visit(fd);
@@ -120,6 +121,10 @@ public class SemanticAnalyser {
     }
 
     void visit(FuncDecl fd) {
+        if (fd.getIdentifier().matches("^[abf]\\d+$")) {
+            throw new IllegalArgumentException("Function identifiers matching the register pattern cannot be used e.g. a0, b2 or f9");
+        }
+
         // Create function symbol and assign it to currentFunctionSymbol
         try {
             currentFunctionSymbol = symbolTable.newFunctionSymbol(fd.getIdentifier(), fd.getReturnType());
@@ -326,6 +331,15 @@ public class SemanticAnalyser {
         }
 
         rs.setSymbolRef(currentFunctionSymbol);
+    }
+
+    void visit(MemberAssStmt mas) {
+        Type expressionType = visitType(mas.getValue());
+        // TODO
+        // findes component?
+        // findes memberen?
+        // member field type
+        // expression type
     }
 
     /* --- Type returning visitors --- */

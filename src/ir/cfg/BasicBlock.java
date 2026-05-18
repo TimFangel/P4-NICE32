@@ -1,32 +1,35 @@
 package ir.cfg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import ir.IrInstruction;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public class BasicBlock {
     private final int id;
+    private boolean isEntry = false;
 
     // code within block
     private List<IrInstruction> instructions = new ArrayList<>();
 
-    // graph predessecor and successors
     private List<BasicBlock> parents = new ArrayList<>();
     private List<BasicBlock> children = new ArrayList<>();
 
     /* Liveness Variables */
     // variables used before def.
-    private Set<String> use;
+    private Set<String> gen = new HashSet<>();
     // variables assigned
-    private Set<String> def;
+    private Set<String> kill = new HashSet<>();
 
     // in and out from liveness analysis
-    private Set<String> liveIn;
-    private Set<String> liveOut;
+    private Set<String> in = new HashSet<>();
+    private Set<String> out = new HashSet<>();
 
     public BasicBlock(int id) {
         this.id = id;
@@ -48,5 +51,41 @@ public class BasicBlock {
         children.add(child);
         // remember to add this as parent to new child.
         child.parents.add(this);
+    }
+
+    public void addIn(Set<String> s) {
+        this.in.addAll(s);
+    }
+
+    public void addOut(Set<String> s) {
+        this.out.addAll(s);
+    }
+
+    public void clearIn() {
+        this.in.clear();
+    }
+
+    public void clearOut() {
+        this.out.clear();
+    }
+
+    public void addGen(Set<String> s) {
+        this.gen.addAll(s);
+    }
+
+    public void addKill(Set<String> s) {
+        this.kill.addAll(s);
+    }
+
+    public void clearGen() {
+        this.gen.clear();
+    }
+
+    public void clearKill() {
+        this.kill.clear();
+    }
+
+    public boolean getIsEntry() {
+        return this.isEntry;
     }
 }

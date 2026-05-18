@@ -18,6 +18,8 @@ public class ControlFlowGraph {
     }
 
     public void printCFG() {
+        System.out.println("Graph entry: B" + entry.getId());
+
         for (BasicBlock block : blocks) {
             System.out.println("B" + block.getId());
 
@@ -38,7 +40,7 @@ public class ControlFlowGraph {
 
             System.out.println(" Instructions: ");
             for (IrInstruction instr : block.getInstructions()) {
-                System.out.println("  " + instr.toString());
+                System.out.println("  " + instr.getInstrNum() + ": " + instr.toString());
             }
 
             System.out.println();
