@@ -1,7 +1,6 @@
 package irTest;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +11,6 @@ import frontend.abstract_syntax.type.Type;
 import frontend.symbol_table.VariableSymbol;
 import ir.IrFunction;
 import ir.IrGenerator;
-import ir.IrInstructionInterface;
 import ir.IrValue;
 
 class IrGeneratorTest {
@@ -39,133 +37,101 @@ class IrGeneratorTest {
 
     // Test that new labels gets created correctly. Followed medium guide
     @Test
-    void testNewLabel() {
-        try {
-            // Get the private method by name and parameter types
-            Method newLabelMethod = IrGenerator.class.getDeclaredMethod("newLabel", String.class);
+    void testNewLabel() throws Exception {
 
-            // Make the private method accessible
-            newLabelMethod.setAccessible(true);
+        // Get the private method by name and parameter types
+        Method newLabelMethod = IrGenerator.class.getDeclaredMethod("newLabel");
 
-            // Invoke the private method
-            String label0 = (String) newLabelMethod.invoke(irGenerator, "label0");
-            String label1 = (String) newLabelMethod.invoke(irGenerator, "label1");
+        // Make the private method accessible
+        newLabelMethod.setAccessible(true);
 
-            // Check that first label is named L0, second label is L1 and that they are not
-            // the same
-            Assertions.assertEquals("L0", label0);
-            Assertions.assertEquals("L1", label1);
-            Assertions.assertNotEquals(label0, label1);
+        // Invoke the private method
+        String label0 = (String) newLabelMethod.invoke(irGenerator);
+        String label1 = (String) newLabelMethod.invoke(irGenerator);
 
-            System.out.println(label0 + label1);
+        // Check that first label is named L0, second label is L1 and that they are not
+        // the same
+        Assertions.assertEquals("L0", label0);
+        Assertions.assertEquals("L1", label1);
+        Assertions.assertNotEquals("Label0:" + label0, "Label1:" + label1);
 
-            // Standard exception messages
-        } catch (NoSuchMethodException e) {
-            System.err.println("Method not found: " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            System.err.println("Cannot access method: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            System.err.println("Method threw an exception: " + e.getCause());
-        }
+        System.out.println(label0 + label1);
 
     }
 
     // Connects type to t0, t1.. etc
     @Test
-    void testNewTempType() {
-        try {
-            // Get the private method by name and parameter types
-            Method newTempTypeMethod = IrGenerator.class.getDeclaredMethod("newTemp", Type.class);
+    void testNewTempType() throws Exception {
 
-            // Make the private method accessible
-            newTempTypeMethod.setAccessible(true);
+        // Get the private method by name and parameter types
+        Method newTempTypeMethod = IrGenerator.class.getDeclaredMethod("newTemp", Type.class);
 
-            // Invoke the private method
-            IrValue temp0 = (IrValue) newTempTypeMethod.invoke(irGenerator, Type.INT_T);
-            IrValue temp1 = (IrValue) newTempTypeMethod.invoke(irGenerator, Type.FLOAT_T);
+        // Make the private method accessible
+        newTempTypeMethod.setAccessible(true);
 
-            // Check that first label is named L0, second label is L1 and that they are not
-            // the same
-            Assertions.assertEquals("t0", temp0.getName());
-            Assertions.assertEquals(Type.INT_T, temp0.getType());
-            Assertions.assertEquals("t1", temp1.getName());
-            Assertions.assertEquals(Type.FLOAT_T, temp1.getType());
-            Assertions.assertNotEquals(temp0, temp1);
+        // Invoke the private method
+        IrValue temp0 = (IrValue) newTempTypeMethod.invoke(irGenerator, Type.INT_T);
+        IrValue temp1 = (IrValue) newTempTypeMethod.invoke(irGenerator, Type.FLOAT_T);
 
-            // Standard exception messages
-        } catch (NoSuchMethodException e) {
-            System.err.println("Method not found: " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            System.err.println("Cannot access method: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            System.err.println("Method threw an exception: " + e.getCause());
-        }
+        // Check that first label is named L0, second label is L1 and that they are not
+        // the same
+        Assertions.assertEquals("t0", temp0.getName());
+        Assertions.assertEquals(Type.INT_T, temp0.getType());
+        Assertions.assertEquals("t1", temp1.getName());
+        Assertions.assertEquals(Type.FLOAT_T, temp1.getType());
+        Assertions.assertNotEquals(temp0, temp1);
 
     }
 
     // Connects t0, t1..., to symbols
     @Test
-    void testNewTempSymbol() {
-        try {
-            VariableSymbol testVariableSymbol = new VariableSymbol("x", Type.INT_T);
+    void testNewTempSymbol() throws Exception {
 
-            // Get the private method by name and parameter types
-            Method newTempSymbolMethod = IrGenerator.class.getDeclaredMethod("newTemp", VariableSymbol.class);
+        VariableSymbol testVariableSymbol = new VariableSymbol("x", Type.INT_T);
 
-            // Make the private method accessible
-            newTempSymbolMethod.setAccessible(true);
+        // Get the private method by name and parameter types
+        Method newTempSymbolMethod = IrGenerator.class.getDeclaredMethod("newTemp", VariableSymbol.class);
 
-            // Invoke the private method
-            IrValue temp0 = (IrValue) newTempSymbolMethod.invoke(irGenerator, testVariableSymbol);
+        // Make the private method accessible
+        newTempSymbolMethod.setAccessible(true);
 
-            // Check that first label is named L0, second label is L1 and that they are not
-            // the ½
-            Assertions.assertEquals("t0", temp0.getName());
-            Assertions.assertEquals(Type.INT_T, temp0.getType());
+        // Invoke the private method
+        IrValue temp0 = (IrValue) newTempSymbolMethod.invoke(irGenerator, testVariableSymbol);
 
-            // Standard exception messages
-        } catch (NoSuchMethodException e) {
-            System.err.println("Method not found: " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            System.err.println("Cannot access method: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            System.err.println("Method threw an exception: " + e.getCause());
-        }
+        // Check that the name and type is correct
+        Assertions.assertEquals("t0", temp0.getName());
+        Assertions.assertEquals(Type.INT_T, temp0.getType());
 
     }
 
+    // Declare function first, then find scope
     @Test
-    void testCreateIr() {
-        try {
+    void testCreateIr() throws Exception {
+        // Declare parameter for function
+        IrValue paramIrValue = new IrValue("x", Type.INT_T);
 
-            IrFunction testCurrentFunction = new IrFunction("funcTest", null, Type.INT_T);
+        // Verify that name and type of parameter is correct
+        Assertions.assertEquals("x", paramIrValue.getName());
+        Assertions.assertEquals(Type.INT_T, paramIrValue.getType());
 
-            // Get the private field
-            Field[] newCurrentFunctionField = IrGenerator.class.getDeclaredField("currentFunction");
+        // Declare function with name, parameter and return type
+        IrFunction newFunction = new IrFunction("funcTest", paramIrValue, Type.INT_T);
 
-            newCurrentFunctionField.setAccessible(true);
+        // Create field called currentFunctionField with the getDeclaredField method
+        // getDeclaredField method makes access to currentFunction private field
+        Field currentFunctionField = IrGenerator.class.getDeclaredField("currentFunction");
 
-            // Get the private method by name and parameter types
-            Method newCreateIrMethod = IrGenerator.class.getDeclaredMethod("createIr", IrInstructionInterface.class);
+        // Make private field accessible
+        currentFunctionField.setAccessible(true);
 
-            // Make the private method accessible
-            newCreateIrMethod.setAccessible(true);
+        // Store value of newCurrentFunctionField in newFunction
+        IrFunction tempField = (IrFunction) currentFunctionField.get(irGenerator);
 
-            IrFunction currenFunction = new IrFunction(null, null, null);
+        // Verify that function name and return type is correct
+        Assertions.assertEquals("funcTest", tempField.getFuncName());
+        Assertions.assertEquals(Type.INT_T, tempField.getRetType());
 
-            // Invoke the private method
-            IrInstructionInterface temp0 = (IrInstructionInterface) newCreateIrMethod.invoke(irGenerator);
-
-            Assertions.assertEquals(null, temp0.get());
-
-            // Standard exception messages
-        } catch (NoSuchMethodException e) {
-            System.err.println("Method not found: " + e.getMessage());
-        } catch (IllegalAccessException e) {
-            System.err.println("Cannot access method: " + e.getMessage());
-        } catch (InvocationTargetException e) {
-            System.err.println("Method threw an exception: " + e.getCause());
-        }
+        Assertions.assertNotNull(irGenerator.getCurrentFunction());
 
     }
 
