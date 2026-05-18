@@ -10,7 +10,7 @@ public class IfStatementProcessor {
 
     public IfStatementProcessor(IrValue result, IrValue arg1) {
         this.result = result;
-        this.result = arg1;
+        this.arg1 = arg1;
     }
     
     public String handleIf() {

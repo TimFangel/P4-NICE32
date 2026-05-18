@@ -102,7 +102,7 @@ public class InstructionGenerator {
                     throw new RegisterException("Cannot do arithmetic operation on " + result.getType());
                 }
 
-            case AND, OR:
+                case AND, OR:
                 return comparisonProcessor.handleLogicalComparison();
 
             case LEQ, LT, GT, GEQ, EQ, NEQ:
