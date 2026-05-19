@@ -12,7 +12,6 @@ import ir.IrInstruction;
 import ir.IrValue;
 import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
-import ir.util.IrOperator;
 import lombok.Getter;
 import frontend.abstract_syntax.type.Type;
 
