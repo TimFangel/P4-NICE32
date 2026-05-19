@@ -387,12 +387,53 @@ public class SemanticAnalyzer {
     }
 
     void visit(MemberAssStmt mas) {
+        // Declare component and variable symbols.
+        Symbol component;
+        Symbol variable;
+
+        // Attempt to get the symbol for the component.
+        try {
+            component = symbolTable.lookup(mas.getComponent());
+        } catch (NonMatchingSymbolException e) {
+            throw new NameNotFoundException("[" + mas.getLineNumber() + "] " + e.getMessage());
+        }
+
+        // Ensure that the symbol found is a component.
+        if (!(component instanceof ComponentSymbol cs)) {
+            throw new NonMatchingSymbolException(
+                    "[" + mas.getLineNumber() + "] " + mas.getComponent() + " is not a component");
+        }
+
+        // Get the component's local scope of variables.
+        HashMap<String, Symbol> variableScope = cs.getLocalScope();
+
+        // Ensure that the scope is valid and not empty.
+        if (variableScope == null || variableScope.isEmpty()) {
+            throw new NameNotFoundException(
+                    "[" + mas.getLineNumber() + "] component has no local scope");
+        }
+
+        // Try to get the symbol for the variable within the component's scope.
+        variable = variableScope.get(mas.getVariable());
+
+        // If null, the variable could not be found.
+        if (variable == null) {
+            throw new NameNotFoundException(
+                    "[" + mas.getLineNumber() + "] could not find member " + mas.getVariable()
+                            + " in component " + mas.getComponent());
+        }
+
+        // Get the type of the expression.
         Type expressionType = visitType(mas.getValue());
-        // TODO
-        // findes component?
-        // findes memberen?
-        // member field type
-        // expression type
+
+        // If the expression type does not match the variable type, throw an exception.
+        if (expressionType != variable.getType()) {
+            throw new NonMatchingTypeException(
+                    "[" + mas.getLineNumber() + "] Type mismatch: "
+                            + variable.getType() + " and " + expressionType);
+        }
+
+        mas.setSymbolRef(variable);
     }
 
     /* --- Type returning visitors --- */
