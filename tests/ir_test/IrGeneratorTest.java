@@ -8,11 +8,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import exception.NoValueMatchException;
+import exception.TypeCastException;
 import frontend.abstract_syntax.type.Type;
 import frontend.abstract_syntax.value.Bool;
 import frontend.abstract_syntax.value.FloatNum;
 import frontend.abstract_syntax.value.IntNum;
-import frontend.abstract_syntax.value.Value;
+import frontend.abstract_syntax.value.TestValue;
 import frontend.symbol_table.VariableSymbol;
 import ir.IrFunction;
 import ir.IrGenerator;
@@ -117,6 +118,7 @@ class IrGeneratorTest {
     }
 
     // Declare function first, then find scope
+    // Method uses a private field so it needs reflection
     @Test
     void testCreateIr() throws Exception {
 
@@ -153,33 +155,97 @@ class IrGeneratorTest {
 
     }
 
+    // Public method, does not need reflection
+    // Valid values: Int, float and bool
     @Test
-    void testGenerateValue() throws Exception {
+    void testGenerateValueInt() throws Exception {
 
         IntNum intNum = new IntNum(10);
-        FloatNum floatNum = new FloatNum(12.5f);
-        Bool bool = new Bool(true);
 
-        Method generateValueMethod = IrGenerator.class.getDeclaredMethod("generateValue", Value.class);
-        generateValueMethod.setAccessible(true);
-
-        IrValue resultInt = (IrValue) generateValueMethod.invoke(irGenerator, intNum);
-        IrValue resultFloat = (IrValue) generateValueMethod.invoke(irGenerator, floatNum);
-        IrValue resultBool = (IrValue) generateValueMethod.invoke(irGenerator, bool);
+        IrValue resultInt = irGenerator.generateValue(intNum);
 
         Assertions.assertEquals("10", resultInt.getName());
         Assertions.assertEquals(Type.INT_T, resultInt.getType());
-        Assertions.assertNotEquals("10.7", resultInt.getName());
-        Assertions.assertNotEquals(Type.FLOAT_T, resultInt.getType());
 
+    }
+
+    @Test
+    void testGenerateValueFloat() throws Exception {
+
+        FloatNum floatNum = new FloatNum(12.5f);
+
+        IrValue resultFloat = irGenerator.generateValue(floatNum);
         Assertions.assertEquals("12.5", resultFloat.getName());
         Assertions.assertEquals(Type.FLOAT_T, resultFloat.getType());
 
+    }
+
+    @Test
+    void testGenerateValueBool() throws Exception {
+
+        Bool bool = new Bool(true);
+
+        IrValue resultBool = irGenerator.generateValue(bool);
         Assertions.assertEquals("true", resultBool.getName());
         Assertions.assertEquals(Type.BOOL_T, resultBool.getType());
 
-        Assertions.assertFalse(resultInt, "No matching value found! Value: " + intNum);
+    }
 
+    // LAV TEST FOR NÅR DET ER FORKERT VÆRDI
+
+    @Test
+    void testGenerateValueExpectedFail() throws Exception {
+        TestValue failValue = new TestValue();
+
+        Assertions.assertThrows(NoValueMatchException.class, () -> {
+            irGenerator.generateValue(failValue);
+        });
+    }
+
+    @Test
+    void testGenerateExpr() throws Exception {
+
+    }
+
+    // LAV TEST FOR GENERATE STM
+
+    // LAV TEST FOR GENERATE PROGRAM
+
+    // Public method so it does not need reflection
+    @Test
+    void testTypeCastSameType() throws Exception {
+        IrValue intValue = new IrValue("10", Type.INT_T);
+
+        IrValue result = irGenerator.typeCast(intValue, Type.INT_T);
+
+        Assertions.assertEquals(Type.INT_T, result.getType());
+    }
+
+    @Test
+    void testTypeCastIntToFloat() throws Exception {
+        IrValue intValue = new IrValue("10", Type.INT_T);
+
+        IrValue result = irGenerator.typeCast(intValue, Type.FLOAT_T);
+
+        Assertions.assertEquals(Type.FLOAT_T, result.getType());
+    }
+
+    @Test
+    void testTypeCastFloatToInt() throws Exception {
+        IrValue intValue = new IrValue("9.4", Type.FLOAT_T);
+
+        IrValue result = irGenerator.typeCast(intValue, Type.INT_T);
+
+        Assertions.assertEquals(Type.INT_T, result.getType());
+    }
+
+    @Test
+    void testTypeCastExpectedFail() throws Exception {
+        IrValue boolValue = new IrValue("true", Type.BOOL_T);
+
+        Assertions.assertThrows(TypeCastException.class, () -> {
+            irGenerator.typeCast(boolValue, Type.INT_T);
+        });
     }
 
 }
