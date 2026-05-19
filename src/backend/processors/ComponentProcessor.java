@@ -18,13 +18,11 @@ public class ComponentProcessor {
 
     public String handlePortSetup() {
         // TODO:
-        //return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
-        throw new UnsupportedOperationException("PORT_SETUP");
+        return "PORT_SETUP " + arg1.getName() + " " + arg2.getName() + " " + result.getName();
     }
 
     public String handlePolling() {
         // TODO:
-        // return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
-        throw new UnsupportedOperationException("COMPR/W");
+        return "COMPR/W " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
     }
 }

@@ -1,17 +1,18 @@
 functions {
-    int func a(int b) {
-        int c = b;
-        return c;
-    }
+
 }
 
 setup {
-    
+    component x {
+        port = 2;
+        protocol = digital;
+        interval = 1000;
+        direction = output;
+
+        bool x = false;
+    }    
 }
 
 main {
-    int q = -2;
-    int e = 2;
-    int f = e + 2;
-    int d = a(e + 2);
+    bool a = x.x;
 }
