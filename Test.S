@@ -1,19 +1,17 @@
+; ESP compiler setup
+.section .text
+.global app_main
+.literal_position
+
+
 ; B0
-.La:                     ; FUNC a:; PARAM a2
-MOV        a2,  a2       ; a2 := a2
-RET                      ; RET a2
+app_main:
+PORT_SETUP DIGITAL OUTPUT2 ; PORT_SETUP DIGITAL OUTPUT 2
+XORB       b0,  b0,   b0 ; b0 := false
 
 ; B1
 .Lloop:                  ; Lloop:
-MOVI       a2, 4094      ; a2 := -2
-MOVI       a2,   2       ; a2 := 2
-MOVI       a3,   2       ; a3 := 2
-ADD        a3,  a2,   a3 ; a3 := a2 + a3
-MOV        a3,  a3       ; a3 := a3
-MOVI       a3,   2       ; a3 := 2
-ADD        a2,  a2,   a3 ; a2 := a2 + a3
-CALL0     .La            ; a2 := CALL a, a2
-MOV        a2,  a2       
-MOV        a2,  a2       ; a2 := a2
+ORB        b1,  b0,   b0 ; b1 := b0
+COMPR/W     b0    2 1000 ; COMPW b0 2 1000
 J         .Lloop         ; GOTO Lloop
 

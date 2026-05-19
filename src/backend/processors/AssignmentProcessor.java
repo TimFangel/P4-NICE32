@@ -65,7 +65,7 @@ public class AssignmentProcessor {
         }
 
         if (imm >= -2048 && imm <= 2047) {
-            return "MOVI " + result + ", " + (imm & 0xfff);
+            return "MOVI " + result + ", " + imm;
         } else if (imm >= -2147483648 && imm <= 2147483647) {
             String str = "";
 
@@ -129,7 +129,7 @@ public class AssignmentProcessor {
                 case "0.5", "-0.5":
                     returnStr += "3";
                     break;
-            
+
                 default:
                     throw new NoValueMatchException("Could not convert value to float, got: " + arg1.getName());
             }

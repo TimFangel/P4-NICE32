@@ -4,10 +4,10 @@ functions {
 
 setup {
     component x {
-        port = 2;
-        protocol = digital;
-        interval = 1000;
-        direction = output;
+        port: 2;
+        protocol: digital;
+        interval: 1000;
+        direction: output;
 
         bool x = false;
     }    
