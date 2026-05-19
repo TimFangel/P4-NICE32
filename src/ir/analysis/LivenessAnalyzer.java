@@ -26,7 +26,7 @@ public class LivenessAnalyzer {
         this.cfg = instructionLevelLiveness(this.cfg);
         // Step 5: find interference
         computeInterference(cfg);
-        System.out.println(interference);
+        System.out.println("Interference: " + (interference.isEmpty() ? "no interference" : interference));
     }
 
     /**

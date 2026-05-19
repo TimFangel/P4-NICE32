@@ -50,10 +50,10 @@ class SemanticAnalyzerTest {
         Expr exprLeft = new Operand(0, leftNum);
         Expr exprRight = new Operand(0, rightNum);
 
-        ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
+        ArithBinaryOpExpr arithBinOpExpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
 
         // Invoking
-        Type type = (Type) method.invoke(semanticAnalyzer, arithBinOpexpr);
+        Type type = (Type) method.invoke(semanticAnalyzer, arithBinOpExpr);
 
         Assertions.assertEquals(Type.INT_T, type);
 
@@ -77,10 +77,10 @@ class SemanticAnalyzerTest {
                 Expr exprLeft = new Operand(0, leftNum);
                 Expr exprRight = new Operand(0, rightNum);
 
-                ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
+                ArithBinaryOpExpr arithBinOpExpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
 
                 // Invoking
-                method.invoke(semanticAnalyzer, arithBinOpexpr);
+                method.invoke(semanticAnalyzer, arithBinOpExpr);
 
             } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
@@ -112,10 +112,10 @@ class SemanticAnalyzerTest {
             Expr exprLeft = new Operand(0, leftNum);
             Expr exprRight = new Operand(0, rightNum);
 
-            ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.DIV, exprLeft, exprRight);
+            ArithBinaryOpExpr arithBinOpExpr = new ArithBinaryOpExpr(0, ArithBinaryOp.DIV, exprLeft, exprRight);
 
             // Invoking
-            method.invoke(semanticAnalyzer, arithBinOpexpr);
+            method.invoke(semanticAnalyzer, arithBinOpExpr);
 
         }, "this exception was expected");
     }
@@ -138,15 +138,15 @@ class SemanticAnalyzerTest {
             Operand operandLeft = new Operand(0, leftNum);
             Operand operandRight = new Operand(0, rightNum);
 
-            BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, operandLeft, operandRight);
+            BoolBinaryOpExpr boolBinOpExpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, operandLeft, operandRight);
 
-            Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
+            Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpExpr);
             BlockStmt blockStmt = new BlockStmt(0, declOne);
 
-            Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
+            Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpExpr);
             BlockStmt thenStmt = new BlockStmt(0, declTwo);
 
-            IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
+            IfStmt ifStmt = new IfStmt(0, boolBinOpExpr, thenStmt, blockStmt);
 
             // Invoking
             method.invoke(semanticAnalyzer, ifStmt);
@@ -250,15 +250,15 @@ class SemanticAnalyzerTest {
             Method method = semanticAnalyzer.getClass().getDeclaredMethod("visit", IfStmt.class);
             method.setAccessible(true);
 
-            BoolBinaryOpExpr boolBinOpexpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, leftVar, rightVar);
+            BoolBinaryOpExpr boolBinOpExpr = new BoolBinaryOpExpr(0, BoolBinaryOp.GT, leftVar, rightVar);
 
-            Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpexpr);
+            Decl declOne = new Decl(0, Type.BOOL_T, "y", boolBinOpExpr);
             BlockStmt blockStmt = new BlockStmt(0, declOne);
 
-            Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpexpr);
+            Decl declTwo = new Decl(0, Type.BOOL_T, "s", boolBinOpExpr);
             BlockStmt thenStmt = new BlockStmt(0, declTwo);
 
-            IfStmt ifStmt = new IfStmt(0, boolBinOpexpr, thenStmt, blockStmt);
+            IfStmt ifStmt = new IfStmt(0, boolBinOpExpr, thenStmt, blockStmt);
 
             // Invoking
             method.invoke(semanticAnalyzer, ifStmt);
@@ -284,12 +284,12 @@ class SemanticAnalyzerTest {
                 Operand exprLeft = new Operand(0, leftNum);
                 Operand exprRight = new Operand(0, rightNum);
 
-                ArithBinaryOpExpr arithBinOpexpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
+                ArithBinaryOpExpr arithBinOpExpr = new ArithBinaryOpExpr(0, ArithBinaryOp.ADD, exprLeft, exprRight);
 
-                Decl decl = new Decl(0, Type.INT_T, "y", arithBinOpexpr);
+                Decl decl = new Decl(0, Type.INT_T, "y", arithBinOpExpr);
                 BlockStmt blockStmt = new BlockStmt(0, decl);
 
-                IfStmt ifStmt = new IfStmt(0, arithBinOpexpr, null, blockStmt);
+                IfStmt ifStmt = new IfStmt(0, arithBinOpExpr, null, blockStmt);
 
                 // Invoking
                 method.invoke(semanticAnalyzer, ifStmt);

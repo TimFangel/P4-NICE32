@@ -40,10 +40,10 @@ public class RegisterAllocator {
         this.interference = interference;
 
         getTemporaries();
-        System.out.println("All temporary variables:\n" + temps);
+        System.out.println("All temporary variables: " + temps);
 
         this.allocatedRegisters = allocateRegisters();
-        System.out.println("\n" + allocatedRegisters);
+        System.out.println("Allocated registers: " + allocatedRegisters + "\n");
 
         // Update CFG with newly allocated registers.
         updateCfg(this.allocatedRegisters);
@@ -129,7 +129,7 @@ public class RegisterAllocator {
                 // labels not included
                 if (type != Type.LABEL) {
                     String name = temp.getName();
-                    if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                    if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1)) && !this.temps.contains(name)) {
                         this.temps.add(name);
                         this.temporaryTypes.put(name, type);
                     }

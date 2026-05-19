@@ -244,7 +244,7 @@ public class SemanticAnalyzer {
         ProtocolComp protocolComp = c.getProtocol();
         ProtocolType protocolType = protocolComp == null ? null : protocolComp.getProtocol();
 
-        // Throw an exception if protcol is not one of the supported types.
+        // Throw an exception if protocol is not one of the supported types.
         if (protocolType == null) {
             throw new NonMatchingTypeException("[" + c.getLineNumber()
                     + "] Protocol must be one of the supported protocol values, got " + protocolType);
@@ -436,7 +436,10 @@ public class SemanticAnalyzer {
         mas.setSymbolRef(variable);
     }
 
-    /* --- Type returning visitors --- */
+    /**
+     * The following visitor handles visiting of nodes that can be resolved to a
+     * specific type. Nodes are type checked and their return type is returned.
+     */
     Type visitType(Node n) {
         switch (n) {
             case Operand o:
@@ -464,8 +467,11 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(Operand operand) {
+        // Get the value of the operand.
         Value value = operand.getValue();
 
+        // If the value does not match int, float, or bool, then the type of the operand
+        // is invalid.
         switch (value) {
             case IntNum in:
                 return Type.INT_T;
@@ -480,18 +486,17 @@ public class SemanticAnalyzer {
         }
     }
 
-    /* Expr visitors */
     Type visitType(VarExpr varExpr) {
         Symbol symbol;
 
-        // Get symbol
+        // Attempt to get the symbol for the variable expression.
         try {
             symbol = symbolTable.lookup(varExpr.getName());
         } catch (NameNotFoundException e) {
             throw new NameNotFoundException("[" + varExpr.getLineNumber() + "] " + e.getMessage());
         }
 
-        // Update ast
+        // Attempt to update the symbol reference on the expression.
         try {
             varExpr.setSymbolRef(symbol);
         } catch (NonMatchingSymbolException e) {
@@ -502,10 +507,13 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(ArithBinaryOpExpr binaryExpr) {
+        // Get the type of the left and right expressions and the operator.
         Type leftType = visitType(binaryExpr.getExprLeft());
         Type rightType = visitType(binaryExpr.getExprRight());
         ArithBinaryOp operator = binaryExpr.getOp();
 
+        // Check that the return types of the expressions are permitted for the
+        // operator.
         switch (operator) {
             case DIV:
                 if (binaryExpr.getExprRight() instanceof Operand o) {
@@ -542,9 +550,10 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(ArithUnaryOpExpr unaryExpr) {
+        // Get the return type of the expression.
         Type type = visitType(unaryExpr.getExpr());
 
-        // Type checking
+        // The unary arithmetic operator can only be applied to floats or ints.
         if (type != Type.FLOAT_T && type != Type.INT_T) {
             throw new NonMatchingTypeException(
                     "[" + unaryExpr.getLineNumber() + "] Type mismatch: cannot use " + type
@@ -555,10 +564,13 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(BoolBinaryOpExpr binaryExpr) {
+        // Get the type of the left and right expressions and the operator.
         Type leftType = visitType(binaryExpr.getExprLeft());
         Type rightType = visitType(binaryExpr.getExprRight());
         BoolBinaryOp operator = binaryExpr.getOp();
 
+        // Check that the return types of the expressions are permitted for the
+        // operator.
         switch (operator) {
             case AND, OR:
                 if (leftType != Type.BOOL_T || rightType != Type.BOOL_T) {
@@ -593,9 +605,10 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(BoolUnaryOpExpr unaryExpr) {
+        // Get the return type of the expression.
         Type type = visitType(unaryExpr.getExpr());
 
-        // Type checking
+        // The boolean unary operator can only be applied to boolean expressions.
         if (type != Type.BOOL_T) {
             throw new NonMatchingTypeException(
                     "[" + unaryExpr.getLineNumber() + "] Negation requires type bool, got " + type);
@@ -605,10 +618,12 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(Cast cast) {
+        // Get initial and target types.
         Type initType = visitType(cast.getExpr());
         Type targetType = cast.getTargetType();
 
-        // Type checking
+        // Assure that conversion is either from int to float or vice versa, otherwise
+        // throw an exception.
         if (initType != Type.FLOAT_T && initType != Type.INT_T) {
             throw new NonMatchingTypeException(
                     "[" + cast.getLineNumber() + "] Type mismatch: cannot type cast from " + initType);
@@ -623,15 +638,21 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(FuncCall funcCall) {
+        // Get the symbol for the function call.
         Symbol funcSymbol = symbolTable.lookup(funcCall.getIdentifier());
 
+        // Attempt to update the symbol reference for the function call, and throw an
+        // error if it doesn't match.
         try {
             funcCall.setFunctionSymbolRef(funcSymbol);
         } catch (NonMatchingSymbolException e) {
             throw new NonMatchingSymbolException("[" + funcCall.getLineNumber() + "] " + e.getMessage());
         }
 
+        // Get the type of the parameter.
         Type parameterType = visitType(funcCall.getParameter());
+
+        // Ensure that it matches the parameter symbol reference.
         if (parameterType != funcCall.getParameterSymbolRef().getType()) {
             throw new NonMatchingTypeException(
                     "[" + funcCall.getLineNumber() + "] Type mismatch: " + parameterType + " and "
@@ -642,18 +663,18 @@ public class SemanticAnalyzer {
     }
 
     Type visitType(MemberAccess memberAccess) {
+        // Declare symbols for component and variable.
         Symbol component = null;
         Symbol variable;
 
-        // Get component
+        // Attempt to get component symbol.
         try {
             component = symbolTable.lookup(memberAccess.getComponent());
-
         } catch (NameNotFoundException e) {
             throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "]" + e.getMessage());
         }
 
-        // Get variable
+        // Get variable symbol from component's local scope.
         if (component instanceof ComponentSymbol cs) {
             HashMap<String, Symbol> variableScope = cs.getLocalScope();
 
@@ -666,6 +687,7 @@ public class SemanticAnalyzer {
             throw new NameNotFoundException("[" + memberAccess.getLineNumber() + "] could not find component");
         }
 
+        // Set the reference for the variable.
         memberAccess.setSymbolRef(variable);
 
         return variable.getType();
