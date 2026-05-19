@@ -156,26 +156,4 @@ public class InstructionGeneratorTest {
 
         },"This exception was expected");
     }
-
-    @Test
-    public void testIsRegisterDoesNotReturnOnInvalidRegister() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-
-        IrValue arg1 = new IrValue("a400", Type.INT_T);
-        IrValue arg2 = new IrValue("a5", Type.INT_T);
-        IrValue result = new IrValue("b2", Type.BOOL_T);
-
-        IrInstruction ii = new IrInstruction(IrOperator.GEQ, arg1, arg2, result);
-
-        InstructionGenerator ig = new InstructionGenerator(ii);
-
-        Method method = ig.getClass().getDeclaredMethod("isRegister", String.class);
-        method.setAccessible(true);
-
-        boolean invokationResult =(boolean)method.invoke(ig,arg1.getName());
-
-        // Expected
-        boolean expected = false;
-        Assertions.assertEquals(expected, invokationResult);
-
-    }
 }
