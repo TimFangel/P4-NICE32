@@ -7,7 +7,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import exception.NoValueMatchException;
 import frontend.abstract_syntax.type.Type;
+import frontend.abstract_syntax.value.Bool;
+import frontend.abstract_syntax.value.FloatNum;
+import frontend.abstract_syntax.value.IntNum;
+import frontend.abstract_syntax.value.Value;
 import frontend.symbol_table.VariableSymbol;
 import ir.IrFunction;
 import ir.IrGenerator;
@@ -77,8 +82,12 @@ class IrGeneratorTest {
         // the same
         Assertions.assertEquals("t0", temp0.getName());
         Assertions.assertEquals(Type.INT_T, temp0.getType());
+        Assertions.assertNotEquals("t8", temp0.getName());
+        Assertions.assertNotEquals(Type.FLOAT_T, temp0.getType());
+
         Assertions.assertEquals("t1", temp1.getName());
         Assertions.assertEquals(Type.FLOAT_T, temp1.getType());
+
         Assertions.assertNotEquals(temp0, temp1);
 
     }
@@ -102,20 +111,22 @@ class IrGeneratorTest {
         Assertions.assertEquals("t0", temp0.getName());
         Assertions.assertEquals(Type.INT_T, temp0.getType());
 
+        Assertions.assertNotEquals("t7", temp0.getName());
+        Assertions.assertNotEquals(Type.BOOL_T, temp0.getType());
+
     }
 
     // Declare function first, then find scope
     @Test
     void testCreateIr() throws Exception {
+
         // Declare parameter for function
         IrValue paramIrValue = new IrValue("x", Type.INT_T);
 
-        // Verify that name and type of parameter is correct
-        Assertions.assertEquals("x", paramIrValue.getName());
-        Assertions.assertEquals(Type.INT_T, paramIrValue.getType());
-
-        // Declare function with name, parameter and return type
-        IrFunction newFunction = new IrFunction("funcTest", paramIrValue, Type.INT_T);
+        // Declare instance of IrFunction called newFunction with name, parameter and
+        // return type
+        IrFunction newFunction = new IrFunction("funcTest", paramIrValue,
+                Type.INT_T);
 
         // Create field called currentFunctionField with the getDeclaredField method
         // getDeclaredField method makes access to currentFunction private field
@@ -124,8 +135,15 @@ class IrGeneratorTest {
         // Make private field accessible
         currentFunctionField.setAccessible(true);
 
-        // Store value of newCurrentFunctionField in newFunction
+        // Sets the newFunction to currentFunctionField
+        currentFunctionField.set(irGenerator, newFunction);
+
+        // Store value of newCurrentFunctionField in
         IrFunction tempField = (IrFunction) currentFunctionField.get(irGenerator);
+
+        // Verify that name and type of parameter is correct
+        Assertions.assertEquals("x", paramIrValue.getName());
+        Assertions.assertEquals(Type.INT_T, paramIrValue.getType());
 
         // Verify that function name and return type is correct
         Assertions.assertEquals("funcTest", tempField.getFuncName());
@@ -136,7 +154,44 @@ class IrGeneratorTest {
     }
 
     @Test
-    void testGenerateValue() {
+    void testGenerateValue() throws Exception {
+
+        IntNum intNum = new IntNum(10);
+        FloatNum floatNum = new FloatNum(12.5f);
+        Bool bool = new Bool(true);
+
+        Method generateValueMethod = IrGenerator.class.getDeclaredMethod("generateValue", Value.class);
+        generateValueMethod.setAccessible(true);
+
+        IrValue resultInt = (IrValue) generateValueMethod.invoke(irGenerator, intNum);
+        IrValue resultFloat = (IrValue) generateValueMethod.invoke(irGenerator, floatNum);
+        IrValue resultBool = (IrValue) generateValueMethod.invoke(irGenerator, bool);
+
+        Assertions.assertEquals("10", resultInt.getName());
+        Assertions.assertEquals(Type.INT_T, resultInt.getType());
+        Assertions.assertNotEquals("10.7", resultInt.getName());
+        Assertions.assertNotEquals(Type.FLOAT_T, resultInt.getType());
+
+        Assertions.assertEquals("12.5", resultFloat.getName());
+        Assertions.assertEquals(Type.FLOAT_T, resultFloat.getType());
+
+        Assertions.assertEquals("true", resultBool.getName());
+        Assertions.assertEquals(Type.BOOL_T, resultBool.getType());
+
+    }
+
+    @Test
+    void testGenerateValueExpectedFail() throws Exception {
+
+        IntNum intNum = new IntNum(10);
+        Method generateValueMethod = IrGenerator.class.getDeclaredMethod("generateValue", Value.class);
+        generateValueMethod.setAccessible(true);
+
+        IrValue resultInt = (IrValue) generateValueMethod.invoke(irGenerator, intNum);
+
+        Assertions.assertThrows(NoValueMatchException.class, () -> {
+            IntNum intNumFail = new IntNum(15);
+        }, "No matching value found! Value:");
 
     }
 }
