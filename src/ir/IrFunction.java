@@ -8,9 +8,9 @@ import lombok.Getter;
 
 @Getter
 public final class IrFunction implements IrInstructionInterface {
-    private String funcName;
-    private IrValue parameter;
-    private Type retType;
+    private String funcName; // identifier of function.
+    private IrValue parameter; // function parameter.
+    private Type retType; // return type of function
     private List<IrInstruction> funcBody = new ArrayList<>(); // local function code
 
     public IrFunction(String funcName, IrValue parameter, Type retType) {

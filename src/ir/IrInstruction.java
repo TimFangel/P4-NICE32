@@ -10,6 +10,10 @@ import ir.util.IrOperator;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * General representation of a single IR instruction.
+ * In CFG generation components and functions will be made into this.
+ */
 @Getter
 @Setter
 public final class IrInstruction implements IrInstructionInterface {
@@ -40,10 +44,12 @@ public final class IrInstruction implements IrInstructionInterface {
         this.arg2 = arg2;
         this.result = result;
 
-        findGen();
-        findKill();
+        findGenKill();
     }
 
+    /**
+     * Outputs the IrInstruction as it is expected to look based on operator.
+     */
     @Override
     public String toString() {
         switch (operator) {
@@ -84,17 +90,17 @@ public final class IrInstruction implements IrInstructionInterface {
             case COMPW:
                 return "COMPW " + result.getName() + " " + arg1.getName() + " " + arg2.getName();
 
-            case COMP_INTS:
-                return "PORT: " + arg1.getName() + "INTERVAL: " + arg2.getName();
-
             case FUNC_INFO:
-                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + arg2.getName();
+                return "FUNC " + arg1.getName() + ":\n" + "  PARAM " + result.getName();
 
             default:
                 throw new UnrecognizedOperatorException("Unrecognized Operator (toString): " + operator.toString());
         }
     }
 
+    /**
+     * Replaces the operator with its symbol.
+     */
     public String operandToSymbol(IrOperator operator) {
         switch (operator) {
             case ADD:
@@ -133,20 +139,26 @@ public final class IrInstruction implements IrInstructionInterface {
         }
     }
 
-    private void findGen() {
+    private void findGenKill() {
+        // Types for which gen/kill should be found.
         Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.FUNCTION, Type.COMPONENT);
 
-        // add arg1 and arg2 to gen, if valid type.
+        // Add arg1 and arg2 to gen if the type is valid and if they are temps.
         if (arg1 != null && set.contains(arg1.getType())) {
+            // Get argument name.
             String name = arg1.getName();
+
             if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
                 gen.add(name);
             }
         }
 
         if (arg2 != null && set.contains(arg2.getType())) {
+            // Get argument name.
             String name = arg2.getName();
-            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+
+            if (name.length() >= 2 && name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                // In case the operator is for function declarations, add to kill.
                 if (operator == IrOperator.FUNC_INFO) {
                     kill.add(name);
                 } else {
@@ -154,19 +166,16 @@ public final class IrInstruction implements IrInstructionInterface {
                 }
             }
         }
-    }
 
-    private void findKill() {
-        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.FUNCTION, Type.COMPONENT);
-
-        // add result to kill, if valid type.
+        // Add result to kill if type is valid and if it is a temp.
         if (result != null && set.contains(result.getType())) {
+            // Get result name.
             String name = result.getName();
-            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
 
+            if (name.length() >= 2 && name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                // In case the operator is for return statements or component write, add to gen.
                 if (operator == IrOperator.RET || operator == IrOperator.COMPW) {
                     gen.add(name);
-
                 } else {
                     kill.add(name);
                 }
@@ -174,18 +183,30 @@ public final class IrInstruction implements IrInstructionInterface {
         }
     }
 
+    /**
+     * Setter for the 'in' set.
+     */
     public void addIn(Set<String> s) {
         this.in.addAll(s);
     }
 
+    /**
+     * Setter for the 'out' set.
+     */
     public void addOut(Set<String> s) {
         this.out.addAll(s);
     }
 
+    /**
+     * Clear the 'in' set
+     */
     public void clearIn() {
         this.in.clear();
     }
 
+    /**
+     * Clear the 'out' set
+     */
     public void clearOut() {
         this.out.clear();
     }

@@ -12,8 +12,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BasicBlock {
-    private final int id;
-    private boolean isEntry = false;
+    private final int id; // block number
+    private boolean isEntry = false; // whether it is the entry to the CFG or not.
 
     // code within block
     private List<IrInstruction> instructions = new ArrayList<>();
@@ -22,10 +22,8 @@ public class BasicBlock {
     private List<BasicBlock> children = new ArrayList<>();
 
     /* Liveness Variables */
-    // variables used before def.
-    private Set<String> gen = new HashSet<>();
-    // variables assigned
-    private Set<String> kill = new HashSet<>();
+    private Set<String> gen = new HashSet<>(); // read
+    private Set<String> kill = new HashSet<>(); // write
 
     // in and out from liveness analysis
     private Set<String> in = new HashSet<>();
@@ -47,6 +45,12 @@ public class BasicBlock {
         return instructions.get(instructions.size() - 1);
     }
 
+    /**
+     * Adds the given basic block as child to the current block, and also adds the
+     * current block as parent to the child.
+     * 
+     * @param child block to assign as child.
+     */
     public void addChild(BasicBlock child) {
         children.add(child);
         // remember to add this as parent to new child.

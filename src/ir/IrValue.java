@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+/**
+ * IrValue represents the lowest form of IR, a value such as 10.
+ */
 @Getter
 @ToString
 public class IrValue {
@@ -14,6 +17,10 @@ public class IrValue {
 
     public IrValue(String name, Type type) {
         this.name = name;
+        this.type = type;
+    }
+
+    public void setType(Type type) {
         this.type = type;
     }
 }

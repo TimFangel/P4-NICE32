@@ -1,9 +1,10 @@
 package main;
 
+import backend.AssemblyGenerator;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
-import frontend.semantic_analysis.SemanticAnalyser;
+import frontend.semantic_analysis.SemanticAnalyzer;
 import ir.IrGenerator;
 import ir.analysis.LivenessAnalyzer;
 import ir.analysis.RegisterAllocator;
@@ -17,6 +18,8 @@ public class Main {
             System.out.println("Usage: java frontend.Main <file>");
             return;
         }
+
+        String fileName = args[0].replaceAll(".*/|\\.[^.]+$", "");
 
         try {
             // --- Parse ---
@@ -33,8 +36,8 @@ public class Main {
             // --- Semantic Analysis ---
             Program ast = parser.mainNode;
 
-            SemanticAnalyser semanticAnalyser = new SemanticAnalyser();
-            semanticAnalyser.traverse(ast);
+            SemanticAnalyzer semanticAnalyzer = new SemanticAnalyzer();
+            semanticAnalyzer.traverse(ast);
 
             System.out.println(ast);
             System.out.println("> AST passed type checker <");
@@ -44,7 +47,7 @@ public class Main {
             irGenerator.generateProgram(ast);
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
-            irPrinter.printIR("IR");
+            irPrinter.printIR(fileName);
 
             System.out.println("> IR has been successfully generated <");
 
@@ -63,7 +66,7 @@ public class Main {
 
             // --- Assembly Generator ---
             // AssemblyGenerator ag = new AssemblyGenerator();
-            // ag.run(ra.getCfg(), "assembly");
+            // ag.run(ra.getCfg(), fileName);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,0 +1,13 @@
+--- FUNCTIONS ---
+
+--- SETUP ---
+t0 := 67
+PORT_SETUP DIGITAL INPUT 2
+
+
+--- MAIN ---
+L0:
+t1 := t0
+t0 := 200
+COMPR t0 2 1000
+GOTO L0

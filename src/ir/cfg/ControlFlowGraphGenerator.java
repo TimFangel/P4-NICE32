@@ -48,8 +48,13 @@ public class ControlFlowGraphGenerator {
         }
     }
 
+    /**
+     * Generates Basic Blocks from a list of IrInstructions
+     * 
+     * @param instructions the list of IrInstructions to make into basic blocks.
+     */
     private void generateBasicBlocks(List<IrInstruction> instructions) {
-        BasicBlock currentBlock = new BasicBlock(blockIdCount++);
+        BasicBlock currentBlock = new BasicBlock(blockIdCount++); // start new block
         int separatorCount = 0; // 0 == in functions, hence not entry.
 
         // Iterate through each instruction.
@@ -58,7 +63,7 @@ public class ControlFlowGraphGenerator {
 
             /*
              * ignore SEPARATOR used for pretty printing, but use first one to mark entry of
-             * graph (setup)
+             * CFG (setup or main depending on whether setup has instructions)
              */
             if (instr.getOperator() == IrOperator.SEPARATOR) {
                 if (separatorCount == 0) {
@@ -69,17 +74,23 @@ public class ControlFlowGraphGenerator {
                 continue;
             }
 
-            // if leader, create new block (except first instruction)
+            /*
+             * if leader, create new block if current is not empty
+             * (except first instruction)
+             */
             if (i > 0 && isLeader(instr) && !currentBlock.getInstructions().isEmpty()) {
+                // add block, then create new one.
                 blocks.add(currentBlock);
                 currentBlock = new BasicBlock(blockIdCount++);
 
             }
 
+            // add instruction to block
             currentBlock.addInstruction(instr);
 
             // create new block after terminator
             if (isTerminator(instr)) {
+                // add block and create new one if list contains more instructions.
                 blocks.add(currentBlock);
 
                 // avoid empty block at end
@@ -95,6 +106,9 @@ public class ControlFlowGraphGenerator {
         }
     }
 
+    /**
+     * Generates the relations between basic blocks
+     */
     private void generateRelations() {
         // Map to match labels to blocks.
         Map<String, BasicBlock> labelToBlock = new HashMap<>();
@@ -104,7 +118,7 @@ public class ControlFlowGraphGenerator {
             if (!block.getInstructions().isEmpty()) {
                 // get the first instruction
                 IrInstruction firstInstr = block.getInstructions().get(0);
-                // ensure it is a leader operation
+                // if instr is label add it to map.
                 if (firstInstr.getOperator() == IrOperator.LABEL) {
                     // label always stored in result, so put that in map.
                     labelToBlock.put(firstInstr.getResult().getName(), block);
@@ -112,7 +126,7 @@ public class ControlFlowGraphGenerator {
             }
         }
 
-        // assign children based on last instruction and map.
+        // assign children based on last instruction in block and map.
         for (int i = 0; i < blocks.size(); i++) {
             BasicBlock block = blocks.get(i);
             IrInstruction lastInstr = block.getLastInstruction();
@@ -122,6 +136,8 @@ public class ControlFlowGraphGenerator {
                 continue;
             }
 
+            // switch assigning relations based on operation.
+            // NOTE: addChild also assigns the child's parent.
             switch (lastInstr.getOperator()) {
                 case GOTO:
                     // find target of GOTO
@@ -145,6 +161,7 @@ public class ControlFlowGraphGenerator {
                     // jumpTarget -> thing after if body.
                     BasicBlock jumpTarget = labelToBlock.get(lastInstr.getResult().getName());
                     if (jumpTarget != null) {
+                        // connect current block and target.
                         block.addChild(jumpTarget);
                     } else {
                         throw new MissingLabelException(
@@ -157,7 +174,7 @@ public class ControlFlowGraphGenerator {
                     break;
 
                 default:
-                    // fallthrough to next block
+                    // fallthrough to next block, if there are more.
                     if (i + 1 < blocks.size()) {
                         block.addChild(blocks.get(i + 1));
                     }
@@ -165,10 +182,20 @@ public class ControlFlowGraphGenerator {
         }
     }
 
+    /**
+     * Converts a List containing IrInstruction, IrComponent, and IrFunction into
+     * one only containing IrInstruction.
+     * 
+     * @param list made up of IrInstructionInterface objects.
+     * @return A list, where IrComponent and IrFunction has been made into
+     *         IrInstruction.
+     */
     private List<IrInstruction> convertInterfaceList(List<IrInstructionInterface> list) {
+        // list of instructions to return
         List<IrInstruction> instructions = new ArrayList<>();
         int instructionCounter = 0;
 
+        // Adapt each member to an IrInstruction.
         for (IrInstructionInterface i : list) {
             switch (i) {
                 case IrInstruction instr -> {
@@ -186,8 +213,8 @@ public class ControlFlowGraphGenerator {
                     IrInstruction funcInfo = new IrInstruction(
                             IrOperator.FUNC_INFO,
                             funcNameType,
-                            instr.getParameter(),
-                            null);
+                            null,
+                            instr.getParameter());
 
                     funcInfo.setInstrNum(instructionCounter++);
                     instructions.add(funcInfo);
@@ -200,16 +227,6 @@ public class ControlFlowGraphGenerator {
                 }
 
                 case IrComponent instr -> {
-                    // convert port and interval info to instruction.
-                    IrInstruction portIntervalInfo = new IrInstruction(
-                            IrOperator.COMP_INTS,
-                            instr.getPort(),
-                            instr.getInterval(),
-                            null);
-
-                    portIntervalInfo.setInstrNum(instructionCounter++);
-                    instructions.add(portIntervalInfo);
-
                     // add direction/protocol instruction to list.
                     IrInstruction setup = instr.getSetup();
                     setup.setInstrNum(instructionCounter++);
@@ -230,11 +247,14 @@ public class ControlFlowGraphGenerator {
     }
 
     /**
-     * Entry of CFG is the one containing a SEPARATOR instruction.
+     * Finds the block marked as entry and updates the CFG.
+     * 
+     * @param cfg to update with entry.
+     * @return CFG with entry.
      */
     private ControlFlowGraph findEntry(ControlFlowGraph cfg) {
 
-        // check each list of instructions of each block until separator is found.
+        // check each list of instructions of each block until marked block is found.
         List<BasicBlock> cfgBlocks = cfg.getBlocks();
         for (BasicBlock block : cfgBlocks) {
             if (block.getIsEntry()) {
@@ -246,6 +266,12 @@ public class ControlFlowGraphGenerator {
         return cfg;
     }
 
+    /**
+     * Generates a CFG with Basic Blocks containing instructions and relations.
+     * 
+     * @param instructions used to generate the CFG.
+     * @return A CFG with Basic Blocks with relations.
+     */
     public ControlFlowGraph generateCFG(List<IrInstructionInterface> instructions) {
         ControlFlowGraph cfg = new ControlFlowGraph();
         generateBasicBlocks(convertInterfaceList(instructions));

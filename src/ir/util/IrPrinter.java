@@ -21,7 +21,13 @@ public class IrPrinter {
         this.ir = ir;
     }
 
+    /**
+     * Prints IR to a file with the given input as name.10T
+     * 
+     * @param filename name of file to write to.
+     */
     public void printIR(String filename) throws IOException {
+        // create the BufferedWriter, which writes to filename.NICEIR.
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".NICEIR"))) {
             List<IrInstructionInterface> code = ir.getCode();
             int i = 0;
@@ -41,7 +47,7 @@ public class IrPrinter {
                 // print functions and their bodies.
                 if (current instanceof IrFunction function) {
                     writer.write(function.toString());
-                    writer.newLine();
+                    writer.newLine(); // indent so param is in function.
                     writer.write("param " + function.getParameter().getName());
                     writer.newLine();
                     List<IrInstruction> funcBody = function.getFuncBody();
@@ -49,7 +55,6 @@ public class IrPrinter {
                         writer.write(instr.toString());
                         writer.newLine();
                     }
-                    writer.write("end func");
                     writer.newLine(); // space between functions
                     writer.newLine();
                 }
@@ -64,7 +69,8 @@ public class IrPrinter {
             // write setup and main
             while (i < code.size()) {
                 IrInstructionInterface current = code.get(i);
-                // make differentiation between main and setup
+
+                // if separator is found start main.
                 if (current instanceof IrInstruction instr && instr.getOperator() == IrOperator.SEPARATOR) {
                     writer.newLine();
                     writer.write("--- MAIN ---");
