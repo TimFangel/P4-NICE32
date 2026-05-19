@@ -102,13 +102,13 @@ public class InstructionGenerator {
                     throw new RegisterException("Cannot do arithmetic operation on " + result.getType());
                 }
 
-                case AND, OR:
+            case AND, OR:
                 return comparisonProcessor.handleLogicalComparison();
 
             case LEQ, LT, GT, GEQ, EQ, NEQ:
-                if (result.getType() == Type.A_REG) {
+                if (arg1.getType() == Type.A_REG) {
                     return comparisonProcessor.handleArithmeticComparison();
-                } else if (result.getType() == Type.F_REG) {
+                } else if (arg1.getType() == Type.F_REG) {
                     return comparisonProcessor.handleFloatComparisons();
                 } else {
                     throw new RegisterException("Cannot do comparison operation on " + result.getType());

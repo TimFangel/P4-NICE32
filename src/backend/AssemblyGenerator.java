@@ -40,7 +40,7 @@ public class AssemblyGenerator {
     }
 
     public static String newLabel() {
-        return "L0" + ++nextLabelNumber;
+        return ".L0" + ++nextLabelNumber;
     }
 
     private write

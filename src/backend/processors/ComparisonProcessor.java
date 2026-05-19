@@ -50,17 +50,18 @@ public class ComparisonProcessor {
             throw new NonRegisterArgsException("Cannot generate boolean expression for non-register args");
         }
 
+        // Use idioms to get instruction as a > b = b < a and a >= b = b <= a
         switch (operator) {
-            case GEQ:
+            case GT:
                 switchArgs();
             case LT:
                 return "OLT.S " + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+            case GEQ:
+                switchArgs();
             case LEQ:
                 return "OLE.S " + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
-            case GT:
-                switchArgs();
             case EQ:
-                return "OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
+                return "OEQ.S " + result.getName() + ", " + arg1.getName() + ", " + arg2.getName();
             case NEQ:
                 if (result.getName().compareTo(boolScratchReg) == 0) {
                     throw new InvalidRegisterException(
@@ -69,7 +70,7 @@ public class ComparisonProcessor {
 
                 // Calculate Equal and negate result
                 StringBuilder str = new StringBuilder();
-                str.append("OEQ.S" + result.getName() + ", " + arg1.getName() + ", " + arg2.getName());
+                str.append("OEQ.S " + result.getName() + ", " + arg1.getName() + ", " + arg2.getName());
                 str.append("ORBC " + boolScratchReg + ", " + boolScratchReg + ", " + boolScratchReg + "");
                 str.append("XORB " + result.getName() + ", " + result.getName() + ", " + boolScratchReg);
                 return str.toString();
@@ -92,19 +93,20 @@ public class ComparisonProcessor {
         final String falseLabel = AssemblyGenerator.newLabel();
         StringBuilder str = new StringBuilder();
 
+        // Use idioms to get instruction as a > b = b < a and a >= b = b <= a
         switch (operator) {
+            case LEQ:
+                switchArgs();
             case GEQ:
+                str.append("BGE ");
+                break;
+            case GT:
                 switchArgs();
             case LT:
                 str.append("BLT ");
                 break;
-            case LEQ:
-                switchArgs();
-            case GT:
-                str.append("BGE ");
-                break;
             case EQ:
-                str.append("BEQ");
+                str.append("BEQ ");
                 break;
             case NEQ:
                 str.append("BNE ");
@@ -116,13 +118,13 @@ public class ComparisonProcessor {
         final String setBit = "ORBC " + result.getName() + ", " + result.getName() + ", " + result.getName();
         final String clearBit = "XORB " + result.getName() + ", " + result.getName() + ", " + result.getName();
 
-        // Generate if else branch which sets or clears bit
+        // Generate if else branch which sets (if true) or clears bit (if false)
         str.append(arg1.getName() + "," + arg2.getName() + "," + trueLabel + "\n");
         str.append(clearBit + "\n");
         str.append("J " + falseLabel + "\n");
-        str.append(trueLabel + "\n");
+        str.append(trueLabel + ":\n");
         str.append(setBit + "\n");
-        str.append(falseLabel + "\n");
+        str.append(falseLabel + ":\n");
 
         return str.toString();
     }
