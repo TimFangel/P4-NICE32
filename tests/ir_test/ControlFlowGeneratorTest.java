@@ -1,4 +1,4 @@
-package irTest;
+package ir_test;
 
 import java.lang.reflect.Method;
 

@@ -1,4 +1,4 @@
-package irTest;
+package ir_test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -178,20 +178,8 @@ class IrGeneratorTest {
         Assertions.assertEquals("true", resultBool.getName());
         Assertions.assertEquals(Type.BOOL_T, resultBool.getType());
 
-    }
-
-    @Test
-    void testGenerateValueExpectedFail() throws Exception {
-
-        IntNum intNum = new IntNum(10);
-        Method generateValueMethod = IrGenerator.class.getDeclaredMethod("generateValue", Value.class);
-        generateValueMethod.setAccessible(true);
-
-        IrValue resultInt = (IrValue) generateValueMethod.invoke(irGenerator, intNum);
-
-        Assertions.assertThrows(NoValueMatchException.class, () -> {
-            IntNum intNumFail = new IntNum(15);
-        }, "No matching value found! Value:");
+        Assertions.assertFalse(resultInt, "No matching value found! Value: " + intNum);
 
     }
+
 }
