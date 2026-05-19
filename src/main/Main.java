@@ -1,6 +1,7 @@
 package main;
 
 import backend.AssemblyGenerator;
+import backend.DirectorySetup;
 import frontend.abstract_syntax.program.Program;
 import frontend.coco.Parser;
 import frontend.coco.Scanner;
@@ -13,6 +14,9 @@ import ir.cfg.ControlFlowGraphGenerator;
 import ir.util.IrPrinter;
 
 public class Main {
+    private static final String OUTPUT_DIR = "output";
+    private static final String MAIN_DIR = "main";
+
     public static void main(String[] args) {
         if (args.length == 0) {
             System.out.println("Usage: java frontend.Main <file>");
@@ -22,6 +26,9 @@ public class Main {
         String fileName = args[0].replaceAll(".*/|\\.[^.]+$", "");
 
         try {
+            // --- Directory setup ---
+            DirectorySetup.create(OUTPUT_DIR, MAIN_DIR, fileName);
+
             // --- Parse ---
             Parser parser = new Parser(new Scanner(args[0]));
             parser.Parse();
@@ -47,7 +54,7 @@ public class Main {
             irGenerator.generateProgram(ast);
 
             IrPrinter irPrinter = new IrPrinter(irGenerator);
-            irPrinter.printIR(fileName);
+            irPrinter.printIR(OUTPUT_DIR, MAIN_DIR, fileName);
 
             System.out.println("> IR has been successfully generated <");
 
@@ -66,7 +73,7 @@ public class Main {
 
             // --- Assembly Generator ---
             AssemblyGenerator ag = new AssemblyGenerator();
-            ag.run(ra.getCfg(), fileName);
+            ag.run(ra.getCfg(), OUTPUT_DIR, MAIN_DIR, fileName);
 
         } catch (Exception e) {
             e.printStackTrace();

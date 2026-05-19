@@ -3,6 +3,9 @@ package ir.util;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import ir.IrComponent;
@@ -21,8 +24,15 @@ public class IrPrinter {
         this.ir = ir;
     }
 
-    public void printIR(String filename) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".NICEIR"))) {
+    public void printIR(String outputFolder, String mainFolder, String filename) throws IOException {
+        // Create path for file
+        Path path = Paths.get(outputFolder, mainFolder, filename + ".NICEIR");
+
+        if (path.getParent() != null) {
+            Files.createDirectories(path.getParent());
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile()))) {
             List<IrInstructionInterface> code = ir.getCode();
             int i = 0;
 

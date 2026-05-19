@@ -3,21 +3,30 @@ package backend;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import ir.IrInstruction;
 import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraph;
 
 // TODO:
-// CMakeLists.txt x2
-// . setup
+// setup core?
 // TIMG0_WDT_WKEY_REG
 
 public class AssemblyGenerator {
     static int nextLabelNumber = 0;
 
-    public void run(ControlFlowGraph cfg, String filename) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".S"))) {
+    public void run(ControlFlowGraph cfg, String outputFolder, String mainFolder, String filename) throws IOException {
+        // Create path for file
+        Path path = Paths.get(outputFolder, mainFolder, filename + ".S");
+
+        if (path.getParent() != null) {
+            Files.createDirectories(path.getParent());
+        }
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(path.toFile()))) {
             writer.write(writeHeader());
             writer.newLine();
             writer.newLine();
