@@ -12,7 +12,7 @@ public class AssemblyGenerator {
     static int nextLabelNumber = 0;
 
     public void run(ControlFlowGraph cfg, String filename) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".a"))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename + ".S"))) {
             for (BasicBlock block : cfg.getBlocks()) {
                 // Block name
                 writer.write("; B" + block.getId());
@@ -20,8 +20,8 @@ public class AssemblyGenerator {
 
                 // Write instructions
                 for (IrInstruction instr : block.getInstructions()) {
-                    InstructionGenerator iw = new InstructionGenerator(instr);
-                    writer.write(InstructionFormatter.format(iw.write(), instr.toString()));
+                    InstructionGenerator ig = new InstructionGenerator(instr);
+                    writer.write(InstructionFormatter.format(ig.write(), instr.toString()));
                 }
 
                 writer.newLine();

@@ -57,7 +57,8 @@ public class IrGenerator {
     }
 
     /**
-     * Creates a new temporary with the given operand's type and an immutable assignment.
+     * Creates a new temporary with the given operand's type and an immutable
+     * assignment.
      * 
      * @param op to get the type of.
      * @return Temporary variable with the input operand's type.
@@ -67,7 +68,7 @@ public class IrGenerator {
         IrValue operandValue;
 
         switch (op.getValue()) {
-            case IntNum in: 
+            case IntNum in:
                 operandValue = new IrValue(String.valueOf(in.value()), Type.INT_T);
                 result = newTemp(Type.INT_T);
                 break;
@@ -80,13 +81,12 @@ public class IrGenerator {
                 result = newTemp(Type.BOOL_T);
                 break;
 
-            default: 
+            default:
                 throw new NoValueMatchException("No matching value found! Value: " + op.toString());
         }
 
         // Create assignment
         createIR(new IrInstruction(IrOperator.ASS, operandValue, null, result));
-
 
         return result;
     }
@@ -184,7 +184,7 @@ public class IrGenerator {
                 if (o.getValue() instanceof IntNum in) {
                     return new IrValue("-" + String.valueOf(in.value()), Type.INT_T);
                 }
-                
+
                 if (o.getValue() instanceof FloatNum fn) {
                     return new IrValue("-" + String.valueOf(fn.value()), Type.FLOAT_T);
                 }
@@ -505,8 +505,8 @@ public class IrGenerator {
         // SEPARATOR to distinguish between main and setup
         createIR(new IrInstruction(IrOperator.SEPARATOR, null, null, null));
 
-        // make label at start of main.
-        String mainStart = newLabel();
+        // make loop label at start of main.
+        String mainStart = "Lloop";
         createIR(new IrInstruction(IrOperator.LABEL, null, null, new IrValue(mainStart, Type.LABEL)));
 
         // Generate main

@@ -4,7 +4,7 @@ MOV        a2,  a2       ; a2 := a2
 RET                      ; RET a2
 
 ; B1
-.L0:                     ; L0:
+.Lloop:                  ; Lloop:
 MOVI       a2, 4094      ; a2 := -2
 MOVI       a2,   2       ; a2 := 2
 MOVI       a3,   2       ; a3 := 2
@@ -15,5 +15,5 @@ ADD        a2,  a2,   a3 ; a2 := a2 + a3
 CALL0     .La            ; a2 := CALL a, a2
 MOV        a2,  a2       
 MOV        a2,  a2       ; a2 := a2
-J         .L0            ; GOTO L0
+J         .Lloop         ; GOTO Lloop
 
