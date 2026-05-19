@@ -378,6 +378,23 @@ public class IrGenerator {
             return;
         }
 
+        if (stmt instanceof MemberAssStmt memAssStmt) {
+            try {
+                // get symbol with relevant info and create subexpression.
+                VariableSymbol symbol = memAssStmt.getSymbolRef();
+                IrValue expr = generateExpr(memAssStmt.getValue());
+
+                // create an IrValue for the result.
+                IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
+
+                createIR(new IrInstruction(IrOperator.ASS, expr, null, result));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return;
+        }
+
         throw new NoStmtMatchException(
                 "No matching statement found! Statement: " + stmt.toString());
     }
