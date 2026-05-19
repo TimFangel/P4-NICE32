@@ -44,8 +44,7 @@ public final class IrInstruction implements IrInstructionInterface {
         this.arg2 = arg2;
         this.result = result;
 
-        findGen();
-        findKill();
+        findGenKill();
     }
 
     /**
@@ -137,6 +136,44 @@ public final class IrInstruction implements IrInstructionInterface {
             default:
                 throw new UnrecognizedOperatorException(
                         "Unrecognized Operator (operatorToSymbol): " + operator.toString());
+        }
+    }
+
+    private void findGenKill() {
+        Set<Type> set = EnumSet.of(Type.BOOL_T, Type.FLOAT_T, Type.INT_T, Type.FUNCTION, Type.COMPONENT);
+
+        // add arg1 and arg2 to gen, if valid type and is temp.
+        if (arg1 != null && set.contains(arg1.getType())) {
+            String name = arg1.getName();
+            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                gen.add(name);
+            }
+        }
+
+        if (arg2 != null && set.contains(arg2.getType())) {
+            String name = arg2.getName();
+            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+                // special case for func_info
+                if (operator == IrOperator.FUNC_INFO) {
+                    kill.add(name);
+                } else {
+                    gen.add(name);
+                }
+            }
+        }
+
+        // add result to kill, if valid type and is temp.
+        if (result != null && set.contains(result.getType())) {
+            String name = result.getName();
+            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+
+                // special case for RET and COMPW
+                if (operator == IrOperator.RET || operator == IrOperator.COMPW) {
+                    gen.add(name);
+                } else {
+                    kill.add(name);
+                }
+            }
         }
     }
 
