@@ -116,12 +116,6 @@ public class IrGenerator {
             IrValue left = generateExpr(binOp.getExprLeft());
             IrValue right = generateExpr(binOp.getExprRight());
 
-            if (left.getType() != right.getType()) {
-                throw new NonMatchingTypeException(
-                        "[" + expr.getLineNumber() + "] Type mismatch! Left: " + left.getType() + " Right: "
-                                + right.getType());
-            }
-
             // Create temporary value to hold result
             IrValue temp = newTemp(left.getType());
 
@@ -156,11 +150,6 @@ public class IrGenerator {
             IrValue left = generateExpr(binOp.getExprLeft());
             IrValue right = generateExpr(binOp.getExprRight());
 
-            if (left.getType() != right.getType()) {
-                throw new NonMatchingTypeException(
-                        "Type mismatch! Left: " + left.getType() + " Right: " + right.getType());
-            }
-
             IrValue temp = newTemp(Type.BOOL_T);
 
             /*
@@ -175,10 +164,6 @@ public class IrGenerator {
         if (expr instanceof BoolUnaryOpExpr unOp) {
             // generate subexpression.
             IrValue left = generateExpr(unOp.getExpr());
-
-            if (left.getType() != Type.BOOL_T) {
-                throw new NonMatchingTypeException("Type mismatch! Left: " + left.getType());
-            }
 
             // new temporary variable to hold result.
             IrValue temp = newTemp(left.getType());
@@ -266,10 +251,6 @@ public class IrGenerator {
                 // create an IrValue for the result.
                 IrValue result = new IrValue(symbol.getIrName(), symbol.getType());
 
-                if (result.getType() != expr.getType()) {
-                    throw new NonMatchingTypeException(
-                            "Type mismatch! Result: " + result.getType() + " Expr: " + expr.getType());
-                }
                 createIR(new IrInstruction(IrOperator.ASS, expr, null, result));
             } catch (Exception e) {
                 e.printStackTrace();
@@ -281,10 +262,6 @@ public class IrGenerator {
         if (stmt instanceof IfStmt ifStmt) {
             // generate the condition of the if stmt.
             IrValue condition = generateExpr(ifStmt.getCondition());
-
-            if (condition.getType() != Type.BOOL_T) {
-                throw new NonMatchingTypeException("Condition is not a boolean! Type: " + condition.getType());
-            }
 
             String elseLabel = newLabel();
             // only
@@ -389,11 +366,6 @@ public class IrGenerator {
 
                 IrValue expr = generateExpr(decl.getValue());
                 IrValue result = newTemp(symbol);
-
-                if (expr.getType() != result.getType()) {
-                    throw new NonMatchingTypeException(
-                            "Type mismatch! Left: " + expr.getType() + " Right: " + result.getType());
-                }
 
                 IrInstruction variable = new IrInstruction(IrOperator.ASS, expr, null, result);
 

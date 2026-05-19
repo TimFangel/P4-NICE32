@@ -166,7 +166,6 @@ public final class IrInstruction implements IrInstructionInterface {
         if (result != null && set.contains(result.getType())) {
             String name = result.getName();
             if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
-
                 // special case for RET and COMPW
                 if (operator == IrOperator.RET || operator == IrOperator.COMPW) {
                     gen.add(name);
