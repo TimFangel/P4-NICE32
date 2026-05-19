@@ -55,3 +55,6 @@ buildNumber.properties
 !src/frontend/coco/*.frame
 src/frontend/coco/*.java
 src/frontend/coco/*.java.old
+
+# Output folder
+output/
