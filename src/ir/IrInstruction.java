@@ -152,7 +152,7 @@ public final class IrInstruction implements IrInstructionInterface {
 
         if (arg2 != null && set.contains(arg2.getType())) {
             String name = arg2.getName();
-            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+            if (name.length() >= 2 && name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
                 // special case for func_info
                 if (operator == IrOperator.FUNC_INFO) {
                     kill.add(name);
@@ -165,7 +165,7 @@ public final class IrInstruction implements IrInstructionInterface {
         // add result to kill, if valid type and is temp.
         if (result != null && set.contains(result.getType())) {
             String name = result.getName();
-            if (name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
+            if (name.length() >= 2 && name.charAt(0) == 't' && Character.isDigit(name.charAt(1))) {
                 // special case for RET and COMPW
                 if (operator == IrOperator.RET || operator == IrOperator.COMPW) {
                     gen.add(name);

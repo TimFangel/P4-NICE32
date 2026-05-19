@@ -1,25 +1,13 @@
 --- FUNCTIONS ---
-func x:
-param t0
-t1 := 20
-RET t1
-
-
 
 --- SETUP ---
-t2 := 67
+t0 := 67
 PORT_SETUP DIGITAL INPUT 2
 
 
 --- MAIN ---
 L0:
-t3 := true
-t4 := CALL x, 2
-t5 := t4 > 10
-IF_FALSE t5 GOTO L1
-t3 := false
-L1:
-t7 := 2.76 + 99.99
-t6 := t7
-COMPR t2 2 1000
+t1 := t0
+t0 := 200
+COMPR t0 2 1000
 GOTO L0

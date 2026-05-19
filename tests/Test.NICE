@@ -1,8 +1,4 @@
 functions {
-    int func x(int n) {
-        int g = 20;
-        return g;
-    }
 }
 
 setup {
@@ -17,10 +13,6 @@ setup {
 }
 
 main {
-    bool e = true;
-    if(x(2) > 10) {
-        e = false;
-    }
-
-    float q = 2.76 + 99.99;
+    int b = c.a;
+    c.a = 200;
 }
