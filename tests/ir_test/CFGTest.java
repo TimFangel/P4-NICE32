@@ -1,8 +1,10 @@
 package ir_test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -10,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import exception.MissingLabelException;
 import frontend.abstract_syntax.type.Type;
 import ir.cfg.BasicBlock;
 import ir.cfg.ControlFlowGraphGenerator;
@@ -241,7 +244,7 @@ class CFGTest {
     }
 
     @Test
-    void createsFallthroughRelation() throws Exception {
+    void createFallthroughRelation() throws Exception {
         Method generateRelations = ControlFlowGraphGenerator.class.getDeclaredMethod("generateRelations");
         generateRelations.setAccessible(true);
 
@@ -263,7 +266,7 @@ class CFGTest {
     }
 
     @Test
-    void createsGotoRelation() throws Exception {
+    void createGotoRelation() throws Exception {
         Method generateRelations = ControlFlowGraphGenerator.class.getDeclaredMethod("generateRelations");
         generateRelations.setAccessible(true);
 
@@ -289,6 +292,94 @@ class CFGTest {
 
         // assert b1 does not fallthrough to b2.
         assertTrue(b2.getParents().isEmpty());
+    }
+
+    @Test
+    void createGotoRelationThrowsException() throws Exception {
+        Method generateRelations = ControlFlowGraphGenerator.class.getDeclaredMethod("generateRelations");
+        generateRelations.setAccessible(true);
+
+        BasicBlock b1 = new BasicBlock(0);
+        b1.addInstruction(new IrInstruction(IrOperator.GOTO, null, null,
+                new IrValue("L0", Type.LABEL)));
+
+        BasicBlock b2 = new BasicBlock(1);
+        b2.addInstruction(new IrInstruction(IrOperator.ASS, new IrValue("5.2", Type.FLOAT_T), null,
+                new IrValue("t0", Type.FLOAT_T)));
+
+        // update blocks
+        cfgGen.getBlocks().addAll(List.of(b1, b2));
+
+        InvocationTargetException ex = assertThrows(InvocationTargetException.class,
+                () -> generateRelations.invoke(cfgGen));
+
+        assertTrue(ex.getCause() instanceof MissingLabelException);
+    }
+
+    @Test
+    void createIf_FalseRelation() throws Exception {
+        Method generateRelations = ControlFlowGraphGenerator.class.getDeclaredMethod("generateRelations");
+        generateRelations.setAccessible(true);
+
+        BasicBlock b1 = new BasicBlock(0);
+        b1.addInstruction(new IrInstruction(IrOperator.IF_FALSE, new IrValue("t1", Type.BOOL_T), null,
+                new IrValue("L0", Type.LABEL)));
+
+        BasicBlock b2 = new BasicBlock(1);
+        b2.addInstruction(new IrInstruction(IrOperator.ASS, new IrValue("5.2", Type.FLOAT_T), null,
+                new IrValue("t0", Type.FLOAT_T)));
+
+        BasicBlock b3 = new BasicBlock(2);
+        b3.addInstruction(new IrInstruction(IrOperator.LABEL, null, null,
+                new IrValue("L0", Type.LABEL)));
+
+        // update blocks
+        cfgGen.getBlocks().addAll(List.of(b1, b2, b3));
+
+        generateRelations.invoke(cfgGen);
+
+        int expectB1Child = 2;
+
+        assertEquals(expectB1Child, b1.getChildren().size());
+
+        assertTrue(b1.getChildren().contains(b2));
+        assertTrue(b1.getChildren().contains(b3));
+    }
+
+    @Test
+    void retNoRelations() throws Exception {
+        Method generateRelations = ControlFlowGraphGenerator.class.getDeclaredMethod("generateRelations");
+        generateRelations.setAccessible(true);
+
+        BasicBlock b1 = new BasicBlock(0);
+        b1.addInstruction(new IrInstruction(IrOperator.RET, null, null, null));
+
+        BasicBlock b2 = new BasicBlock(1);
+        b2.addInstruction(new IrInstruction(IrOperator.ASS, new IrValue("5.2", Type.FLOAT_T), null,
+                new IrValue("t0", Type.FLOAT_T)));
+
+        // update blocks
+        cfgGen.getBlocks().addAll(List.of(b1, b2));
+
+        assertTrue(b1.getChildren().isEmpty());
+    }
+
+    @Test
+    void emptyBlockNoRelations() throws Exception {
+        Method generateRelations = ControlFlowGraphGenerator.class.getDeclaredMethod("generateRelations");
+        generateRelations.setAccessible(true);
+
+        BasicBlock b1 = new BasicBlock(0);
+
+        BasicBlock b2 = new BasicBlock(1);
+        b2.addInstruction(new IrInstruction(IrOperator.ASS, new IrValue("5.2", Type.FLOAT_T), null,
+                new IrValue("t0", Type.FLOAT_T)));
+
+        // update blocks
+        cfgGen.getBlocks().addAll(List.of(b1, b2));
+
+        assertTrue(b1.getChildren().isEmpty());
+        assertTrue(b1.getParents().isEmpty());
     }
 
 }
